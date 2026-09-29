@@ -1,0 +1,1748 @@
+{
+  "files": {
+    "ActivityFeed.swift": {
+      "base": "bases/b57c6c9a7eeddc0d5af2a8d1c3a3b2404a88e22ee7f4847c99624a7e29e4dc35.base",
+      "installedDigest": "sha256:3a371a38f2c4a3f9c537190bf93ef22aa1ff7be53772e262476c7e06037d90ec",
+      "item": "activity-feed",
+      "sourceDigest": "sha256:3a371a38f2c4a3f9c537190bf93ef22aa1ff7be53772e262476c7e06037d90ec",
+      "version": "0.2.2"
+    },
+    "AttachmentRow.swift": {
+      "base": "bases/38be4e5a3a371e7653353805fc188336435291c35197d664ade59881838570e4.base",
+      "installedDigest": "sha256:6147e51e5ca19c2c1b75ce704d06c5d5a073be1f98835307809f1b29006b7ca0",
+      "item": "attachment",
+      "sourceDigest": "sha256:6147e51e5ca19c2c1b75ce704d06c5d5a073be1f98835307809f1b29006b7ca0",
+      "version": "0.1.2"
+    },
+    "AuthForm.swift": {
+      "base": "bases/b808915e7c307350d015763d2cb828270f25868f16345bd7122b187337a9d83f.base",
+      "installedDigest": "sha256:5eea5326190da68ab0636a87cce0e7f0f2991598fb4ee97d86c92ff6afa3e7ea",
+      "item": "auth-form",
+      "sourceDigest": "sha256:5eea5326190da68ab0636a87cce0e7f0f2991598fb4ee97d86c92ff6afa3e7ea",
+      "version": "0.3.2"
+    },
+    "Avatar.swift": {
+      "base": "bases/52f53b07c4f5b4deb26b2c60971258bd9c19da8a9e21a7ab004c5edacbf27f7e.base",
+      "installedDigest": "sha256:0a6f174db0816c934fcdc84eb8284039793265d512560ced274e1d77090fc418",
+      "item": "avatar",
+      "sourceDigest": "sha256:0a6f174db0816c934fcdc84eb8284039793265d512560ced274e1d77090fc418",
+      "version": "0.2.1"
+    },
+    "Breadcrumb.swift": {
+      "base": "bases/00aa1d3117261e6ebcfe6cedb98c212262e4142e72015216d27181c2a9950dc5.base",
+      "installedDigest": "sha256:ff1579a625a8c546bd21d12000efe2d3565f4bb0515f7a1b480772608e6ae4a6",
+      "item": "breadcrumb",
+      "sourceDigest": "sha256:ff1579a625a8c546bd21d12000efe2d3565f4bb0515f7a1b480772608e6ae4a6",
+      "version": "0.1.2"
+    },
+    "Combobox.swift": {
+      "base": "bases/ee1324adc0e16e3d8dfbe47c2ec10d029728b0e55e77dbf3a3b01bc123eeeb8c.base",
+      "installedDigest": "sha256:f5427a967882a9d3c21e6efc214c6f43333b0463139942245928a2f4b9a923da",
+      "item": "combobox",
+      "sourceDigest": "sha256:f5427a967882a9d3c21e6efc214c6f43333b0463139942245928a2f4b9a923da",
+      "version": "0.1.1"
+    },
+    "CommandPalette.swift": {
+      "base": "bases/b44cc9fe32bbb74237996e0556b041a7dcc5972d193b83b1d3ef1412cee5040b.base",
+      "installedDigest": "sha256:d5829939e3af486cd115837aa7d3362dc0459b65282569996f1b1213f3b27b09",
+      "item": "command",
+      "sourceDigest": "sha256:d5829939e3af486cd115837aa7d3362dc0459b65282569996f1b1213f3b27b09",
+      "version": "0.2.1"
+    },
+    "CommandSearch.swift": {
+      "base": "bases/ea8812f099cbdc82a8f23dd8c062de39931e3f1b74d27416cf85d990e4140eef.base",
+      "installedDigest": "sha256:7bcd70fc3ccc941a54050f5f933f55569448ded8d7699b54d72a7e672431037d",
+      "item": "command-search",
+      "sourceDigest": "sha256:7bcd70fc3ccc941a54050f5f933f55569448ded8d7699b54d72a7e672431037d",
+      "version": "0.2.1"
+    },
+    "Dashboard.swift": {
+      "base": "bases/945127ff24c38e79dfecbe4ac9a826e68322b0f24e6c536c8fe958883dd272c6.base",
+      "installedDigest": "sha256:42153dbefaa6c3e1e1cfbfadb21914a599b6322c6b6b80ef261e88fb2494d987",
+      "item": "dashboard",
+      "sourceDigest": "sha256:42153dbefaa6c3e1e1cfbfadb21914a599b6322c6b6b80ef261e88fb2494d987",
+      "version": "0.1.1"
+    },
+    "DataTable.swift": {
+      "base": "bases/9c688bb3f46b32b93fcf941f8ad31a7dc06f3436863b4a73656dd267b4c44a97.base",
+      "installedDigest": "sha256:b71dd56116cddd39ca6d27cf9f6a7f335658f89bc65f8c6d0873053a06837aff",
+      "item": "table",
+      "sourceDigest": "sha256:b71dd56116cddd39ca6d27cf9f6a7f335658f89bc65f8c6d0873053a06837aff",
+      "version": "0.1.1"
+    },
+    "Field.swift": {
+      "base": "bases/64618fe49264c119c1f75ef524b449f4bd6c4f0cae3d95cab546f5e9dc49e378.base",
+      "installedDigest": "sha256:24b5dca6920acace40f0a3ae7d2683843a2fc2da8b3449100f37f54126b1ee5c",
+      "item": "field",
+      "sourceDigest": "sha256:24b5dca6920acace40f0a3ae7d2683843a2fc2da8b3449100f37f54126b1ee5c",
+      "version": "0.1.2"
+    },
+    "FinanceOverview.swift": {
+      "base": "bases/f9b286d5453416c4c440e65a4c2be76f47597245ad27cdad80314bf17053616c.base",
+      "installedDigest": "sha256:0dd9e83c41a3181ff2290414bb661e23781e22c357f2660563f2754f4a595bd6",
+      "item": "finance-overview",
+      "sourceDigest": "sha256:0dd9e83c41a3181ff2290414bb661e23781e22c357f2660563f2754f4a595bd6",
+      "version": "0.4.3"
+    },
+    "InlineAlert.swift": {
+      "base": "bases/ea8c868eda9aec86e5cd2571ffc9a41b5baccc19ce3f9847eb287a16dc368901.base",
+      "installedDigest": "sha256:d3cfa3eb9eae2ad5a3098990fba65867d7cdc666e7de4406753e3be602d67324",
+      "item": "alert",
+      "sourceDigest": "sha256:d3cfa3eb9eae2ad5a3098990fba65867d7cdc666e7de4406753e3be602d67324",
+      "version": "0.2.1"
+    },
+    "InputGroup.swift": {
+      "base": "bases/39bb43f0f12caa8503b581f1bad9025c5e1b4ec0920f535456e88ab3b8b99abe.base",
+      "installedDigest": "sha256:f66fb353bdf5ff42599888c14fcc8b584d9ceb4fad3c81e406f55e44deb08d4d",
+      "item": "input-group",
+      "sourceDigest": "sha256:f66fb353bdf5ff42599888c14fcc8b584d9ceb4fad3c81e406f55e44deb08d4d",
+      "version": "0.2.1"
+    },
+    "ItemRow.swift": {
+      "base": "bases/bc855952cda7fd950cb49608a75fbc629e03015cdf44548d2113a3abc74b87ba.base",
+      "installedDigest": "sha256:84ed589edf449d3324c921a884160e22d51af80d31cb1db08fbaab84a0e4ff69",
+      "item": "item",
+      "sourceDigest": "sha256:84ed589edf449d3324c921a884160e22d51af80d31cb1db08fbaab84a0e4ff69",
+      "version": "0.2.2"
+    },
+    "MacroProgress.swift": {
+      "base": "bases/061c048d9552b3eb5f519bbb2c6158fd60f407fa4a68b22ce277c9fad95ac8a9.base",
+      "installedDigest": "sha256:e5d457c5341e8fd69249ce21bd72931bfe1000faa1ba556e7b7905d5809b0f27",
+      "item": "macro-progress",
+      "sourceDigest": "sha256:e5d457c5341e8fd69249ce21bd72931bfe1000faa1ba556e7b7905d5809b0f27",
+      "version": "0.4.1"
+    },
+    "MessageRow.swift": {
+      "base": "bases/bfa16d9e58481d731a3715556285ebe1c1295ec9877590be92cd3d946f2ad616.base",
+      "installedDigest": "sha256:e34837a0c13740344528a268eec59cfab0d5f9124eef403fb830c15872a472c5",
+      "item": "message",
+      "sourceDigest": "sha256:e34837a0c13740344528a268eec59cfab0d5f9124eef403fb830c15872a472c5",
+      "version": "0.1.1"
+    },
+    "MessageScroller.swift": {
+      "base": "bases/f7b3d1afbe043f75dc9ef304e8c80aad0242d68cb0f3fb49a1394be6809e0409.base",
+      "installedDigest": "sha256:7dd4d24945d07a6c294cb1fabfa4fe08be95e87ddf03b7fd7869380019f4b6f3",
+      "item": "message-scroller",
+      "sourceDigest": "sha256:7dd4d24945d07a6c294cb1fabfa4fe08be95e87ddf03b7fd7869380019f4b6f3",
+      "version": "0.1.1"
+    },
+    "MetricCard.swift": {
+      "base": "bases/72e69e8c35a9ff94342e2eb0ca362ef1edd41c34a3587ae393844d00ca45e247.base",
+      "installedDigest": "sha256:28968d035c4937f4d0ceba41723a6036f3a137b291a1ec0905bbe22a3d6d097a",
+      "item": "metric-card",
+      "sourceDigest": "sha256:28968d035c4937f4d0ceba41723a6036f3a137b291a1ec0905bbe22a3d6d097a",
+      "version": "0.2.2"
+    },
+    "NutritionOverview.swift": {
+      "base": "bases/414b159906565ccf3c90122a903dd45568afc9c26393be31e864c15bed24c433.base",
+      "installedDigest": "sha256:8ea5ff7f3bf351d674284a5eb2aa926c26f680eb3e155c70b90cb8a18a8fbda0",
+      "item": "nutrition-overview",
+      "sourceDigest": "sha256:8ea5ff7f3bf351d674284a5eb2aa926c26f680eb3e155c70b90cb8a18a8fbda0",
+      "version": "0.2.3"
+    },
+    "Preview/ActivateAgentDialog.swift": {
+      "base": "bases/177c71a90b8b6002ba3f18008b7247bad72ceeb58d2595804fbb61f8e05ac637.base",
+      "installedDigest": "sha256:a325226b5a5792fa038197b6ae14be6ed31e92921b8b949c8544e02712bbdfcc",
+      "item": "preview",
+      "sourceDigest": "sha256:a325226b5a5792fa038197b6ae14be6ed31e92921b8b949c8544e02712bbdfcc",
+      "version": "0.3.1"
+    },
+    "Preview/AnalyticsCard.swift": {
+      "base": "bases/82222386f7ac5608aab2d42a63f5e21325998bd30c355f1de975b3010fde8205.base",
+      "installedDigest": "sha256:1aec21d74b8f7108641585ad97ea9fd767dcc06745a7532405c3c322340ce184",
+      "item": "preview",
+      "sourceDigest": "sha256:1aec21d74b8f7108641585ad97ea9fd767dcc06745a7532405c3c322340ce184",
+      "version": "0.3.1"
+    },
+    "Preview/AnomalyAlert.swift": {
+      "base": "bases/c0292f87ae9e537a3d375b1ff9f36d0507d9e8278bbfa3d49d218f10541d34a5.base",
+      "installedDigest": "sha256:ade866298c5a2c4b96bcc3f1eacc3ebe25750004d1bf9773c30e4a6d0a7253ba",
+      "item": "preview",
+      "sourceDigest": "sha256:ade866298c5a2c4b96bcc3f1eacc3ebe25750004d1bf9773c30e4a6d0a7253ba",
+      "version": "0.3.1"
+    },
+    "Preview/AssignIssue.swift": {
+      "base": "bases/29dd6c5925422088a5f3ce0c97383d567d45d41a13ae2ba0396924db260620b1.base",
+      "installedDigest": "sha256:022eb90d03da97db8d8cf321ad0da2cbd5f2cb60553d0fce4501cdf112756419",
+      "item": "preview",
+      "sourceDigest": "sha256:022eb90d03da97db8d8cf321ad0da2cbd5f2cb60553d0fce4501cdf112756419",
+      "version": "0.3.1"
+    },
+    "Preview/BarChartCard.swift": {
+      "base": "bases/7ccee6690c675969c44437e07838571ea3af1c07cc33e2d52e0ceb9a55aaa88a.base",
+      "installedDigest": "sha256:18b6b7025fa3c1895d435c0b60119a69b16e87c648e0ad32ec3dfccf72a202d5",
+      "item": "preview",
+      "sourceDigest": "sha256:18b6b7025fa3c1895d435c0b60119a69b16e87c648e0ad32ec3dfccf72a202d5",
+      "version": "0.3.1"
+    },
+    "Preview/BarVisualizer.swift": {
+      "base": "bases/e3410488f1dda443539ac22bafa5f54ed09faf5c29c21237b3bfeee236f985b3.base",
+      "installedDigest": "sha256:8bdfd55813d29932ed2e1af4518b783fad8031691fd393c49a213258d3242c04",
+      "item": "preview",
+      "sourceDigest": "sha256:8bdfd55813d29932ed2e1af4518b783fad8031691fd393c49a213258d3242c04",
+      "version": "0.3.1"
+    },
+    "Preview/BookAppointment.swift": {
+      "base": "bases/36a3a8189a71cc8296ed338eb69dad0e31a5fe0611543657ba4a911e9c53f37b.base",
+      "installedDigest": "sha256:99b54477dead26255310b8ccb0f42d8338c0a3de74530950bfd8b66ec3980848",
+      "item": "preview",
+      "sourceDigest": "sha256:99b54477dead26255310b8ccb0f42d8338c0a3de74530950bfd8b66ec3980848",
+      "version": "0.3.1"
+    },
+    "Preview/CodespacesCard.swift": {
+      "base": "bases/6202b70a29e773f8283ac559c1cfd6653e67684534be43d79689df4ad6087403.base",
+      "installedDigest": "sha256:036c5839ed59f69e88789658e99e656b5ba1226c8039ba57ce4e80eb49e93e0f",
+      "item": "preview",
+      "sourceDigest": "sha256:036c5839ed59f69e88789658e99e656b5ba1226c8039ba57ce4e80eb49e93e0f",
+      "version": "0.3.1"
+    },
+    "Preview/ContributionsActivity.swift": {
+      "base": "bases/224c8e5c78c245b3865879156f77e10081caf58e9c851ded06fa7a8b5f5d7767.base",
+      "installedDigest": "sha256:45006ff60b7b79b1b620896aedb6880add3d7d30c17ddf44c14654474b0ae30b",
+      "item": "preview",
+      "sourceDigest": "sha256:45006ff60b7b79b1b620896aedb6880add3d7d30c17ddf44c14654474b0ae30b",
+      "version": "0.3.1"
+    },
+    "Preview/Contributors.swift": {
+      "base": "bases/1fe1982d590698a303fbc835c442cc40e0c6dd3f9816103bac465f83f2c2c945.base",
+      "installedDigest": "sha256:00034f0c6a38686b56739d6999e8beef6c1f76fd7f4839e035a314e917037a46",
+      "item": "preview",
+      "sourceDigest": "sha256:00034f0c6a38686b56739d6999e8beef6c1f76fd7f4839e035a314e917037a46",
+      "version": "0.3.1"
+    },
+    "Preview/DeveloperProfile.swift": {
+      "base": "bases/b08ad60c73740beb86916276f34b3a2dd245be8a75dc1dcde5870dac6308a178.base",
+      "installedDigest": "sha256:612e92dcd11cdc2097d3a71fb6c7c9656eca8039af714da6c6fe8833a3c1e747",
+      "item": "preview",
+      "sourceDigest": "sha256:612e92dcd11cdc2097d3a71fb6c7c9656eca8039af714da6c6fe8833a3c1e747",
+      "version": "0.3.1"
+    },
+    "Preview/EnvironmentVariables.swift": {
+      "base": "bases/deaaa55fda04ae6caee287aaea7db365ebf4e949a6dd89f2e93ca7a31ea77266.base",
+      "installedDigest": "sha256:ea4097ae50fc053fbc2061d31218eed415e859b87a2050f5630358b8fd7c5c46",
+      "item": "preview",
+      "sourceDigest": "sha256:ea4097ae50fc053fbc2061d31218eed415e859b87a2050f5630358b8fd7c5c46",
+      "version": "0.3.1"
+    },
+    "Preview/FeedbackForm.swift": {
+      "base": "bases/a4a7c7133a194ed04d6b4f952e67b52e9e002701d5f1ced79317784f5bf3f3f8.base",
+      "installedDigest": "sha256:e172ad7971e6d4068381255259b268d694f1cee954d546d73cf03d9d5c4a1827",
+      "item": "preview",
+      "sourceDigest": "sha256:e172ad7971e6d4068381255259b268d694f1cee954d546d73cf03d9d5c4a1827",
+      "version": "0.3.1"
+    },
+    "Preview/FileUpload.swift": {
+      "base": "bases/4eb72123d0ea222e020b3ba6e7f1a9460386300e5e561e5fc66d00667306f211.base",
+      "installedDigest": "sha256:d7fdfe53f04149aeb389268c02ad6411aa99e4ddec6532b1558a390257c14cbc",
+      "item": "preview",
+      "sourceDigest": "sha256:d7fdfe53f04149aeb389268c02ad6411aa99e4ddec6532b1558a390257c14cbc",
+      "version": "0.3.1"
+    },
+    "Preview/IconPreviewGrid.swift": {
+      "base": "bases/e8b06b5df989f546195b01d4d1d4ac5cbdb32d41878c48c3c46e5c0c14202ff9.base",
+      "installedDigest": "sha256:0e0d3a76501c427036e553b1ee83748e72ea1440f0dcdaaa1e026fcc65ef8ee6",
+      "item": "preview",
+      "sourceDigest": "sha256:0e0d3a76501c427036e553b1ee83748e72ea1440f0dcdaaa1e026fcc65ef8ee6",
+      "version": "0.3.1"
+    },
+    "Preview/InviteTeam.swift": {
+      "base": "bases/308577146b652d771bafb615b630cefa3628d36a8a1cb69f241b707abf314332.base",
+      "installedDigest": "sha256:02d1b2f688269760a031cb64da6b3e73f6dbf8eab54079ded3c0537d4f988b56",
+      "item": "preview",
+      "sourceDigest": "sha256:02d1b2f688269760a031cb64da6b3e73f6dbf8eab54079ded3c0537d4f988b56",
+      "version": "0.3.1"
+    },
+    "Preview/Invoice.swift": {
+      "base": "bases/d3235eeaa5ea43e6b83386aefd1754ef30fc34bc640e4432e888071192a6b3ac.base",
+      "installedDigest": "sha256:a90ca71e08ebadb01f50fed0285a6b5b30cff00d5b8a14f4614338fe3fbdefaf",
+      "item": "preview",
+      "sourceDigest": "sha256:a90ca71e08ebadb01f50fed0285a6b5b30cff00d5b8a14f4614338fe3fbdefaf",
+      "version": "0.3.1"
+    },
+    "Preview/LiveWaveform.swift": {
+      "base": "bases/946ac7724ec106b64e318ab382798ca098105b93f5b89fed9bbefd323b6a81ac.base",
+      "installedDigest": "sha256:a60dcc89ffb8ef9c55285bcc26e51b725545df096fff6e205272133eab27eb3d",
+      "item": "preview",
+      "sourceDigest": "sha256:a60dcc89ffb8ef9c55285bcc26e51b725545df096fff6e205272133eab27eb3d",
+      "version": "0.3.1"
+    },
+    "Preview/NoTeamMembers.swift": {
+      "base": "bases/9e66fc337eb7877e43084da75c490002b156b03bb63d9715484f26c8cf7bb43b.base",
+      "installedDigest": "sha256:88fc7e3b891c2c56c9f7c045843e2fdad66187443c5fcf2fcf4e06cf6043824d",
+      "item": "preview",
+      "sourceDigest": "sha256:88fc7e3b891c2c56c9f7c045843e2fdad66187443c5fcf2fcf4e06cf6043824d",
+      "version": "0.3.1"
+    },
+    "Preview/NotFound.swift": {
+      "base": "bases/c79ffcdb467a1d86f41d495e4f3e122bb53794ca3f11aeb8930ae2eb27864149.base",
+      "installedDigest": "sha256:de6e31b38c77ff6e37eb01e5e59828f6110bac2651aab9718d3d58c89fabf343",
+      "item": "preview",
+      "sourceDigest": "sha256:de6e31b38c77ff6e37eb01e5e59828f6110bac2651aab9718d3d58c89fabf343",
+      "version": "0.3.1"
+    },
+    "Preview/ObservabilityCard.swift": {
+      "base": "bases/c625b2c623f8c9267d2a62f655e0d7db95aa275ea837b3539d0347e919e3e88a.base",
+      "installedDigest": "sha256:9d0f44eea0e3d3135e8db84cab05cecd2df57d620207d97b0c8d22ed7fccd0c8",
+      "item": "preview",
+      "sourceDigest": "sha256:9d0f44eea0e3d3135e8db84cab05cecd2df57d620207d97b0c8d22ed7fccd0c8",
+      "version": "0.3.1"
+    },
+    "Preview/PieChartCard.swift": {
+      "base": "bases/e62243e1d5507eee8247510d5a936bc611d7f37d3d8a8962ca2cf5f514e5d9f3.base",
+      "installedDigest": "sha256:277b6d8162db5b164488e8536f03b84b9299a479957ed8744a74b42b43aff54c",
+      "item": "preview",
+      "sourceDigest": "sha256:277b6d8162db5b164488e8536f03b84b9299a479957ed8744a74b42b43aff54c",
+      "version": "0.3.1"
+    },
+    "Preview/PreviewWall.swift": {
+      "base": "bases/21fd264667c3047604e99c4cd51cebe0e88f8f9a1fbe7b826a5a2fc9c9d602d4.base",
+      "installedDigest": "sha256:162f4456f19c252592d64abc1ad7feae690fd345fc84cd5b3a3e79c8d482c364",
+      "item": "preview",
+      "sourceDigest": "sha256:162f4456f19c252592d64abc1ad7feae690fd345fc84cd5b3a3e79c8d482c364",
+      "version": "0.3.1"
+    },
+    "Preview/ReportBug.swift": {
+      "base": "bases/51d71b6e93e9f64179b135dba616cf898389aab71b4bc73a2d3ee51dbb6bf7ae.base",
+      "installedDigest": "sha256:38895e7c3c6109d8d6e4e9f9a1e89a1257e025701d7ec602d1ae56c234a2f4b6",
+      "item": "preview",
+      "sourceDigest": "sha256:38895e7c3c6109d8d6e4e9f9a1e89a1257e025701d7ec602d1ae56c234a2f4b6",
+      "version": "0.3.1"
+    },
+    "Preview/ShippingAddress.swift": {
+      "base": "bases/f0fa240d0db19de59eb115110908cc9b33febe20dd25181216c666474219974e.base",
+      "installedDigest": "sha256:9b8adccaa5c8f50686505d570b22071d1d7b44a4415b1d4f62c5e581e61426d4",
+      "item": "preview",
+      "sourceDigest": "sha256:9b8adccaa5c8f50686505d570b22071d1d7b44a4415b1d4f62c5e581e61426d4",
+      "version": "0.3.1"
+    },
+    "Preview/Shortcuts.swift": {
+      "base": "bases/323e5eb88449d6458e6ad43700570f10b518c14039ef1c214eef7d264e0f2861.base",
+      "installedDigest": "sha256:fa0cba556728cdbb183c9eb9715bfc0d3438eda2af879782529d68dd69288fc3",
+      "item": "preview",
+      "sourceDigest": "sha256:fa0cba556728cdbb183c9eb9715bfc0d3438eda2af879782529d68dd69288fc3",
+      "version": "0.3.1"
+    },
+    "Preview/SkeletonLoading.swift": {
+      "base": "bases/aecfd77d4fe92a88cbc9eb352ab62ac3774bf7d4f2a19b6b8221d6f87f5794c0.base",
+      "installedDigest": "sha256:c0622fe040e71c154631919ecaea1ee3b98915af5a17bb644de1507eab15b4ba",
+      "item": "preview",
+      "sourceDigest": "sha256:c0622fe040e71c154631919ecaea1ee3b98915af5a17bb644de1507eab15b4ba",
+      "version": "0.3.1"
+    },
+    "Preview/SleepReport.swift": {
+      "base": "bases/5e2bf297e57da7fb565bfde75c97ba568264eaa0a62338c86f671647c1a4b6c2.base",
+      "installedDigest": "sha256:1ba7d5036236a54ede20c18245e1e26c5c6a6fcc4ec2b3cbce53ce095c4f51c4",
+      "item": "preview",
+      "sourceDigest": "sha256:1ba7d5036236a54ede20c18245e1e26c5c6a6fcc4ec2b3cbce53ce095c4f51c4",
+      "version": "0.3.1"
+    },
+    "Preview/StyleOverview.swift": {
+      "base": "bases/a62dcfa84df919d2e0b1e82d68fc7b7c76e0cae7bcd84e4f06927c85deadd430.base",
+      "installedDigest": "sha256:79d3196cb8d6eed4d784fbb285808b8b00bd54317b65004a4e8207954a0eeeb8",
+      "item": "preview",
+      "sourceDigest": "sha256:79d3196cb8d6eed4d784fbb285808b8b00bd54317b65004a4e8207954a0eeeb8",
+      "version": "0.3.1"
+    },
+    "Preview/TypographySpecimen.swift": {
+      "base": "bases/383be61595fdbdeca354da7f373a24cbd45c152ea147a54fac8093f1beeba9f0.base",
+      "installedDigest": "sha256:19a1065394644b335210b2ca53912c9429cfff49d14641757dbaf8dd7f0058fb",
+      "item": "preview",
+      "sourceDigest": "sha256:19a1065394644b335210b2ca53912c9429cfff49d14641757dbaf8dd7f0058fb",
+      "version": "0.3.1"
+    },
+    "Preview/UIElements.swift": {
+      "base": "bases/4c481b4f3c8ea8903b4f2520802ff7306e549f354b037a50ffe9c0d5f3d495ce.base",
+      "installedDigest": "sha256:62e115ea57151393615d0e05c0e73ad3b83385535e58be23493a0e32054f54b0",
+      "item": "preview",
+      "sourceDigest": "sha256:62e115ea57151393615d0e05c0e73ad3b83385535e58be23493a0e32054f54b0",
+      "version": "0.3.1"
+    },
+    "Preview/UsageCard.swift": {
+      "base": "bases/7e5c42b0714587c1dc9d9bdc7ac6dd6b058fd6f33709b57846abc3903e2bb890.base",
+      "installedDigest": "sha256:3c504c39b6ec0e3edad0fb519fdc795245e973d66d9f5552cdbdaed75b3931cf",
+      "item": "preview",
+      "sourceDigest": "sha256:3c504c39b6ec0e3edad0fb519fdc795245e973d66d9f5552cdbdaed75b3931cf",
+      "version": "0.3.1"
+    },
+    "Preview/Visitors.swift": {
+      "base": "bases/f975b306f7fd754989a91fefedff3866ab66361ec2c6267187e2759ead7a07c0.base",
+      "installedDigest": "sha256:f4c12d20ec8e0240acdfe161c0beb30aeceb5fd829d6a7f5fa2454d56b481963",
+      "item": "preview",
+      "sourceDigest": "sha256:f4c12d20ec8e0240acdfe161c0beb30aeceb5fd829d6a7f5fa2454d56b481963",
+      "version": "0.3.1"
+    },
+    "Preview/WeeklyFitnessSummary.swift": {
+      "base": "bases/cd7a150019b0fe1c08a7add691f98599e80597bd6cc699369ad1362f856354c3.base",
+      "installedDigest": "sha256:97b125d4bb41567950c206c673cf92a709cd8bd44cb2753429f05eb78db75d94",
+      "item": "preview",
+      "sourceDigest": "sha256:97b125d4bb41567950c206c673cf92a709cd8bd44cb2753429f05eb78db75d94",
+      "version": "0.3.1"
+    },
+    "Preview02/AccountAccess.swift": {
+      "base": "bases/9cb004cebd01e410a98c5c79158d3bd8e479c15860f4538253c0e1326ce2c0fe.base",
+      "installedDigest": "sha256:b54ac31bddf9adc22f3fc4e06e1d3ae68e8cd2535fd755ebf82f34d4ad3daaab",
+      "item": "preview-02",
+      "sourceDigest": "sha256:b54ac31bddf9adc22f3fc4e06e1d3ae68e8cd2535fd755ebf82f34d4ad3daaab",
+      "version": "0.3.1"
+    },
+    "Preview02/AlbumCard.swift": {
+      "base": "bases/7c5e174fc722155c3f41659866713af7143670679efaa8cf240196f699962423.base",
+      "installedDigest": "sha256:a0ba7d9237b3522c832aaa35f4b2df1ee68c924b27c2176dcb590f272e059c79",
+      "item": "preview-02",
+      "sourceDigest": "sha256:a0ba7d9237b3522c832aaa35f4b2df1ee68c924b27c2176dcb590f272e059c79",
+      "version": "0.3.1"
+    },
+    "Preview02/CardOverview.swift": {
+      "base": "bases/851a9c7e3c50827a10e199a36d4bcae62809977711c46f104e3c4b516f87404f.base",
+      "installedDigest": "sha256:0aae2c4743f237177c82987b3804d0ec7f4c2edf1f7c6a1d94dad404ad776f56",
+      "item": "preview-02",
+      "sourceDigest": "sha256:0aae2c4743f237177c82987b3804d0ec7f4c2edf1f7c6a1d94dad404ad776f56",
+      "version": "0.3.1"
+    },
+    "Preview02/CatalogToolbar.swift": {
+      "base": "bases/fdb86ba4abf7ad997eb85956b0e7c495873dbb4112b514f06a6c8aad0ba8d4ca.base",
+      "installedDigest": "sha256:01ce51cec6532c5626c72e2c6a13a5a1dd3e7792c1c959714a3a557b4b5a8a00",
+      "item": "preview-02",
+      "sourceDigest": "sha256:01ce51cec6532c5626c72e2c6a13a5a1dd3e7792c1c959714a3a557b4b5a8a00",
+      "version": "0.3.1"
+    },
+    "Preview02/ClaimableBalance.swift": {
+      "base": "bases/b388f0e941ebde81ef22203642b5beac2ffb10210f6452e52d1e43ee10feb635.base",
+      "installedDigest": "sha256:c9a0b50c8ffbb5e9db843a65fd97a593656221dd029bf06b6eb9bd27f3a506d5",
+      "item": "preview-02",
+      "sourceDigest": "sha256:c9a0b50c8ffbb5e9db843a65fd97a593656221dd029bf06b6eb9bd27f3a506d5",
+      "version": "0.3.1"
+    },
+    "Preview02/ContributionHistory.swift": {
+      "base": "bases/f0d6dd46ed900591ee8a807d2cfd681ddd4829f9e2d8e28dca6b8a78b51e8709.base",
+      "installedDigest": "sha256:b0a9d866f7e31eeb4eb0ce321a21baee68a3f6850fd649e9dbd20db9c33b7829",
+      "item": "preview-02",
+      "sourceDigest": "sha256:b0a9d866f7e31eeb4eb0ce321a21baee68a3f6850fd649e9dbd20db9c33b7829",
+      "version": "0.3.1"
+    },
+    "Preview02/CoverArt.swift": {
+      "base": "bases/8a141d237c42a8d34c08e61690c56418c8cc83c58a5f8c581bc8b25fddc6643a.base",
+      "installedDigest": "sha256:add914e170cef2aa3f43ad84dc77605113acfbb0a716a968abe7ca5505e8197d",
+      "item": "preview-02",
+      "sourceDigest": "sha256:add914e170cef2aa3f43ad84dc77605113acfbb0a716a968abe7ca5505e8197d",
+      "version": "0.3.1"
+    },
+    "Preview02/DividendIncome.swift": {
+      "base": "bases/4b056b1ab93e7f249e1ecf27f768a55422c681853c6fcf559ffe4264067ffcf6.base",
+      "installedDigest": "sha256:427099e53df5a60c2c4f3fc8da51c19f7ae29539adbff3a687df8971fb48f722",
+      "item": "preview-02",
+      "sourceDigest": "sha256:427099e53df5a60c2c4f3fc8da51c19f7ae29539adbff3a687df8971fb48f722",
+      "version": "0.3.1"
+    },
+    "Preview02/EmptyConnectBank.swift": {
+      "base": "bases/962bb46382080f4c508f8e82cc35544c94c3ec72665e719d2b853dae82fc38f0.base",
+      "installedDigest": "sha256:f93c47831ad3452c0cd21cb8da59709928d9e73e41cd25c7483f39f8ce5ba0eb",
+      "item": "preview-02",
+      "sourceDigest": "sha256:f93c47831ad3452c0cd21cb8da59709928d9e73e41cd25c7483f39f8ce5ba0eb",
+      "version": "0.3.1"
+    },
+    "Preview02/EmptyDistributeTrack.swift": {
+      "base": "bases/ec8c51de2cd050723cfefa64b46a2771e6bd1248fc7121198695ab71b342cfa3.base",
+      "installedDigest": "sha256:e00bedaf4ca75d351532068ad8f8137c609f4f4c89c8d1a11dddeced53ff153b",
+      "item": "preview-02",
+      "sourceDigest": "sha256:e00bedaf4ca75d351532068ad8f8137c609f4f4c89c8d1a11dddeced53ff153b",
+      "version": "0.3.1"
+    },
+    "Preview02/EmptyExploreCatalog.swift": {
+      "base": "bases/bc2e05cf09c2bdd9ebd94eaf048ccc073233829af4a21df3686b7a2019fdb83c.base",
+      "installedDigest": "sha256:5e36f76036609337206bd52e765fadbeaa036d8fb04850739f80dcbc7cc6298a",
+      "item": "preview-02",
+      "sourceDigest": "sha256:5e36f76036609337206bd52e765fadbeaa036d8fb04850739f80dcbc7cc6298a",
+      "version": "0.3.1"
+    },
+    "Preview02/Faq.swift": {
+      "base": "bases/0add2b3f9ecc70e9d27ecd923a832b5574d1345390ebf5f484e9d48bfeb0c39c.base",
+      "installedDigest": "sha256:ef9318121e0b63e32e31fb5d0a563ffc356c07109fe302d8f804fd6ead9c3b94",
+      "item": "preview-02",
+      "sourceDigest": "sha256:ef9318121e0b63e32e31fb5d0a563ffc356c07109fe302d8f804fd6ead9c3b94",
+      "version": "0.3.1"
+    },
+    "Preview02/FrontDoor.swift": {
+      "base": "bases/30dc8f284266efb155ff179b7d30044738bb23b3cf744cb8581045eee70e3eb3.base",
+      "installedDigest": "sha256:6b77804dd84bf7729fcfca98304373870b9ef26892f45e5798a8ba22e90c59b0",
+      "item": "preview-02",
+      "sourceDigest": "sha256:6b77804dd84bf7729fcfca98304373870b9ef26892f45e5798a8ba22e90c59b0",
+      "version": "0.3.1"
+    },
+    "Preview02/IndexInvesting.swift": {
+      "base": "bases/0f08766e76c723f873bd547a339e4fd98f8f41fbb2d5df578824fa9ebb15ad0e.base",
+      "installedDigest": "sha256:e1652fb7c371c123ae460d4b55ee611bddc73c4a32ea12d799bb6a8da8993149",
+      "item": "preview-02",
+      "sourceDigest": "sha256:e1652fb7c371c123ae460d4b55ee611bddc73c4a32ea12d799bb6a8da8993149",
+      "version": "0.3.1"
+    },
+    "Preview02/KitchenIsland.swift": {
+      "base": "bases/0c1a45b5199c545533dff08c85cb409505286cbf926d1b43ea2e57487a904d83.base",
+      "installedDigest": "sha256:16294f79559a2d22aeae3e5515592def52bed72159031a9c6f9d2f7f3ce12df0",
+      "item": "preview-02",
+      "sourceDigest": "sha256:16294f79559a2d22aeae3e5515592def52bed72159031a9c6f9d2f7f3ce12df0",
+      "version": "0.3.1"
+    },
+    "Preview02/LoadingCard.swift": {
+      "base": "bases/679b7def760d84c38e46dd0e6d249c83482780266d7cb0f2c1d9ab5ec8dcc938.base",
+      "installedDigest": "sha256:c1c03928249fcbc612e6090979ef48a1f749b7ec353d46cf3e88e6ada0cc77cf",
+      "item": "preview-02",
+      "sourceDigest": "sha256:c1c03928249fcbc612e6090979ef48a1f749b7ec353d46cf3e88e6ada0cc77cf",
+      "version": "0.3.1"
+    },
+    "Preview02/NewMilestone.swift": {
+      "base": "bases/16272b102d7a87663915d6f15059f5ca3d38c9fb2eceb848341bfab6555071c2.base",
+      "installedDigest": "sha256:a37a65ba026daa2bf392f70ba23ae165b21c3aaa5cff8fa767d15f1964ca6d22",
+      "item": "preview-02",
+      "sourceDigest": "sha256:a37a65ba026daa2bf392f70ba23ae165b21c3aaa5cff8fa767d15f1964ca6d22",
+      "version": "0.3.1"
+    },
+    "Preview02/NotificationSettings.swift": {
+      "base": "bases/ab07554f43ba48d0a523baa5ebdc9d429601c6381df8fdcd078e691561c8a103.base",
+      "installedDigest": "sha256:4c33aadbc490557f74fcdb35518c6e5f77fbe77c12163526140a441a0af65431",
+      "item": "preview-02",
+      "sourceDigest": "sha256:4c33aadbc490557f74fcdb35518c6e5f77fbe77c12163526140a441a0af65431",
+      "version": "0.3.1"
+    },
+    "Preview02/Payments.swift": {
+      "base": "bases/e98f589144276dab7a549bdb27e36ffc57bd2dee04221a956261f7b0c6e0edc6.base",
+      "installedDigest": "sha256:70df067bb02d8464525bfdb4238fd0d70c9580697403213caed23f73fe95bf16",
+      "item": "preview-02",
+      "sourceDigest": "sha256:70df067bb02d8464525bfdb4238fd0d70c9580697403213caed23f73fe95bf16",
+      "version": "0.3.1"
+    },
+    "Preview02/PayoutThreshold.swift": {
+      "base": "bases/3733272b6f598b9dbe2c6c98717e8b535ac8e7aa2875f2314f344a59a4f279fe.base",
+      "installedDigest": "sha256:8771a4b20db349369a7618c82e4411166ae06fae13b6ddd7759d5daa17b67a3b",
+      "item": "preview-02",
+      "sourceDigest": "sha256:8771a4b20db349369a7618c82e4411166ae06fae13b6ddd7759d5daa17b67a3b",
+      "version": "0.3.1"
+    },
+    "Preview02/PowerUsage.swift": {
+      "base": "bases/d253ea098e32afa6fe531c9af8af0b054acc182c4f227086ded16304dabd82f1.base",
+      "installedDigest": "sha256:1c9c8f32e8ec7e924c4014937dbd40d829c7f6e679426a112d6eb8028b1a46aa",
+      "item": "preview-02",
+      "sourceDigest": "sha256:1c9c8f32e8ec7e924c4014937dbd40d829c7f6e679426a112d6eb8028b1a46aa",
+      "version": "0.3.1"
+    },
+    "Preview02/Preferences.swift": {
+      "base": "bases/a6cb1d498118eff07d7745c1d488c76ebd34d396d2e1802e2e42f99be02cc02b.base",
+      "installedDigest": "sha256:542153feb513e23a759d6a4c828b173f30f5bec4cb5d2d77e1abbfe0a3b446d4",
+      "item": "preview-02",
+      "sourceDigest": "sha256:542153feb513e23a759d6a4c828b173f30f5bec4cb5d2d77e1abbfe0a3b446d4",
+      "version": "0.3.1"
+    },
+    "Preview02/PreviewWall02.swift": {
+      "base": "bases/b04be442f19f04e6095876f23a3cf43bd6b5e5df104cc45d091cab651730339d.base",
+      "installedDigest": "sha256:b12bcf6e9a29def0f076d92b02563c82e47085e9fdc96c9c3b5a1ff0749e394a",
+      "item": "preview-02",
+      "sourceDigest": "sha256:b12bcf6e9a29def0f076d92b02563c82e47085e9fdc96c9c3b5a1ff0749e394a",
+      "version": "0.3.1"
+    },
+    "Preview02/QrConnect.swift": {
+      "base": "bases/79952a904c54737481a052b65d04b7410f3f18d95eda0c36ebddbf5b5571b8b7.base",
+      "installedDigest": "sha256:c68b7688d737366c88f070ac6fa6bed707d7bdaa80931284ab00662b393e6ce2",
+      "item": "preview-02",
+      "sourceDigest": "sha256:c68b7688d737366c88f070ac6fa6bed707d7bdaa80931284ab00662b393e6ce2",
+      "version": "0.3.1"
+    },
+    "Preview02/ReceivingMethod.swift": {
+      "base": "bases/ecf5883bbe3934635d3deba1784ac030d7acef7df3b214953ef091da0163585d.base",
+      "installedDigest": "sha256:fb8af09925eec144ced6bdaa26fc618d03e6ef52c65654d18331ef094f5a5745",
+      "item": "preview-02",
+      "sourceDigest": "sha256:fb8af09925eec144ced6bdaa26fc618d03e6ef52c65654d18331ef094f5a5745",
+      "version": "0.3.1"
+    },
+    "Preview02/RecentTransactions.swift": {
+      "base": "bases/8e2608a24e4e6ea9b2ac88e78c8272e14ed4db1a7a17d13bef7c443626275237.base",
+      "installedDigest": "sha256:d3038c18dbe306f495a3804bbed341163c35288fc903020978cdd4ddc50211fe",
+      "item": "preview-02",
+      "sourceDigest": "sha256:d3038c18dbe306f495a3804bbed341163c35288fc903020978cdd4ddc50211fe",
+      "version": "0.3.1"
+    },
+    "Preview02/ReleaseCatalog.swift": {
+      "base": "bases/ae705f28a360bbb7ce60e84625e5cdc20f7c758b434aa7bf5d83928ac6465a92.base",
+      "installedDigest": "sha256:c0c570d7e9505ff0774677680f9f7e7b1ef523c7dd56d998242067b4c6205f84",
+      "item": "preview-02",
+      "sourceDigest": "sha256:c0c570d7e9505ff0774677680f9f7e7b1ef523c7dd56d998242067b4c6205f84",
+      "version": "0.3.1"
+    },
+    "Preview02/RollerShades.swift": {
+      "base": "bases/be34e4404f9f121f2e9a1a3ed7bed04fc54818ebd29b45105e6f0d69628f8698.base",
+      "installedDigest": "sha256:d89b23fe275d9ddf401886a913b5f0f95981176678bf6372437439ad96a7f7b1",
+      "item": "preview-02",
+      "sourceDigest": "sha256:d89b23fe275d9ddf401886a913b5f0f95981176678bf6372437439ad96a7f7b1",
+      "version": "0.3.1"
+    },
+    "Preview02/SavingsProgress.swift": {
+      "base": "bases/f7b43a159879f42772f568c46327ce6bd16fd85181685400c395d4819ce4875e.base",
+      "installedDigest": "sha256:5380fbf3989b1fd45945fd985dec7082eb0cd442a6683992b1f9089a22a36d44",
+      "item": "preview-02",
+      "sourceDigest": "sha256:5380fbf3989b1fd45945fd985dec7082eb0cd442a6683992b1f9089a22a36d44",
+      "version": "0.3.1"
+    },
+    "Preview02/SavingsTargets.swift": {
+      "base": "bases/667c1237a58c17bbb550202dfebe16155fd199aa1a45e876e6baebcea13117ff.base",
+      "installedDigest": "sha256:371f1f7141d37939afe34996289f087bf7c5878bfccf0e31af48cc8a918c8021",
+      "item": "preview-02",
+      "sourceDigest": "sha256:371f1f7141d37939afe34996289f087bf7c5878bfccf0e31af48cc8a918c8021",
+      "version": "0.3.1"
+    },
+    "Preview02/SidebarNav.swift": {
+      "base": "bases/2ad32a195b76bde4f5df947a477f0b5cb91dc5cfaae5a0e71d5b72df7f584617.base",
+      "installedDigest": "sha256:6eb7535e1a7fbc5245166efce31780af12d97fcdcf5dc5d6511ff7fbc9fbc9c1",
+      "item": "preview-02",
+      "sourceDigest": "sha256:6eb7535e1a7fbc5245166efce31780af12d97fcdcf5dc5d6511ff7fbc9fbc9c1",
+      "version": "0.3.1"
+    },
+    "Preview02/SocialLinks.swift": {
+      "base": "bases/caf1adf332c05edbdc112d7cc8a28f36046f95adb6964fa8ce3b90f85a4b9908.base",
+      "installedDigest": "sha256:6ac726b13cf2032b872630da34ce5dd5613e6ef2350d355f8e1bc4ebef870021",
+      "item": "preview-02",
+      "sourceDigest": "sha256:6ac726b13cf2032b872630da34ce5dd5613e6ef2350d355f8e1bc4ebef870021",
+      "version": "0.3.1"
+    },
+    "Preview02/StockPerformance.swift": {
+      "base": "bases/cdd05ba8e5e2218e43833aaffd9c726f514e3e4f916a6ec1c5d13127060ccaf1.base",
+      "installedDigest": "sha256:af628d0f627ae030346c299ac14ccf613249d25c5ec5f4fd1f58c49b574b13a5",
+      "item": "preview-02",
+      "sourceDigest": "sha256:af628d0f627ae030346c299ac14ccf613249d25c5ec5f4fd1f58c49b574b13a5",
+      "version": "0.3.1"
+    },
+    "Preview02/SyncingState.swift": {
+      "base": "bases/55be08c2c74607d9a23f19e4825e7569a6f0dbc044ca44acec4ac0af57150919.base",
+      "installedDigest": "sha256:66e98f3194f886467057f37a28609a2e5dde87a813d036a24efcf1bbff2005a8",
+      "item": "preview-02",
+      "sourceDigest": "sha256:66e98f3194f886467057f37a28609a2e5dde87a813d036a24efcf1bbff2005a8",
+      "version": "0.3.1"
+    },
+    "Preview02/TransferFunds.swift": {
+      "base": "bases/05b3b2acb805439f2ab6f5475688e7b554b0924f2cf0f4dc58421c9d7a97582a.base",
+      "installedDigest": "sha256:e0bb03d8ecdc29578b90a417d5bbac394925c39930ad7ebb6942ba93a440ef2e",
+      "item": "preview-02",
+      "sourceDigest": "sha256:e0bb03d8ecdc29578b90a417d5bbac394925c39930ad7ebb6942ba93a440ef2e",
+      "version": "0.3.1"
+    },
+    "Preview02/UpcomingPayments.swift": {
+      "base": "bases/9985e8256e3839b460e73160061fc7d19ed18554030f47c37177a3b9402afb78.base",
+      "installedDigest": "sha256:75030221b7e663ee92d108ec606a77d73c93ec3a4145002e385baa08344a332c",
+      "item": "preview-02",
+      "sourceDigest": "sha256:75030221b7e663ee92d108ec606a77d73c93ec3a4145002e385baa08344a332c",
+      "version": "0.3.1"
+    },
+    "Questionnaire.swift": {
+      "base": "bases/c7c327db8c8470c1547c081ccb42253d00625f65ead205d73c9d9ec43933d3e7.base",
+      "installedDigest": "sha256:543122a9e98c1198a7a951851096b0d6860735dd905d05c07e5f240ebd5396d5",
+      "item": "questionnaire",
+      "sourceDigest": "sha256:543122a9e98c1198a7a951851096b0d6860735dd905d05c07e5f240ebd5396d5",
+      "version": "0.1.1"
+    },
+    "RegistryAccordionStyle.swift": {
+      "base": "bases/41a84c6783a403ca9cf897c8da81322317ac76ec19288b7ffb112dd4d85023a2.base",
+      "installedDigest": "sha256:b7b1a582fa0c12068c8ef4a6abe4662b880b2db40dcb3af2576122fe4be87234",
+      "item": "accordion",
+      "sourceDigest": "sha256:b7b1a582fa0c12068c8ef4a6abe4662b880b2db40dcb3af2576122fe4be87234",
+      "version": "0.2.2"
+    },
+    "RegistryBadge.swift": {
+      "base": "bases/d2c9ac15caa37b6a8d992908df2bae92cbf1f88a0a246a7122f2e7e198b5024d.base",
+      "installedDigest": "sha256:f5b1dd7bd73ad49343ae4d3999f00f81011dfb0f3b95b900dab3591e3d0d6192",
+      "item": "badge",
+      "sourceDigest": "sha256:f5b1dd7bd73ad49343ae4d3999f00f81011dfb0f3b95b900dab3591e3d0d6192",
+      "version": "0.3.2"
+    },
+    "RegistryBubbleModifier.swift": {
+      "base": "bases/b15993938c5c6e4dfd198111944107c82a4945a20bd0a7ee8d6b80633049bf25.base",
+      "installedDigest": "sha256:d01f3ec209922abce57b55b984410732e6071d3663edc34bfe64c67c27ea3ea0",
+      "item": "bubble",
+      "sourceDigest": "sha256:d01f3ec209922abce57b55b984410732e6071d3663edc34bfe64c67c27ea3ea0",
+      "version": "0.1.1"
+    },
+    "RegistryButtonGroupStyle.swift": {
+      "base": "bases/db7fdc3c6784bc96f933530ea493c2024cac082f8e63aaf7cf8373dc2e7c22b5.base",
+      "installedDigest": "sha256:1ecb2adff52f7a2a8949449e2f34c7386c4f611c28e9eb0aaabf4f199fdb95f3",
+      "item": "button-group",
+      "sourceDigest": "sha256:1ecb2adff52f7a2a8949449e2f34c7386c4f611c28e9eb0aaabf4f199fdb95f3",
+      "version": "0.3.2"
+    },
+    "RegistryButtonStyle.swift": {
+      "base": "bases/a314683b53d284671d9132d9c92f6349d1d80fdc372a8fbb9636baec5da3c809.base",
+      "installedDigest": "sha256:a1442135dc39b9b038953fea87b3d9aa62c7a2939473a1902fd0755ba6ffbbbe",
+      "item": "button",
+      "sourceDigest": "sha256:a1442135dc39b9b038953fea87b3d9aa62c7a2939473a1902fd0755ba6ffbbbe",
+      "version": "0.5.2"
+    },
+    "RegistryCardStyle.swift": {
+      "base": "bases/d37825ac79fff2b2bf1402a97c8c621c6d5bf0b09ad1b1a623e4b269279cbcc6.base",
+      "installedDigest": "sha256:762d1eca55a714a5adab37bc1aade7d357367d4a344b8181b6f71aba2eda02bf",
+      "item": "card",
+      "sourceDigest": "sha256:762d1eca55a714a5adab37bc1aade7d357367d4a344b8181b6f71aba2eda02bf",
+      "version": "0.2.1"
+    },
+    "RegistryChart.swift": {
+      "base": "bases/d30352e1a86b8dc6487fb81b1536b1d2d7936ed4c6c35783195f2dce859d221d.base",
+      "installedDigest": "sha256:9c4e8eff9170ebbb893abe74f78c6c44207068dbc1289f4a345e5c9221c2ce69",
+      "item": "chart",
+      "sourceDigest": "sha256:9c4e8eff9170ebbb893abe74f78c6c44207068dbc1289f4a345e5c9221c2ce69",
+      "version": "0.1.3"
+    },
+    "RegistryCheckboxToggleStyle.swift": {
+      "base": "bases/84ef61e84e290159ebfd98ceb45adbe2c83371f33abc11c357b1d2e38db16213.base",
+      "installedDigest": "sha256:9e02486a22caf6d2130c0e02fe0d221f6c5682328df68632b6fd22ed507d8cee",
+      "item": "checkbox",
+      "sourceDigest": "sha256:9e02486a22caf6d2130c0e02fe0d221f6c5682328df68632b6fd22ed507d8cee",
+      "version": "0.3.2"
+    },
+    "RegistryEmptyStateModifier.swift": {
+      "base": "bases/0fa5e256e67ba2b8faf6ff3535e44ba0bfbecd0e754ab7a92bb7e0d562a574f6.base",
+      "installedDigest": "sha256:9330b33cb6e22f101c6de1bb2527f9ae89d8cf79524f55a36c888650af31c016",
+      "item": "empty",
+      "sourceDigest": "sha256:9330b33cb6e22f101c6de1bb2527f9ae89d8cf79524f55a36c888650af31c016",
+      "version": "0.1.1"
+    },
+    "RegistryInputStyle.swift": {
+      "base": "bases/66c24a2324bc206ee6b03a7ba2dfead5fe1cec8f6eb52595c4ddc2131308bad9.base",
+      "installedDigest": "sha256:12b446ccdd03470458eb729a87a5fa09278b422be18be33748a35d360284af2c",
+      "item": "input",
+      "sourceDigest": "sha256:12b446ccdd03470458eb729a87a5fa09278b422be18be33748a35d360284af2c",
+      "version": "0.5.1"
+    },
+    "RegistryKeycapModifier.swift": {
+      "base": "bases/27d4e89f7b1eea1cb61637ba4d7925f3c287418f60a0a6d0b31fa5abc8b7b7ba.base",
+      "installedDigest": "sha256:17a25f88100fdae5bc13a5407648f800005ea6f11f18f8bd77829091dd15607a",
+      "item": "kbd",
+      "sourceDigest": "sha256:17a25f88100fdae5bc13a5407648f800005ea6f11f18f8bd77829091dd15607a",
+      "version": "0.1.2"
+    },
+    "RegistryLabelStyle.swift": {
+      "base": "bases/04739f973034fb8d715a72289080746b744a673da290b3b462fc035871996323.base",
+      "installedDigest": "sha256:1438f37c236dd1ab07ae41e8a3d1e0031e8e023136109726293cd0c05ab55481",
+      "item": "label",
+      "sourceDigest": "sha256:1438f37c236dd1ab07ae41e8a3d1e0031e8e023136109726293cd0c05ab55481",
+      "version": "0.2.1"
+    },
+    "RegistryMarkerModifier.swift": {
+      "base": "bases/7b953879d949c4e411e1345859dacaabee744056d45e3c564985bdf93fcbbc35.base",
+      "installedDigest": "sha256:97cea4c38a058af53546b4bb963b378c3e712c73771e222e5659fac6d38c7576",
+      "item": "marker",
+      "sourceDigest": "sha256:97cea4c38a058af53546b4bb963b378c3e712c73771e222e5659fac6d38c7576",
+      "version": "0.1.1"
+    },
+    "RegistryProgressViewStyle.swift": {
+      "base": "bases/7e913d7bc5cadc9661e485c4d840908f32942a4cbe3ff7fdafd0f4b017b7497e.base",
+      "installedDigest": "sha256:ff8d00b678db17d4fec55cc1b3ede05b90e016cc9dacf72e4eae5ca023bd3491",
+      "item": "progress",
+      "sourceDigest": "sha256:ff8d00b678db17d4fec55cc1b3ede05b90e016cc9dacf72e4eae5ca023bd3491",
+      "version": "0.2.1"
+    },
+    "RegistrySelectModifier.swift": {
+      "base": "bases/3a9217f76d6535c41e3f06af4707d99fe4556fec2ef7348663c62d87878353e3.base",
+      "installedDigest": "sha256:6590e0ca4cd841726353f6463e177f8af96541ad6487e8551755b84f40dca09f",
+      "item": "select",
+      "sourceDigest": "sha256:6590e0ca4cd841726353f6463e177f8af96541ad6487e8551755b84f40dca09f",
+      "version": "0.2.1"
+    },
+    "RegistrySeparatorModifier.swift": {
+      "base": "bases/bb9d9cd74969a7587102a28109791c2ca2b6c3bb70a7995c3bed3fec91467b25.base",
+      "installedDigest": "sha256:81fb41d7e14ce0f8fc6a5ff4d4c6b329be5996916dc478bddd733412933b6129",
+      "item": "separator",
+      "sourceDigest": "sha256:81fb41d7e14ce0f8fc6a5ff4d4c6b329be5996916dc478bddd733412933b6129",
+      "version": "0.2.1"
+    },
+    "RegistrySkeletonModifier.swift": {
+      "base": "bases/fbcf3e3bd66128acb7b24ae44ee3aa58843ac5c47a53574c6f2d9735a9e5eb62.base",
+      "installedDigest": "sha256:6aef9296a24760264820688fca9d224510f99a32c586e8ad31ff441a5062ce7f",
+      "item": "skeleton",
+      "sourceDigest": "sha256:6aef9296a24760264820688fca9d224510f99a32c586e8ad31ff441a5062ce7f",
+      "version": "0.2.2"
+    },
+    "RegistrySpinnerStyle.swift": {
+      "base": "bases/93bb6a5df1f063298fae71049dc4a862310b163cd2563b177eabc9f7c71d55ed.base",
+      "installedDigest": "sha256:2c54c480b0e04568a710fce5ca34d028b286b79d56efa599232af2f59c67bd46",
+      "item": "spinner",
+      "sourceDigest": "sha256:2c54c480b0e04568a710fce5ca34d028b286b79d56efa599232af2f59c67bd46",
+      "version": "0.2.1"
+    },
+    "RegistryTextAreaModifier.swift": {
+      "base": "bases/204aacd79f20901e9f35cd65a8270a4ad86eb648acf05c028f9ae12439e10a8a.base",
+      "installedDigest": "sha256:7ad5c78a40c4914ef9985787b825fd5add166cf136c1d11bf4d4a90dde2eff15",
+      "item": "textarea",
+      "sourceDigest": "sha256:7ad5c78a40c4914ef9985787b825fd5add166cf136c1d11bf4d4a90dde2eff15",
+      "version": "0.4.1"
+    },
+    "RegistryToastModifier.swift": {
+      "base": "bases/87c59e78860855d4270fa443a51de419b5463b01561d25a2b9226e7f5fad879f.base",
+      "installedDigest": "sha256:2a6c25ffa67f30a6f9c5189fc4dc11966557901cb3fbeecfd74d1cfe48b7efb8",
+      "item": "toast",
+      "sourceDigest": "sha256:2a6c25ffa67f30a6f9c5189fc4dc11966557901cb3fbeecfd74d1cfe48b7efb8",
+      "version": "0.1.1"
+    },
+    "RegistryToggleGroupModifier.swift": {
+      "base": "bases/ca52356b91430d7163321866f41475fcbde3004f0fe8f57edf95b6084bf935d8.base",
+      "installedDigest": "sha256:87babb9f266597dbee22013624ff840e3efdfa587b84aca96ddfc98904f5f212",
+      "item": "toggle-group",
+      "sourceDigest": "sha256:87babb9f266597dbee22013624ff840e3efdfa587b84aca96ddfc98904f5f212",
+      "version": "0.2.1"
+    },
+    "RegistryToggleStyle.swift": {
+      "base": "bases/a5a7b22fa485766b95a43f6129a3750d9a48465143741dd98d5a6bdb47f4d5c9.base",
+      "installedDigest": "sha256:504497ac2dd7d7fe8178e683336b229aab14dfd4f6e97ff604ea98846696b926",
+      "item": "toggle",
+      "sourceDigest": "sha256:504497ac2dd7d7fe8178e683336b229aab14dfd4f6e97ff604ea98846696b926",
+      "version": "0.2.1"
+    },
+    "SettingsSection.swift": {
+      "base": "bases/f0cbe660f369434a96a11528c9670cfa91024028aba99117143a5034582ee972.base",
+      "installedDigest": "sha256:d4f9fbc026af3655949bfeec14149f4b98a92373ef892e1e6341403517738a59",
+      "item": "settings-section",
+      "sourceDigest": "sha256:d4f9fbc026af3655949bfeec14149f4b98a92373ef892e1e6341403517738a59",
+      "version": "0.1.2"
+    },
+    "SignUpForm.swift": {
+      "base": "bases/19e1f1284a2c6fa9fc87143ab4ab4c48922c83a66c50ca0cadfac3015210b13f.base",
+      "installedDigest": "sha256:77a150fa4ed8570e7b121ab7d850bdb50e4579851f983a84b940c63a329af49c",
+      "item": "signup-form",
+      "sourceDigest": "sha256:77a150fa4ed8570e7b121ab7d850bdb50e4579851f983a84b940c63a329af49c",
+      "version": "0.1.2"
+    },
+    "TransactionRow.swift": {
+      "base": "bases/bb175adeaac2e6443042b5ae547edcdaea4daec1487cb932a128b37b41cb221d.base",
+      "installedDigest": "sha256:f70f47bfd8a55cefdb9f75f66594743af13b0dd31c47297064a649ec2f2a2165",
+      "item": "transaction-row",
+      "sourceDigest": "sha256:f70f47bfd8a55cefdb9f75f66594743af13b0dd31c47297064a649ec2f2a2165",
+      "version": "0.5.1"
+    },
+    "ValidatedInput.swift": {
+      "base": "bases/101f086c577da42b472d22bddd2460910bb92a66b2012ef004f46cc0c33bcc03.base",
+      "installedDigest": "sha256:87722cc047f34c1b049d4a2dbc27706dd2e27cef73037403ab6d1547e0476ee8",
+      "item": "validated-input",
+      "sourceDigest": "sha256:87722cc047f34c1b049d4a2dbc27706dd2e27cef73037403ab6d1547e0476ee8",
+      "version": "0.1.0"
+    }
+  },
+  "items": {
+    "accordion": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "separator"
+      ],
+      "version": "0.2.2"
+    },
+    "activity-feed": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "alert",
+        "avatar",
+        "item",
+        "skeleton",
+        "empty",
+        "accordion",
+        "separator",
+        "button"
+      ],
+      "version": "0.2.2"
+    },
+    "alert": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "button"
+      ],
+      "version": "0.2.1"
+    },
+    "attachment": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "item",
+        "progress",
+        "button",
+        "separator"
+      ],
+      "version": "0.1.2"
+    },
+    "auth-form": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "input",
+        "button",
+        "card"
+      ],
+      "version": "0.3.2"
+    },
+    "avatar": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.1"
+    },
+    "badge": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.3.2"
+    },
+    "breadcrumb": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.1.2"
+    },
+    "bubble": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.1.1"
+    },
+    "button": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.5.2"
+    },
+    "button-group": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "button"
+      ],
+      "version": "0.3.2"
+    },
+    "card": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.1"
+    },
+    "chart": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.1.3"
+    },
+    "checkbox": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.3.2"
+    },
+    "combobox": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "input-group",
+        "item",
+        "empty",
+        "separator",
+        "button"
+      ],
+      "version": "0.1.1"
+    },
+    "command": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "input-group",
+        "item",
+        "kbd",
+        "empty",
+        "separator",
+        "button"
+      ],
+      "version": "0.2.1"
+    },
+    "command-search": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "command",
+        "kbd"
+      ],
+      "version": "0.2.1"
+    },
+    "dashboard": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "metric-card",
+        "chart",
+        "table"
+      ],
+      "version": "0.1.1"
+    },
+    "empty": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.1.1"
+    },
+    "field": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "input"
+      ],
+      "version": "0.1.2"
+    },
+    "finance-overview": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "metric-card",
+        "transaction-row",
+        "empty"
+      ],
+      "version": "0.4.3"
+    },
+    "input": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.5.1"
+    },
+    "input-group": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "button"
+      ],
+      "version": "0.2.1"
+    },
+    "item": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "avatar",
+        "separator",
+        "badge"
+      ],
+      "version": "0.2.2"
+    },
+    "kbd": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.1.2"
+    },
+    "label": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.1"
+    },
+    "macro-progress": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.4.1"
+    },
+    "marker": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "separator"
+      ],
+      "version": "0.1.1"
+    },
+    "message": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "avatar",
+        "bubble"
+      ],
+      "version": "0.1.1"
+    },
+    "message-scroller": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "message",
+        "avatar"
+      ],
+      "version": "0.1.1"
+    },
+    "metric-card": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.2"
+    },
+    "nutrition-overview": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "metric-card",
+        "macro-progress"
+      ],
+      "version": "0.2.3"
+    },
+    "preview": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "card",
+        "item",
+        "alert",
+        "badge",
+        "button",
+        "chart",
+        "empty",
+        "avatar",
+        "combobox",
+        "separator",
+        "field",
+        "input-group",
+        "spinner",
+        "checkbox",
+        "textarea",
+        "input",
+        "table",
+        "kbd",
+        "progress",
+        "select",
+        "skeleton",
+        "button-group"
+      ],
+      "version": "0.3.1"
+    },
+    "preview-02": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "card",
+        "field",
+        "input",
+        "button",
+        "item",
+        "badge",
+        "separator",
+        "chart",
+        "input-group",
+        "toggle-group",
+        "empty",
+        "accordion",
+        "skeleton",
+        "checkbox",
+        "breadcrumb",
+        "select",
+        "textarea",
+        "progress",
+        "table",
+        "combobox",
+        "spinner"
+      ],
+      "version": "0.3.1"
+    },
+    "progress": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.1"
+    },
+    "questionnaire": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "field",
+        "checkbox",
+        "textarea",
+        "progress",
+        "button",
+        "card"
+      ],
+      "version": "0.1.1"
+    },
+    "select": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.1"
+    },
+    "separator": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.1"
+    },
+    "settings-section": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "select",
+        "separator",
+        "button"
+      ],
+      "version": "0.1.2"
+    },
+    "signup-form": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "input",
+        "button",
+        "card",
+        "checkbox"
+      ],
+      "version": "0.1.2"
+    },
+    "skeleton": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.2"
+    },
+    "spinner": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.2.1"
+    },
+    "table": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "separator"
+      ],
+      "version": "0.1.1"
+    },
+    "textarea": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.4.1"
+    },
+    "toast": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "button"
+      ],
+      "version": "0.1.1"
+    },
+    "toggle": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "button"
+      ],
+      "version": "0.2.1"
+    },
+    "toggle-group": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [
+        "toggle",
+        "button"
+      ],
+      "version": "0.2.1"
+    },
+    "transaction-row": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.5.1"
+    },
+    "validated-input": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.1.0"
+    }
+  },
+  "registry": "SweetUI",
+  "schemaVersion": 1
+}

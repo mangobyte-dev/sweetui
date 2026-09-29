@@ -2,13 +2,13 @@
 
 ## Contract
 
-Showcase UI tests compare 6 screens (finance, nutrition, authentication, settings, activity, command-search) to `Examples/Showcase/SwiftUIRegistryShowcaseUITests/ReferenceImages/`
+Showcase UI tests compare 6 screens (finance, nutrition, authentication, settings, activity, command-search) to `Examples/Showcase/SweetUIShowcaseUITests/ReferenceImages/`
 
 Pin: light-mode iPhone 17, iOS 27.0; controls/tabs vary by platform, other runtimes are evidence only
 
 ## Comparison
 
-`SwiftUIRegistryShowcaseUITests.swift`:
+`SweetUIShowcaseUITests.swift`:
 
 1. captures via `XCUIApplication.screenshot()`
 2. removes top `7%` (status-bar)

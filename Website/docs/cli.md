@@ -1,6 +1,6 @@
 # CLI
 
-`swiftui-registry`: one binary, no dependencies. `brew install mangobyte-dev/tap/swiftui-registry`, or `swift run swiftui-registry <command>` from clone.
+`sweetui`: one binary, no dependencies. `brew install mangobyte-dev/tap/sweetui`, or `swift run sweetui <command>` from clone.
 
 Registry source:
 
@@ -9,7 +9,7 @@ Registry source:
 - Elsewhere: cached snapshot; `--refresh` rechecks tap.
 
 ```text
-USAGE: swiftui-registry <subcommand>
+USAGE: sweetui <subcommand>
 
 SUBCOMMANDS:
   validate
@@ -29,8 +29,8 @@ SUBCOMMANDS:
 Local, deterministic, JSON-first, no model/account/hosted service. Results: closure, package/accessibility/compatibility, previews.
 
 ```sh
-swiftui-registry search nutrition dashboard --kind block --platform iOS --target-version 26.0
-swiftui-registry search activity --kind block --format names
+sweetui search nutrition dashboard --kind block --platform iOS --target-version 26.0
+sweetui search activity --kind block --format names
 ```
 
 ## describe
@@ -38,20 +38,20 @@ swiftui-registry search activity --kind block --format names
 Prints item: name, kind, version, description, usage, signatures (every public initializer, function, static member, and enum, prefixed with its owning type), accessibility notes; installables: closure, requirement, targets. `--source`: content; `--format json`: MCP `describe_item` payload; recipes: native guidance.
 
 ```sh
-swiftui-registry describe activity-feed
-swiftui-registry describe button --source
+sweetui describe activity-feed
+sweetui describe button --source
 ```
 
 ## install
 
 ```text
-USAGE: swiftui-registry install [--registry <registry>] [--refresh] <item> --destination <destination> [--force] [--update] [--plan] [--diff]
+USAGE: sweetui install [--registry <registry>] [--refresh] <item> --destination <destination> [--force] [--update] [--plan] [--diff]
 ```
 
 - `--plan`: dry run: closure, status (`new`/`up-to-date`/`modified-would-require-force`/`would-merge`), requirement, collisions, steps.
-- Default: copies closure, writes `.swiftui-registry/receipt.json` + non-Swift base snapshots, prints requirement; repeat needs matching receipt.
+- Default: copies closure, writes `.sweetui/receipt.json` + non-Swift base snapshots, prints requirement; repeat needs matching receipt.
 - `--diff`: unified diff vs registry, exit 1 on difference, needs receipt.
-- `--update`: unmodified takes registry, edits stay, disjoint merges via `git merge-file`, overlapping keeps file, writes `.merge` under `.swiftui-registry/conflicts/`.
+- `--update`: unmodified takes registry, edits stay, disjoint merges via `git merge-file`, overlapping keeps file, writes `.merge` under `.sweetui/conflicts/`.
 - `--force` replaces modified source, skips cache.
 - Recipe: installs nothing, exit 2.
 
@@ -62,7 +62,7 @@ Checks tap daily, prints upgrade if newer; failures silent.
 Reads receipt, lists items, marks files up-to-date/modified/missing vs install-time digests. Never touches registry; exits 2 without one.
 
 ```sh
-swiftui-registry info --destination Sources/App/Components
+sweetui info --destination Sources/App/Components
 ```
 
 ## preset
@@ -70,11 +70,11 @@ swiftui-registry info --destination Sources/App/Components
 Preset code: one `RegistryTheme` string, read/written by tool, Showcase, website, MCP.
 
 ```sh
-swiftui-registry preset decode a13GkaOXWwIF          # the knobs, the Swift, the website URL (--json for the payload)
-swiftui-registry preset url a13GkaOXWwIF             # the Create page for the code
-swiftui-registry preset apply a74hGF01CVunaG0vzZJG --destination path/to/YourApp   # writes RegistryTheme+App.swift
-swiftui-registry preset resolve path/to/YourApp/RegistryTheme+App.swift          # an edited theme file back into a code
-swiftui-registry preset random                        # a code to start from
+sweetui preset decode a13GkaOXWwIF          # the knobs, the Swift, the website URL (--json for the payload)
+sweetui preset url a13GkaOXWwIF             # the Create page for the code
+sweetui preset apply a74hGF01CVunaG0vzZJG --destination path/to/YourApp   # writes RegistryTheme+App.swift
+sweetui preset resolve path/to/YourApp/RegistryTheme+App.swift          # an edited theme file back into a code
+sweetui preset random                        # a code to start from
 ```
 
 Theme file: not registry item, no receipt; apply via `.registryTheme(.app)`.
@@ -87,4 +87,4 @@ Theme file: not registry item, no receipt; apply via `.registryTheme(.app)`.
 
 ## mcp
 
-`swiftui-registry mcp` serves engine over stdio; see [MCP server](/docs/mcp/).
+`sweetui mcp` serves engine over stdio; see [MCP server](/docs/mcp/).

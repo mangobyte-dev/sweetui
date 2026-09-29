@@ -6,18 +6,18 @@
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/mangobyte-dev/swiftui-ui-registry.git", .upToNextMinor(from: "0.3.0"))
+    .package(url: "https://github.com/mangobyte-dev/sweetui.git", .upToNextMinor(from: "0.5.0"))
 ],
 // In your target's dependencies:
-.product(name: "SwiftUIRegistryFoundations", package: "swiftui-ui-registry")
+.product(name: "SweetUIFoundations", package: "sweetui")
 ```
 
-Or Xcode: Add Package Dependency, same URL, rule Up to Next Minor Version from 0.3.0, add `SwiftUIRegistryFoundations`. `package:` = URL's last segment minus `.git`.
+Or Xcode: Add Package Dependency, same URL, rule Up to Next Minor Version from 0.5.0, add `SweetUIFoundations`. `package:` = URL's last segment minus `.git`.
 
 ## 2. Theme once
 
 ```swift
-import SwiftUIRegistryFoundations
+import SweetUIFoundations
 
 ContentView()
     .registryTheme(.graphite)
@@ -28,11 +28,11 @@ Presets: `.system` (app tint), `.graphite`, `.indigo`, `.rose`, `.emerald`, `.am
 ## 3. Install an item
 
 ```sh
-brew install mangobyte-dev/tap/swiftui-registry
-swiftui-registry install button --destination Sources/App/Components
+brew install mangobyte-dev/tap/sweetui
+sweetui install button --destination Sources/App/Components
 ```
 
-Resolves dependencies, copies exact source (`RegistryButtonStyle.swift`), writes `.swiftui-registry/receipt.json`, prints requirement. Never edits project files; add destination to target. Outside clone, fetches release on first use, cached under `~/Library/Caches/swiftui-registry`.
+Resolves dependencies, copies exact source (`RegistryButtonStyle.swift`), writes `.sweetui/receipt.json`, prints requirement. Never edits project files; add destination to target. Outside clone, fetches release on first use, cached under `~/Library/Caches/sweetui`.
 
 ## 4. Use it
 
@@ -48,10 +48,10 @@ Apple's `Button` stays visible; only style changes. Each item carries snippet, a
 
 ## 5. Tune on the device
 
-Add `SwiftUIRegistryDesignSurface` to target:
+Add `SweetUIDesignSurface` to target:
 
 ```swift
-import SwiftUIRegistryDesignSurface
+import SweetUIDesignSurface
 
 ContentView()
     .designSurface()
@@ -63,8 +63,8 @@ Debug builds add draggable Tune button; Select, then item, scopes tokens. Copy S
 ## Update source
 
 ```sh
-swiftui-registry install button --destination Sources/App/Components --diff
-swiftui-registry install button --destination Sources/App/Components --update
+sweetui install button --destination Sources/App/Components --diff
+sweetui install button --destination Sources/App/Components --update
 ```
 
 `--diff` shows local edits vs registry. `--update`:
@@ -72,13 +72,13 @@ swiftui-registry install button --destination Sources/App/Components --update
 - Unmodified files: registry version.
 - Edits stay.
 - Disjoint edits merge via `git merge-file`.
-- Overlapping edits keep file, write `.merge` under `.swiftui-registry/conflicts/`.
+- Overlapping edits keep file, write `.merge` under `.sweetui/conflicts/`.
 
 Conflicts never auto-resolve; customized files stay.
 
 ## Requirements
 
 - Swift tools 6.2+, iOS 26+, Xcode building Swift 6.2
-- Homebrew, or `swift run swiftui-registry <command>` from clone
+- Homebrew, or `swift run sweetui <command>` from clone
 - Git for three-way merges
 - Liquid Glass native, no pre-26 styling, no 27-only APIs, floor iOS 26

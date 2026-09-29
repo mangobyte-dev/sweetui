@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Report a security vulnerability
-    url: https://github.com/mangobyte-dev/swiftui-ui-registry/security/advisories/new
+    url: https://github.com/mangobyte-dev/sweetui/security/advisories/new
     about: Please report vulnerabilities privately, never in a public issue

@@ -3,22 +3,22 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftUIRegistry",
+    name: "SweetUI",
     platforms: [
         .macOS(.v15),
         .iOS(.v26)
     ],
     products: [
         .library(
-            name: "SwiftUIRegistryFoundations",
-            targets: ["SwiftUIRegistryFoundations"]
+            name: "SweetUIFoundations",
+            targets: ["SweetUIFoundations"]
         ),
         .library(
-            name: "SwiftUIRegistryDesignSurface",
-            targets: ["SwiftUIRegistryDesignSurface"]
+            name: "SweetUIDesignSurface",
+            targets: ["SweetUIDesignSurface"]
         ),
-        .library(name: "RegistryKit", targets: ["RegistryKit"]),
-        .executable(name: "swiftui-registry", targets: ["SwiftUIRegistryCLI"])
+        .library(name: "SweetUIKit", targets: ["SweetUIKit"]),
+        .executable(name: "sweetui", targets: ["SweetUICLI"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
@@ -30,7 +30,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "RegistryKit",
+            name: "SweetUIKit",
             dependencies: [
                 .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
@@ -38,19 +38,19 @@ let package = Package(
             swiftSettings: [.enableUpcomingFeature("NonisolatedNonsendingByDefault")]
         ),
         .executableTarget(
-            name: "SwiftUIRegistryCLI",
+            name: "SweetUICLI",
             dependencies: [
-                "RegistryKit",
+                "SweetUIKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Dependencies", package: "swift-dependencies"),
             ],
             swiftSettings: [.enableUpcomingFeature("NonisolatedNonsendingByDefault")]
         ),
         .testTarget(
-            name: "RegistryKitTests",
+            name: "SweetUIKitTests",
             dependencies: [
-                "RegistryKit",
-                "SwiftUIRegistryCLI",
+                "SweetUIKit",
+                "SweetUICLI",
                 .product(name: "CustomDump", package: "swift-custom-dump"),
                 .product(name: "InlineSnapshotTesting", package: "swift-snapshot-testing"),
                 .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
@@ -58,17 +58,17 @@ let package = Package(
             resources: [.copy("Fixtures")],
             swiftSettings: [.enableUpcomingFeature("NonisolatedNonsendingByDefault")]
         ),
-        .target(name: "SwiftUIRegistryFoundations"),
+        .target(name: "SweetUIFoundations"),
         .target(
-            name: "SwiftUIRegistryDesignSurface",
+            name: "SweetUIDesignSurface",
             dependencies: [
-                "SwiftUIRegistryFoundations",
+                "SweetUIFoundations",
                 .product(name: "Sharing", package: "swift-sharing")
             ]
         ),
         .testTarget(
-            name: "SwiftUIRegistryFoundationsTests",
-            dependencies: ["SwiftUIRegistryFoundations"]
+            name: "SweetUIFoundationsTests",
+            dependencies: ["SweetUIFoundations"]
         )
     ],
     swiftLanguageModes: [.v6]

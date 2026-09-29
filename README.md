@@ -1,35 +1,35 @@
-# SwiftUIRegistry
+# SweetUI
 
 Native-first SwiftUI registry: copy in, own (shadcn/ui spirit). Swift source, metadata, not framework. Theme once, search, inspect, copy, customize, audit. Apple controls stay visible at the call site
 
 Browse 3 ways:
 
-- Website (`Website/`, Next.js, shadcn/ui): preview, install command, usage, source. Live: `swiftui-registry.mangobytekw.workers.dev`. Deploy: `cd Website && npm run deploy`; local: `npm ci && npm run dev`
-- Showcase app (`Examples/Showcase/SwiftUIRegistryShowcase.xcworkspace`): Components/Blocks/Recipes tabs, live demos, design surface, tokens to controls
+- Website (`Website/`, Next.js, shadcn/ui): preview, install command, usage, source. Live: `sweetui.dev`. Deploy: `cd Website && npm run deploy`; local: `npm ci && npm run dev`
+- Showcase app (`Examples/Showcase/SweetUIShowcase.xcworkspace`): Components/Blocks/Recipes tabs, live demos, design surface, tokens to controls
 - Markdown [catalog](docs/catalog/index.md)
 
 Four small apps an agent built from the registry, with screenshots and the friction it met: [case studies](docs/case-studies.md)
 
 ## Quickstart
 
-Every command is real; `swiftui-registry describe <item>` prints usage snippet
+Every command is real; `sweetui describe <item>` prints usage snippet
 
 1. Add package:
 
    ```swift
    dependencies: [
-       .package(url: "https://github.com/mangobyte-dev/swiftui-ui-registry.git", .upToNextMinor(from: "0.3.0"))
+       .package(url: "https://github.com/mangobyte-dev/sweetui.git", .upToNextMinor(from: "0.5.0"))
    ],
    // In your target's dependencies:
-   .product(name: "SwiftUIRegistryFoundations", package: "swiftui-ui-registry")
+   .product(name: "SweetUIFoundations", package: "sweetui")
    ```
 
-   Xcode: Add Package Dependency, Up to Next Minor from 0.3.0, `SwiftUIRegistryFoundations`
+   Xcode: Add Package Dependency, Up to Next Minor from 0.5.0, `SweetUIFoundations`
 
 2. Theme once, scene root:
 
    ```swift
-   import SwiftUIRegistryFoundations
+   import SweetUIFoundations
 
    ContentView()
        .registryTheme(.graphite)
@@ -40,11 +40,11 @@ Every command is real; `swiftui-registry describe <item>` prints usage snippet
 3. Install via Homebrew, anywhere:
 
    ```sh
-   brew install mangobyte-dev/tap/swiftui-registry
-   swiftui-registry install button --destination Sources/App/Components
+   brew install mangobyte-dev/tap/sweetui
+   sweetui install button --destination Sources/App/Components
    ```
 
-   Copies `RegistryButtonStyle.swift`, writes `.swiftui-registry/receipt.json`, prints requirement: `from 0.3.0 up to the next minor version`. Fetches release-tag (`0.3.0`) snapshot, caches under `~/Library/Caches/swiftui-registry`; `--refresh` refetches. From clone: `swift run swiftui-registry <command>`
+   Copies `RegistryButtonStyle.swift`, writes `.sweetui/receipt.json`, prints requirement: `from 0.5.0 up to the next minor version`. Fetches the pinned release tag's snapshot, caches under `~/Library/Caches/sweetui`; `--refresh` refetches. From clone: `swift run sweetui <command>`
 
 4. Use it:
 
@@ -56,10 +56,10 @@ Every command is real; `swiftui-registry describe <item>` prints usage snippet
        .buttonStyle(.registryOutline)
    ```
 
-5. Tune on device: add `SwiftUIRegistryDesignSurface`, apply `designSurface()` inside theme call:
+5. Tune on device: add `SweetUIDesignSurface`, apply `designSurface()` inside theme call:
 
    ```swift
-   import SwiftUIRegistryDesignSurface
+   import SweetUIDesignSurface
 
    ContentView()
        .designSurface()
@@ -83,22 +83,22 @@ Search: local, deterministic, JSON-first; filters `--platform`/`--target-version
 ## Install, update
 
 ```sh
-swiftui-registry install finance-overview --destination path/to/YourTarget/Components
+sweetui install finance-overview --destination path/to/YourTarget/Components
 ```
 
-Resolves closure (`metric-card`, `transaction-row`, `empty` before `finance-overview`), copies source, writes `.swiftui-registry/receipt.json`, non-Swift base snapshots. Never edits project files; destination: build-target member. Repeats need matching receipts; modified source: `--force`. Only `--refresh` touches cache. Post-install: daily tap check flags upgrades; silent failure. `--registry /path/to/clone` serves checkout
+Resolves closure (`metric-card`, `transaction-row`, `empty` before `finance-overview`), copies source, writes `.sweetui/receipt.json`, non-Swift base snapshots. Never edits project files; destination: build-target member. Repeats need matching receipts; modified source: `--force`. Only `--refresh` touches cache. Post-install: daily tap check flags upgrades; silent failure. `--registry /path/to/clone` serves checkout
 
 Verify: `xcodebuild -scheme YourApp -destination 'generic/platform=iOS Simulator' build`
 
 ```sh
-swiftui-registry search activity --kind block --format names
-swiftui-registry install activity-feed --destination path/to/YourTarget/Components --plan
+sweetui search activity --kind block --format names
+sweetui install activity-feed --destination path/to/YourTarget/Components --plan
 ```
 
 Update source, content-based:
 
 ```sh
-swiftui-registry install finance-overview \
+sweetui install finance-overview \
   --destination path/to/YourTarget/Components \
   --update
 ```
@@ -106,45 +106,45 @@ swiftui-registry install finance-overview \
 - Unmodified source: registry version
 - Local-only edits: stay
 - Disjoint edits: merged via `git merge-file`
-- Overlapping edits: owned source kept, `.merge` emitted under `.swiftui-registry/conflicts/`
+- Overlapping edits: owned source kept, `.merge` emitted under `.sweetui/conflicts/`
 
 ## Agent workflow
 
 Read-only flags preview/audit before touching destination; recipes: guidance only, never install
 
 ```sh
-swiftui-registry install finance-overview --destination path/to/YourTarget/Components --plan
+sweetui install finance-overview --destination path/to/YourTarget/Components --plan
 ```
 
 `--plan`: dependency closure (versions/kinds), write status (`new`/`up-to-date`/`modified-would-require-force`/`would-merge`), requirements, collisions, manual steps
 
 ```sh
-swiftui-registry install finance-overview --destination path/to/YourTarget/Components --diff
+sweetui install finance-overview --destination path/to/YourTarget/Components --diff
 ```
 
 `--diff`: diff per receipt-backed file vs canonical, exit 0 identical / 1 different. Needs receipt
 
 ```sh
-swiftui-registry describe activity-feed
+sweetui describe activity-feed
 ```
 
 `describe`: name/kind/version/description/usage/accessibility; installables add closure, requirements, file targets. `--source` appends content; `--format json` matches MCP's `describe_item`
 
 ```sh
-swiftui-registry info --destination path/to/YourTarget/Components
+sweetui info --destination path/to/YourTarget/Components
 ```
 
 `info`: destination receipt, files up-to-date/modified/missing, summary count. Never touches registry; exits 2, no receipt
 
 ### MCP server
 
-`swiftui-registry mcp` exposes search/describe/plan/diff/install/preset tools over stdio:
+`sweetui mcp` exposes search/describe/plan/diff/install/preset tools over stdio:
 
 ```json
 {
   "mcpServers": {
-    "swiftui-registry": {
-      "command": "swiftui-registry",
+    "sweetui": {
+      "command": "sweetui",
       "args": ["mcp"]
     }
   }
@@ -229,12 +229,12 @@ Runtime cost: none vs hand-written styles (2 rows: noise). Stock's slower intera
 Version 0, honest prototype:
 
 - Items generate into `docs/catalog/`, website data; counts there
-- `SwiftUIRegistryFoundations`: pre-1.0 package (accent, on-accent, surface, border, positive, negative, disabled-opacity, metrics). 7 presets, 1 root modifier
-- `SwiftUIRegistryDesignSurface`: second product, own window, movable-resizable panel, per-item knobs, own-token-document page. Persists as `registry-tokens.json`, exports preset code any tool applies
+- `SweetUIFoundations`: pre-1.0 package (accent, on-accent, surface, border, positive, negative, disabled-opacity, metrics). 7 presets, 1 root modifier
+- `SweetUIDesignSurface`: second product, own window, movable-resizable panel, per-item knobs, own-token-document page. Persists as `registry-tokens.json`, exports preset code any tool applies
 - Every item: versioned JSON metadata (dependencies, SwiftPM requirements, platforms, accessibility notes, previews, usage). 1 validator checks all, captured screenshots
 - Installer writes exact-content receipts, performs conflict-aware three-way updates
 - Showcase compiles installables, recipes at iOS 26 floor. Pins visual contract checks for blocks, runs accessibility-audited demo walk per item
-- Published: `0.1.0` (2026-09-06), `0.2.0` (2026-09-07) as tags/GitHub releases, shipping universal `swiftui-registry` binary, Homebrew tap `mangobyte-dev/tap`. `0.3.0`: design-surface's public beta. `0.3.1`: exports reproduce the panel; recipes are selectable. `0.4.0`: `validated-input`, the case studies, search words and API fixes from the agent study. Not yet: hosted registry, Xcode-project mutation, platforms beyond iOS. Known limitations: `CHANGELOG.md`
+- Published: `0.1.0` (2026-09-06), `0.2.0` (2026-09-07) as tags/GitHub releases, shipping universal `swiftui-registry` binary (`sweetui` from 0.5.0), Homebrew tap `mangobyte-dev/tap`. `0.3.0`: design-surface's public beta. `0.3.1`: exports reproduce the panel; recipes are selectable. `0.4.0`: `validated-input`, the case studies, search words and API fixes from the agent study. Not yet: hosted registry, Xcode-project mutation, platforms beyond iOS. Known limitations: `CHANGELOG.md`
 
 ## Showcase screenshots
 
@@ -253,7 +253,7 @@ Dark captures sit beside light under `docs/images/items/`; site toggles them
 - Swift tools 6.2+
 - iOS 26+
 - Xcode building Swift 6.2 packages
-- Homebrew (`brew install mangobyte-dev/tap/swiftui-registry`), clone
+- Homebrew (`brew install mangobyte-dev/tap/sweetui`), clone
 - Node 22: website, codec check inside `swift test`
 - Python 3: `Scripts/capture_previews.py`
 - Git: three-way merge update
@@ -263,15 +263,15 @@ Verified: Xcode 27.0, Swift 6.4. Items inherit Liquid Glass natively, carry no p
 ## Verify
 
 ```sh
-swift run swiftui-registry validate
-swift run swiftui-registry generate catalog
-swift run swiftui-registry generate showcase-manifest
-swift run swiftui-registry generate site-data
-swift run swiftui-registry generate item-tokens
+swift run sweetui validate
+swift run sweetui generate catalog
+swift run sweetui generate showcase-manifest
+swift run sweetui generate site-data
+swift run sweetui generate item-tokens
 swift test
 xcodebuildmcp simulator test \
-  --workspace-path Examples/Showcase/SwiftUIRegistryShowcase.xcworkspace \
-  --scheme SwiftUIRegistryShowcase \
+  --workspace-path Examples/Showcase/SweetUIShowcase.xcworkspace \
+  --scheme SweetUIShowcase \
   --simulator-id YOUR_IOS_27_IPHONE_SIMULATOR_ID
 ```
 
@@ -285,10 +285,10 @@ Baseline: `docs/visual-testing.md`. Screenshots: `python3 Scripts/capture_previe
 ## Sample app
 
 ```sh
-open Examples/Showcase/SwiftUIRegistryShowcase.xcworkspace
+open Examples/Showcase/SweetUIShowcase.xcworkspace
 ```
 
-Select `SwiftUIRegistryShowcase`, run; each item shows install command, usage. Source under `Examples/Showcase/SwiftUIRegistryShowcasePackage/Sources/SwiftUIRegistryShowcaseFeature/Installed/`
+Select `SweetUIShowcase`, run; each item shows install command, usage. Source under `Examples/Showcase/SweetUIShowcasePackage/Sources/SweetUIShowcaseFeature/Installed/`
 
 Second consumer, `Examples/TodoCounter/TodoCounter.xcworkspace`: built 2026-09-06 from fresh Xcode project, proves any-architecture support. Drives todo list, Point-Free's counter. Package: GitHub, `0.1.0` tag; 7 items via Homebrew. Theme: preset code, customized. 1 component: receipt-tracked local edit. README: all commands
 

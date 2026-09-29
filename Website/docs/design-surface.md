@@ -1,6 +1,6 @@
 # Design surface
 
-Tunes app on device via `SwiftUIRegistryDesignSurface`; persists tab/sheet/cover; release unchanged.
+Tunes app on device via `SweetUIDesignSurface`; persists tab/sheet/cover; release unchanged.
 
 ![Card, iPhone](/images/design-surface/iphone-card-light.png)
 
@@ -11,8 +11,8 @@ Tunes app on device via `SwiftUIRegistryDesignSurface`; persists tab/sheet/cover
 Add product to scene-root target, import, apply `designSurface()` inside theme call; tuned wins over shipped.
 
 ```swift
-import SwiftUIRegistryDesignSurface
-import SwiftUIRegistryFoundations
+import SweetUIDesignSurface
+import SweetUIFoundations
 
 ContentView()
     .designSurface()
@@ -21,7 +21,7 @@ ContentView()
 
 - Items carry `registryItem(_:)`, surface's select tag.
 - Screens self-name via `registryScreen(_:)` for panel list.
-- Add tag pre-0.3.0 items: `swiftui-registry install <item> --update`.
+- Add tag pre-0.3.0 items: `sweetui install <item> --update`.
 
 ## The panel
 
@@ -78,7 +78,7 @@ ContentView()
 
 ## Where the result goes
 
-Reads panel's preset code. `swiftui-registry preset decode <code>` prints knobs. `preset apply <code> --destination <app>` writes `RegistryTheme+App.swift`. [Create](/create/) opens it. Copy Swift gives initializer. Theme: one scene-root value; tool gone in release.
+Reads panel's preset code. `sweetui preset decode <code>` prints knobs. `preset apply <code> --destination <app>` writes `RegistryTheme+App.swift`. [Create](/create/) opens it. Copy Swift gives initializer. Theme: one scene-root value; tool gone in release.
 
 ## Known limitations
 

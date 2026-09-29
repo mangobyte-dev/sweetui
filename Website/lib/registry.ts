@@ -63,5 +63,5 @@ export function asset(path: string): string {
 }
 
 export function installCommand(name: string): string {
-  return `swiftui-registry install ${name} --destination Sources/YourFeature/Components`
+  return `sweetui install ${name} --destination Sources/YourFeature/Components`
 }

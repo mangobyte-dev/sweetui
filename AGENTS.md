@@ -1,4 +1,4 @@
-# SwiftUIRegistry agent guide
+# SweetUI agent guide
 
 ## Purpose
 
@@ -32,9 +32,9 @@ Generated, MUST NOT hand edit:
 | `Website/content/registry.json` | site data |
 | `Website/content/docs/` | changelog and contracts copied for the site's Docs pages |
 | `Website/public/images/` | site captures |
-| `Examples/Showcase/.../RegistryCatalogManifest.swift`, `Examples/Showcase/SwiftUIRegistryShowcaseUITests/RegistryItemNames.swift` | Showcase manifest |
+| `Examples/Showcase/.../RegistryCatalogManifest.swift`, `Examples/Showcase/SweetUIShowcaseUITests/RegistryItemNames.swift` | Showcase manifest |
 | `Examples/Showcase/.../UsageSnippetChecks.swift` | one `View` per installable item that compiles its `usage` snippet |
-| `Sources/SwiftUIRegistryDesignSurface/RegistryItemTokens.swift` | item to token map that scopes the design surface's panel |
+| `Sources/SweetUIDesignSurface/RegistryItemTokens.swift` | item to token map that scopes the design surface's panel |
 | `docs/images/items/`, `docs/images/themes/` | captures |
 
 `docs/images/case-studies/` holds the study apps' screens, captured once from the agents' builds. Those apps are not in the repository, so the folder is hand made and never regenerated.
@@ -47,9 +47,9 @@ Conflicts: state beats archives, the later archive wins, contracts govern rules.
 
 ## Boundaries
 
-- `Sources/SwiftUIRegistryFoundations/`: stable interface, design foundations only.
-- `Sources/SwiftUIRegistryDesignSurface/`: optional product: tuning panel, preset codec, `designSurface()`, the `design-tokens.json` store on `swift-sharing`. Compiles only with UIKit, inert in release. Depends on foundations, never on items (native chrome). The Showcase consumes it; its tests run through the Showcase scheme, since the root package builds it empty on macOS.
-- `Sources/RegistryKit/`: SwiftUI free engine behind `swiftui-registry` (`Sources/SwiftUIRegistryCLI/`): loading, the single structural validator, resolution, receipts, install and merge, search, preset codes, the MCP server, the generators. Never imports `SwiftUIRegistryFoundations`. Contracts and captured fixtures: `Tests/RegistryKitTests/`.
+- `Sources/SweetUIFoundations/`: stable interface, design foundations only.
+- `Sources/SweetUIDesignSurface/`: optional product: tuning panel, preset codec, `designSurface()`, the `design-tokens.json` store on `swift-sharing`. Compiles only with UIKit, inert in release. Depends on foundations, never on items (native chrome). The Showcase consumes it; its tests run through the Showcase scheme, since the root package builds it empty on macOS.
+- `Sources/SweetUIKit/`: SwiftUI free engine behind `sweetui` (`Sources/SweetUICLI/`): loading, the single structural validator, resolution, receipts, install and merge, search, preset codes, the MCP server, the generators. Never imports `SweetUIFoundations`. Contracts and captured fixtures: `Tests/SweetUIKitTests/`.
 - `Registry/sources/components/`: source owned styles, focused modifiers, reusable compositions.
 - `Registry/sources/blocks/`: source owned compositions of components.
 - `Registry/items/`: metadata and the dependency graph. `Registry/preset_vectors.json` pins the codes every codec reproduces.
@@ -93,18 +93,18 @@ Conflicts: state beats archives, the later archive wins, contracts govern rules.
 
   | Command | Output |
   | --- | --- |
-  | `swift run swiftui-registry generate catalog` | `docs/catalog/` |
-  | `swift run swiftui-registry generate site-data` | website data |
-  | `swift run swiftui-registry generate showcase-manifest` | Showcase manifest |
-  | `swift run swiftui-registry generate item-tokens` | item to token map |
-  | `swift run swiftui-registry generate usage-checks` | Showcase usage-snippet checks |
+  | `swift run sweetui generate catalog` | `docs/catalog/` |
+  | `swift run sweetui generate site-data` | website data |
+  | `swift run sweetui generate showcase-manifest` | Showcase manifest |
+  | `swift run sweetui generate item-tokens` | item to token map |
+  | `swift run sweetui generate usage-checks` | Showcase usage-snippet checks |
 
-  `item-tokens` scans each item's sources and dependency closure for the theme fields they read. `usage-checks` wraps each installable item's `usage` snippet in a `View` so a snippet naming an undeclared symbol fails the Showcase build; the names a snippet leaves to the adopter live in the hand-written `UsageSnippetPlaceholders.swift`. Regenerate all five after any metadata or source change; `generatedOutputsMatchCanonicalBytes` in `Tests/RegistryKitTests/GeneratorTests.swift` rejects drift byte for byte. `Website/app` is hand written React over that JSON and `Website/content/docs/`; `npm run build` in `Website/` exports it statically.
+  `item-tokens` scans each item's sources and dependency closure for the theme fields they read. `usage-checks` wraps each installable item's `usage` snippet in a `View` so a snippet naming an undeclared symbol fails the Showcase build; the names a snippet leaves to the adopter live in the hand-written `UsageSnippetPlaceholders.swift`. Regenerate all five after any metadata or source change; `generatedOutputsMatchCanonicalBytes` in `Tests/SweetUIKitTests/GeneratorTests.swift` rejects drift byte for byte. `Website/app` is hand written React over that JSON and `Website/content/docs/`; `npm run build` in `Website/` exports it statically.
 
 - Item screenshots come from `python3 Scripts/capture_previews.py` on the pinned simulator, never hand made. Recapture after a visible change, then regenerate the catalog and site.
 - MUST NOT regenerate a visual reference merely to pass a test (`docs/visual-testing.md`).
 - Add a dependency only when a vertical slice proves it necessary.
-- `Sources/RegistryKit/Validation.swift` is the only place that enforces registry structure (Validation, `docs/registry-spec.md`).
+- `Sources/SweetUIKit/Validation.swift` is the only place that enforces registry structure (Validation, `docs/registry-spec.md`).
 
 ## Environment pins
 
@@ -115,10 +115,10 @@ Conflicts: state beats archives, the later archive wins, contracts govern rules.
 | wide block captures | iPad Pro 13 inch, also `en_US` (`ar_SA` until 2026-09-06) |
 | toolchain | Xcode 27.0, Swift 6.4 |
 | CI | GitHub `macos-26` image, default Xcode 26.6, Swift tools 6.2 (`.github/workflows/ci.yml`) |
-| package identity | `swiftui-ui-registry` at `github.com/mangobyte-dev/swiftui-ui-registry` |
+| package identity | `sweetui` at `github.com/mangobyte-dev/sweetui` |
 | published tags | `0.1.0` (2026-09-06), `0.2.0` (2026-09-07), `0.3.0` (2026-09-09), `0.3.1` (2026-09-13), `0.4.0` (2026-09-19), each with a GitHub release and the Homebrew tap |
 
-The launch arguments keep dates, currency, and the calendar in an image independent of the region; the iPad's status bar date comes from the device, hence its pin. No iOS 26 runtime is installed. A floor 26 claim rests on compilation plus iOS 27 runtime evidence. CI runs the registry gate, the website build, and a secret scan on every push and pull request. `0.3.0` adds the design surface's foundations API and the second product. Every installable item therefore declares the `0.3.0` floor (`docs/registry-spec.md`).
+The launch arguments keep dates, currency, and the calendar in an image independent of the region; the iPad's status bar date comes from the device, hence its pin. No iOS 26 runtime is installed. A floor 26 claim rests on compilation plus iOS 27 runtime evidence. CI runs the registry gate, the website build, and a secret scan on every push and pull request. `0.5.0`, unreleased, renames the package, products, modules, and tool to SweetUI. Every installable item therefore declares the `0.5.0` floor (`docs/registry-spec.md`).
 
 ## Verification
 
@@ -126,20 +126,20 @@ Run from the root, cheapest first:
 
 ```sh
 swift build
-swift run swiftui-registry validate
-swift run swiftui-registry generate catalog
-swift run swiftui-registry generate showcase-manifest
-swift run swiftui-registry generate site-data
-swift run swiftui-registry generate item-tokens
-swift run swiftui-registry generate usage-checks
-git diff --exit-code -- docs/catalog Examples/Showcase Website/content Sources/SwiftUIRegistryDesignSurface/RegistryItemTokens.swift
+swift run sweetui validate
+swift run sweetui generate catalog
+swift run sweetui generate showcase-manifest
+swift run sweetui generate site-data
+swift run sweetui generate item-tokens
+swift run sweetui generate usage-checks
+git diff --exit-code -- docs/catalog Examples/Showcase Website/content Sources/SweetUIDesignSurface/RegistryItemTokens.swift
 swift test
 make format-check
-swift run swiftui-registry search nutrition dashboard --kind block --platform iOS --target-version 26.0
-swift run swiftui-registry install finance-overview --destination Examples/Showcase/SwiftUIRegistryShowcasePackage/Sources/SwiftUIRegistryShowcaseFeature/Installed --force
-swift run swiftui-registry install nutrition-overview --destination Examples/Showcase/SwiftUIRegistryShowcasePackage/Sources/SwiftUIRegistryShowcaseFeature/Installed
-xcodebuildmcp simulator build --workspace-path Examples/Showcase/SwiftUIRegistryShowcase.xcworkspace --scheme SwiftUIRegistryShowcase --simulator-name 'iPhone 17'
-xcodebuildmcp simulator test --workspace-path Examples/Showcase/SwiftUIRegistryShowcase.xcworkspace --scheme SwiftUIRegistryShowcase --simulator-id 1807166B-C557-4F6B-B177-D5F3F701CBD7
+swift run sweetui search nutrition dashboard --kind block --platform iOS --target-version 26.0
+swift run sweetui install finance-overview --destination Examples/Showcase/SweetUIShowcasePackage/Sources/SweetUIShowcaseFeature/Installed --force
+swift run sweetui install nutrition-overview --destination Examples/Showcase/SweetUIShowcasePackage/Sources/SweetUIShowcaseFeature/Installed
+xcodebuildmcp simulator build --workspace-path Examples/Showcase/SweetUIShowcase.xcworkspace --scheme SweetUIShowcase --simulator-name 'iPhone 17'
+xcodebuildmcp simulator test --workspace-path Examples/Showcase/SweetUIShowcase.xcworkspace --scheme SweetUIShowcase --simulator-id 1807166B-C557-4F6B-B177-D5F3F701CBD7
 (cd Website && npm ci && npm run typecheck && npm run build)
 ```
 

@@ -11,7 +11,7 @@ permissions:
 jobs:
   registry:
     name: Registry gate
-    # The swiftui-registry tool is a macOS Swift package (CryptoKit, Synchronization); the
+    # The sweetui tool is a macOS Swift package (CryptoKit, Synchronization); the
     # image's default Xcode builds it, and Node runs the website codec check inside swift test
     runs-on: macos-26
     steps:
@@ -20,14 +20,14 @@ jobs:
         with:
           node-version: 22
       - run: swift build
-      - run: swift run swiftui-registry validate
-      - run: swift run swiftui-registry generate catalog
-      - run: swift run swiftui-registry generate showcase-manifest
-      - run: swift run swiftui-registry generate site-data
-      - run: swift run swiftui-registry generate item-tokens
-      - run: swift run swiftui-registry generate usage-checks
+      - run: swift run sweetui validate
+      - run: swift run sweetui generate catalog
+      - run: swift run sweetui generate showcase-manifest
+      - run: swift run sweetui generate site-data
+      - run: swift run sweetui generate item-tokens
+      - run: swift run sweetui generate usage-checks
       - name: Generated files must be committed
-        run: git diff --exit-code -- docs/catalog Examples/Showcase Website/content Sources/SwiftUIRegistryDesignSurface/RegistryItemTokens.swift
+        run: git diff --exit-code -- docs/catalog Examples/Showcase Website/content Sources/SweetUIDesignSurface/RegistryItemTokens.swift
       - run: swift test
       - run: make format-check
 
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Export registry data and captures for the site
-        run: swift run swiftui-registry generate site-data
+        run: swift run sweetui generate site-data
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Export registry data and captures for the site
-        run: swift run swiftui-registry generate site-data
+        run: swift run sweetui generate site-data
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22

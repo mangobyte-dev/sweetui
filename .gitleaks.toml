@@ -1,6 +1,6 @@
 # gitleaks configuration, read by the CI secret scan (.github/workflows/ci.yml)
 
-title = "SwiftUIRegistry"
+title = "SweetUI"
 
 [extend]
 useDefault = true

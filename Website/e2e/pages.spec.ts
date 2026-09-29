@@ -55,7 +55,7 @@ test("an item page shows the install command, the usage, and the iPad captures",
 
   // Install command.
   await expect(page.getByRole("heading", { name: "Install" })).toBeVisible()
-  await expect(page.getByText("swiftui-registry install button")).toBeVisible()
+  await expect(page.getByText("sweetui install button")).toBeVisible()
 
   // Usage snippet.
   await expect(page.getByRole("heading", { name: "Usage" })).toBeVisible()

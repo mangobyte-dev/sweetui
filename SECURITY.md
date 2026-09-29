@@ -2,7 +2,7 @@
 
 ## Reporting
 
-Report privately: [advisory](https://github.com/mangobyte-dev/swiftui-ui-registry/security/advisories/new). MUST NOT: public issue. Include repro, files/commands, impact, fix
+Report privately: [advisory](https://github.com/mangobyte-dev/sweetui/security/advisories/new). MUST NOT: public issue. Include repro, files/commands, impact, fix
 
 Acknowledged 7 days; fix or decision 30. Disclosure post-fix
 
@@ -12,7 +12,7 @@ Acknowledged 7 days; fix or decision 30. Disclosure post-fix
 
 ## Scope
 
-- Installer (`swiftui-registry install`, `Sources/RegistryKit/Installer.swift`): path traversal, symlink escapes, receipt tampering, destination escapes
+- Installer (`sweetui install`, `Sources/SweetUIKit/Installer.swift`): path traversal, symlink escapes, receipt tampering, destination escapes
 - Validator, search, preset, MCP, generator commands, `Sources/`
 - `Registry/sources/`: compromising consumer
 - `Website/`, deployment config
