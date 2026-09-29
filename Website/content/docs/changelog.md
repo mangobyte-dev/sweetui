@@ -12,6 +12,13 @@
   flung targets under the navigation bar or tab bar. It now drags the page without momentum until the
   target sits mid-screen.
 
+### Known limitations
+
+- On the pinned iPad Pro 13-inch (M5) simulator, Xcode 27.0 (27A5252f), the pointer-effect test reads a
+  0.00% pixel change under hover. It fails the same way at `bd9881c`, the commit that added it and passed on
+  2026-09-07, so the simulator environment changed, not the code. The iPhone pin is unaffected. The iPad's
+  two auth keyboard tests stay intermittent, the known idle stall after keyboard input.
+
 ## 0.5.0 (2026-09-29)
 
 A breaking release: the project is now SweetUI. Every product, module, and command changes name,
