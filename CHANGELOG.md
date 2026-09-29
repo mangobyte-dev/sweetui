@@ -1,9 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 (2026-09-29)
 
-The project is now SweetUI. Every product, module, and command changes name, so the next release
-is `0.5.0`, and every item declares that floor. The repository moved to
+A breaking release: the project is now SweetUI. Every product, module, and command changes name,
+and every item declares the `0.5.0` floor. The repository moved to
 `github.com/mangobyte-dev/sweetui`; GitHub redirects the old URL. The website moves to
 `https://sweetui.dev`.
 

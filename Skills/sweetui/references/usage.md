@@ -41,7 +41,7 @@ InlineAlert(
 ```
 
 
-### attachment (component 0.1.1)
+### attachment (component 0.1.2)
 
 
 ```swift
@@ -56,6 +56,15 @@ AttachmentRow(
         .labelStyle(.iconOnly)
         .buttonStyle(.registryGhost)
         .accessibilityLabel("Cancel upload")
+}
+
+// A completed attachment with a thumbnail and no actions: the bare trailing closure is the thumbnail.
+AttachmentRow(
+    name: Text("Receipt.jpg"),
+    detail: Text("Image, 240 KB"),
+    state: .completed
+) {
+    Image(systemName: "photo")
 }
 ```
 
@@ -231,11 +240,15 @@ ContentUnavailableView(
 ```
 
 
-### field (component 0.1.1)
+### field (component 0.1.2)
 
 
 ```swift
+@State private var name = ""
 @State private var email = ""
+@State private var phone = ""
+@State private var showErrors = false
+@State private var phoneError: String? = nil
 
 FieldGroup {
     Field("Full name", description: "As it appears on your card.") { _ in
@@ -243,10 +256,15 @@ FieldGroup {
             .textFieldStyle(.registryInput)
             .accessibilityLabel("Full name")
     }
-    Field("Email", error: emailError) { isInvalid in
+    Field("Email", error: showErrors ? "Enter a valid email address." : nil) { isInvalid in
         TextField("you@example.com", text: $email)
             .textFieldStyle(RegistryInputStyle(isInvalid: isInvalid))
             .accessibilityLabel("Email")
+    }
+    Field("Phone", error: phoneError) { isInvalid in
+        TextField("Phone", text: $phone)
+            .textFieldStyle(RegistryInputStyle(isInvalid: isInvalid))
+            .accessibilityLabel("Phone")
     }
 }
 ```
@@ -299,7 +317,7 @@ InputGroup {
 ```
 
 
-### item (component 0.2.1)
+### item (component 0.2.2)
 
 
 ```swift
@@ -310,6 +328,11 @@ ItemRow(
     Avatar(initials: "ST", accessibilityLabel: Text("Statements"))
 } accessory: {
     Text("New").registryBadge()
+}
+
+// Media only: the bare trailing closure is the media; name accessory: to add a trailing accessory.
+ItemRow(title: Text("Mishmash Bakery"), description: Text("Card payment")) {
+    Avatar(initials: "MB", accessibilityLabel: Text("Mishmash Bakery"))
 }
 ```
 
@@ -393,6 +416,11 @@ MessageRow {
 
 
 ```swift
+// messages is your own model collection; each element is Identifiable
+// with an id, a text, and isMine.
+@State private var position: String?
+@State private var isFollowing = true
+
 MessageScroller(position: $position, isFollowing: $isFollowing) {
     ForEach(messages) { message in
         MessageRow {
@@ -462,7 +490,7 @@ Divider()
 ```
 
 
-### skeleton (component 0.2.1)
+### skeleton (component 0.2.2)
 
 
 ```swift
@@ -525,6 +553,7 @@ CardDetail()
 // Present a destructive toast with an undo action:
 toast = RegistryToast(
     title: "Message deleted",
+    message: "You can undo this for a few seconds.",
     variant: .destructive,
     action: RegistryToast.Action(label: "Undo") { restoreMessage() }
 )
@@ -631,6 +660,19 @@ ActivityFeed(
 
 
 ```swift
+@State private var email = ""
+@State private var password = ""
+@State private var isSubmitting = false
+let formError: LocalizedStringResource? = nil
+
+// Errors derive from state; nil hides the message and clears the invalid style.
+var emailError: LocalizedStringResource? {
+    email.isEmpty || email.contains("@") ? nil : "Enter a valid email address."
+}
+var passwordError: LocalizedStringResource? {
+    password.isEmpty || password.count >= 8 ? nil : "Use at least 8 characters."
+}
+
 AuthForm(
     "Welcome back",
     identity: $email,
@@ -798,6 +840,11 @@ Questionnaire(
 
 
 ```swift
+@State private var alertsEnabled = true
+@State private var marketingEnabled = false
+@State private var currency = "KWD"
+let marketingAllowed = false
+
 SettingsSection(
     "Notifications",
     footer: Text("Quiet hours apply to every channel.")
@@ -825,10 +872,31 @@ SettingsSection(
 ```
 
 
-### signup-form (block 0.1.1)
+### signup-form (block 0.1.2)
 
 
 ```swift
+@State private var name = ""
+@State private var email = ""
+@State private var password = ""
+@State private var confirmation = ""
+@State private var acceptsTerms = false
+@State private var isSubmitting = false
+let formError: LocalizedStringResource? = nil
+
+// Errors derive from state; nil hides the message and clears the invalid style.
+var nameError: LocalizedStringResource? { nil }
+var emailError: LocalizedStringResource? {
+    email.isEmpty || email.contains("@") ? nil : "Enter a valid email address."
+}
+var passwordError: LocalizedStringResource? {
+    password.isEmpty || password.count >= 8 ? nil : "Use at least 8 characters."
+}
+var confirmationError: LocalizedStringResource? {
+    confirmation == password ? nil : "Passwords do not match."
+}
+var termsError: LocalizedStringResource? { nil }
+
 SignUpForm(
     "Create your account",
     name: $name,
@@ -843,6 +911,7 @@ SignUpForm(
     termsError: termsError,
     formError: formError,
     isSubmitting: isSubmitting,
+    isSubmitEnabled: !name.isEmpty && emailError == nil && passwordError == nil && confirmationError == nil && acceptsTerms,
     secondaryActionTitle: "Already have an account?",
     onSecondaryAction: { },
     onSubmit: { }
@@ -912,6 +981,8 @@ MultiDatePicker("Reminder days", selection: $dates)
 
 
 ```swift
+// cards is your own model collection; each element is Identifiable
+// and has a title, a systemImage, and an amount.
 ScrollView(.horizontal) {
     HStack(spacing: 12) {
         ForEach(cards) { card in

@@ -48,7 +48,7 @@ Conflicts: state beats archives, the later archive wins, contracts govern rules.
 ## Boundaries
 
 - `Sources/SweetUIFoundations/`: stable interface, design foundations only.
-- `Sources/SweetUIDesignSurface/`: optional product: tuning panel, preset codec, `designSurface()`, the `design-tokens.json` store on `swift-sharing`. Compiles only with UIKit, inert in release. Depends on foundations, never on items (native chrome). The Showcase consumes it; its tests run through the Showcase scheme, since the root package builds it empty on macOS.
+- `Sources/SweetUIDesignSurface/`: optional product: tuning panel, preset codec, `designSurface()`, the `registry-tokens.json` store on `swift-sharing`. Compiles only with UIKit, inert in release. Depends on foundations, never on items (native chrome). The Showcase consumes it; its tests run through the Showcase scheme, since the root package builds it empty on macOS.
 - `Sources/SweetUIKit/`: SwiftUI free engine behind `sweetui` (`Sources/SweetUICLI/`): loading, the single structural validator, resolution, receipts, install and merge, search, preset codes, the MCP server, the generators. Never imports `SweetUIFoundations`. Contracts and captured fixtures: `Tests/SweetUIKitTests/`.
 - `Registry/sources/components/`: source owned styles, focused modifiers, reusable compositions.
 - `Registry/sources/blocks/`: source owned compositions of components.
@@ -116,9 +116,9 @@ Conflicts: state beats archives, the later archive wins, contracts govern rules.
 | toolchain | Xcode 27.0, Swift 6.4 |
 | CI | GitHub `macos-26` image, default Xcode 26.6, Swift tools 6.2 (`.github/workflows/ci.yml`) |
 | package identity | `sweetui` at `github.com/mangobyte-dev/sweetui` |
-| published tags | `0.1.0` (2026-09-06), `0.2.0` (2026-09-07), `0.3.0` (2026-09-09), `0.3.1` (2026-09-13), `0.4.0` (2026-09-19), each with a GitHub release and the Homebrew tap |
+| published tags | `0.1.0` (2026-09-06), `0.2.0` (2026-09-07), `0.3.0` (2026-09-09), `0.3.1` (2026-09-13), `0.4.0` (2026-09-19), `0.5.0` (2026-09-29), each with a GitHub release and the Homebrew tap |
 
-The launch arguments keep dates, currency, and the calendar in an image independent of the region; the iPad's status bar date comes from the device, hence its pin. No iOS 26 runtime is installed. A floor 26 claim rests on compilation plus iOS 27 runtime evidence. CI runs the registry gate, the website build, and a secret scan on every push and pull request. `0.5.0`, unreleased, renames the package, products, modules, and tool to SweetUI. Every installable item therefore declares the `0.5.0` floor (`docs/registry-spec.md`).
+The launch arguments keep dates, currency, and the calendar in an image independent of the region; the iPad's status bar date comes from the device, hence its pin. No iOS 26 runtime is installed. A floor 26 claim rests on compilation plus iOS 27 runtime evidence. CI runs the registry gate, the website build, and a secret scan on every push and pull request. `0.5.0` renames the package, products, modules, and tool to SweetUI. Every installable item therefore declares the `0.5.0` floor (`docs/registry-spec.md`).
 
 ## Verification
 

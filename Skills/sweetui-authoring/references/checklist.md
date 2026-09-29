@@ -12,6 +12,7 @@ Repo root, cheapest first; scope to change (Scoping).
 - [ ] `swift run sweetui generate showcase-manifest`
 - [ ] `swift run sweetui generate site-data`
 - [ ] `swift run sweetui generate item-tokens`
+- [ ] `swift run sweetui generate usage-checks`
 - [ ] `git diff --exit-code -- docs/catalog Examples/Showcase Website/content Sources/SweetUIDesignSurface/RegistryItemTokens.swift`
 - [ ] `swift test`
 - [ ] `make format-check`
@@ -24,7 +25,7 @@ Repo root, cheapest first; scope to change (Scoping).
 
 ## Captures
 
-- [ ] visible item change: `python3 Scripts/capture_previews.py <item>` on pinned simulator, rerun the four generators above
+- [ ] visible item change: `python3 Scripts/capture_previews.py <item>` on pinned simulator, rerun the five generators above
 
 ## Scoping
 

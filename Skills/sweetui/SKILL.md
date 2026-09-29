@@ -64,7 +64,7 @@ Output: name, kind, version, description, `Usage:`, `Signatures:`, accessibility
 
 ```text
 badge (component 0.3.2)
-Applies primary, secondary, outline, positive, and destructive badge treatments to native Text and Label content.
+Primary, secondary, outline, positive, destructive: Text/Label treatments.
 
 Usage:
   Text("New")
