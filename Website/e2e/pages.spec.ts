@@ -13,24 +13,16 @@ test("home shows the hero and the catalog counts", async ({ page }) => {
   await page.goto("/", { waitUntil: "commit" })
   await expect(
     page.getByRole("heading", {
-      name: "Native-first SwiftUI you copy and own.",
+      name: "Native-first SwiftUI you copy and own",
     })
   ).toBeVisible()
 
-  // The count strip: each label's preceding <dt> is that kind's count.
-  const stats = page.locator("main dl").first()
-  const dtFor = (label: string) =>
-    stats
-      .locator("dd", { hasText: label })
-      .locator("xpath=preceding-sibling::dt")
-  await expect(dtFor("components")).toHaveText(
-    String(registry.counts.component)
-  )
-  await expect(dtFor("blocks")).toHaveText(String(registry.counts.block))
-  await expect(dtFor("recipes")).toHaveText(String(registry.counts.recipe))
-  await expect(dtFor("theme presets")).toHaveText(
-    String(registry.presets.length)
-  )
+  // The count line under the hero: every count comes from the catalog data.
+  await expect(
+    page.getByText(
+      `${registry.counts.component} components · ${registry.counts.block} blocks · ${registry.counts.recipe} recipes · ${registry.presets.length} theme presets`
+    )
+  ).toBeVisible()
 })
 
 test("themes shows the MANGO section", async ({ page }) => {
