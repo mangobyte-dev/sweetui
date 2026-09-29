@@ -4,6 +4,8 @@
   // exports Next.js into out/, then `npx wrangler deploy` uploads it.
   "name": "swiftui-registry",
   "routes": [{ "pattern": "sweetui.dev", "custom_domain": true }],
+  // Keeps swiftui-registry.mangobytekw.workers.dev, the URL released 0.4.0 binaries print.
+  "workers_dev": true,
   "compatibility_date": "2026-09-01",
   "assets": {
     "directory": "./out",
