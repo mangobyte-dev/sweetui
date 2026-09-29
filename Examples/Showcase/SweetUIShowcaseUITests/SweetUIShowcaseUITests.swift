@@ -328,7 +328,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
             "The dedicated Stage 1 launch must not depend on the catalog tab flow."
         )
 
-        let scrollView = app.scrollViews.firstMatch
+        let scrollView = pageScrollView(app)
         XCTAssertTrue(scrollView.exists)
 
         let selectionSection = app.staticTexts["Selection"]
@@ -515,7 +515,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
         XCTAssertFalse(marketingToggle.isEnabled)
         XCTAssertTrue(app.staticTexts["Managed by your organization's privacy policy."].exists)
 
-        let scrollView = app.scrollViews.firstMatch
+        let scrollView = pageScrollView(app)
         let signOutButton = app.buttons["Sign out"]
         scroll(scrollView, until: signOutButton)
         for _ in 0..<4 {
@@ -550,7 +550,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
         XCTAssertGreaterThan(accessibilityTitle.frame.height, regularTitleHeight)
         XCTAssertTrue(app.textFields["Email"].exists)
         XCTAssertTrue(app.secureTextFields["Password"].exists)
-        let scrollView = app.scrollViews.firstMatch
+        let scrollView = pageScrollView(app)
         let submitButton = app.buttons["Sign in"]
         scroll(scrollView, until: submitButton)
         XCTAssertTrue(submitButton.exists)
@@ -610,7 +610,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
         unreadRow.tap()
         XCTAssertTrue(app.staticTexts["Selected bakery."].waitForExistence(timeout: 2))
 
-        let scrollView = app.scrollViews.firstMatch
+        let scrollView = pageScrollView(app)
         let earlier = app.buttons["Earlier"]
         scroll(scrollView, until: earlier)
         XCTAssertEqual(earlier.value as? String, "Collapsed")
@@ -662,7 +662,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
 
         // The legend speaks its shortcuts; keycaps are not bare glyphs.
         let legend = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Command K")).firstMatch
-        let scrollView = app.scrollViews.firstMatch
+        let scrollView = pageScrollView(app)
         scroll(scrollView, until: legend)
         XCTAssertTrue(legend.exists, "The shortcut legend must expose the spoken shortcut, not the glyph alone.")
     }
@@ -1025,11 +1025,30 @@ final class SweetUIShowcaseUITests: XCTestCase {
 
     // MARK: - Helpers
 
+    /// The screen's page scroller. The tuning strip's swatch row is also a scroll
+    /// view, and `firstMatch` can return it, so pick the tallest one.
+    @MainActor
+    private func pageScrollView(_ app: XCUIApplication) -> XCUIElement {
+        app.scrollViews.allElementsBoundByIndex.max { $0.frame.height < $1.frame.height }
+            ?? app.scrollViews.firstMatch
+    }
+
     @MainActor
     private func scroll(_ scrollView: XCUIElement, until element: XCUIElement) {
-        for _ in 0..<8 {
-            if element.exists { return }
-            scrollView.swipeUp()
+        // An element can exist, and even report hittable, under the navigation bar
+        // or under the floating tuning strip and tab bar, where a tap lands on the
+        // chrome. A swipe flings past it, so drag without momentum, a step at a
+        // time, until the element's center sits in the middle of the screen.
+        let top = scrollView.frame.minY + scrollView.frame.height * 0.2
+        let bottom = scrollView.frame.minY + scrollView.frame.height * 0.8
+        let upper = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        let lower = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+        for _ in 0..<16 {
+            if element.exists, (top...bottom).contains(element.frame.midY) { return }
+            let revealsBelow = !element.exists || element.frame.midY > bottom
+            (revealsBelow ? lower : upper).press(
+                forDuration: 0.05, thenDragTo: revealsBelow ? upper : lower,
+                withVelocity: .default, thenHoldForDuration: 0.2)
         }
     }
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- The six Showcase visual references match the app again. They were recaptured on the pinned iPhone 17
+  (iOS 27.0) after reviewed, intended changes (`docs/visual-testing.md`, GOLDEN-CHANGE 2026-09-29), and
+  the full UI suite passes. `SelectionCoverageTests` counts the 74-item catalog.
+- The UI tests stop at the first failure, so the stale references had hidden a scroll bug in the steps
+  after each snapshot. The scroll helper swiped the tuning strip's swatch row, not the page, and a swipe
+  flung targets under the navigation bar or tab bar. It now drags the page without momentum until the
+  target sits mid-screen.
+
 ## 0.5.0 (2026-09-29)
 
 A breaking release: the project is now SweetUI. Every product, module, and command changes name,
