@@ -1,6 +1,6 @@
 # SweetUI 🍭
 
-Native-first SwiftUI registry: copy in, own (shadcn/ui spirit). Swift source, metadata, not framework. Theme once, search, inspect, copy, customize, audit. Apple controls stay visible at the call site
+Native-first SwiftUI components and registry: copy in, own (shadcn/ui spirit). Swift source, metadata, not framework. Theme once, search, inspect, copy, customize, audit. Apple controls stay visible at the call site
 
 Browse 3 ways:
 
