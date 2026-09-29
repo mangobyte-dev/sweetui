@@ -151,10 +151,10 @@ export default async function ItemPage({
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                With the swiftui-registry tool (
+                With the sweetui tool (
                 <code className="ic">
                   {highlightSwift(
-                    "brew install mangobyte-dev/tap/swiftui-registry"
+                    "brew install mangobyte-dev/tap/sweetui"
                   )}
                 </code>
                 ):

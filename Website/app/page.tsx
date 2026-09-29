@@ -101,11 +101,11 @@ const COMPARISON_ROWS: { label: string; values: [string, string, string] }[] = [
 
 const PACKAGE_SNIPPET = `// Package.swift
 dependencies: [
-    .package(url: "https://github.com/mangobyte-dev/swiftui-ui-registry.git", .upToNextMinor(from: "0.3.0"))
+    .package(url: "https://github.com/mangobyte-dev/sweetui.git", .upToNextMinor(from: "0.5.0"))
 ]
 
 // In the consuming target's dependencies:
-.product(name: "SwiftUIRegistryFoundations", package: "swiftui-ui-registry")`
+.product(name: "SweetUIFoundations", package: "sweetui")`
 
 const firstOf = (kind: "component" | "block" | "recipe") =>
   itemsOfKind(kind)[0]?.name
@@ -289,7 +289,7 @@ export default function HomePage() {
               <CardContent>
                 <CodeBlock
                   language="bash"
-                  code="swiftui-registry install auth-form --destination Sources/YourFeature/Components"
+                  code="sweetui install auth-form --destination Sources/YourFeature/Components"
                 />
               </CardContent>
             </Card>

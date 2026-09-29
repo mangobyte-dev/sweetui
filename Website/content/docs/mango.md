@@ -7,10 +7,10 @@ MANGO: MangoByte's sample design system, a team-brand template for the registry.
 Pain points, MANGO's answer:
 
 - Drift: one `RegistryTheme` via `registryTheme(_:)` at scene root, tokens from environment (docs/architecture.md, Foundations)
-- Agent drift: `usage` snippets, `swiftui-registry mcp`, skills (docs/registry-spec.md, Agent usage)
+- Agent drift: `usage` snippets, `sweetui mcp`, skills (docs/registry-spec.md, Agent usage)
 - No `MaterialTheme` equivalent: `RegistryTheme` plus preset code (docs/registry-spec.md, Preset codes)
-- `Color`-extension trap: tokens on theme value, never statics (Sources/SwiftUIRegistryFoundations/RegistryTheme.swift)
-- Unmaintained libraries: source ownership plus receipt, foundations pinned `upToNextMinor` from 0.3.0, `--diff`/`--update` (docs/architecture.md, Installation behavior and Update policy)
+- `Color`-extension trap: tokens on theme value, never statics (Sources/SweetUIFoundations/RegistryTheme.swift)
+- Unmaintained libraries: source ownership plus receipt, foundations pinned `upToNextMinor` from 0.5.0, `--diff`/`--update` (docs/architecture.md, Installation behavior and Update policy)
 - Sameness: Create studio, MANGO as worked brand
 
 ## Domain
@@ -23,7 +23,7 @@ Brand: warmth, generosity, calm. Accent once per screen. Radii, spacing generous
 
 Five parts:
 
-- Theme value: `RegistryTheme`, small `Sendable` struct (Sources/SwiftUIRegistryFoundations/RegistryTheme.swift): optional `accent`, `onAccent`, `surface`, `border`, `positive`, `negative`, `disabledOpacity`, `RegistryMetrics`
+- Theme value: `RegistryTheme`, small `Sendable` struct (Sources/SweetUIFoundations/RegistryTheme.swift): optional `accent`, `onAccent`, `surface`, `border`, `positive`, `negative`, `disabledOpacity`, `RegistryMetrics`
 - Environment: `@Entry` injects it; apply once via `registryTheme(_:)`; tints Apple controls when accent set (docs/architecture.md, Foundations)
 - Presets: plain `static let` starts (`system`, `graphite`, `indigo`, `rose`, `emerald`, `amber`), no theme engine; MANGO adds `mango`
 - Code: theme as shareable `--preset` string; tool, Showcase, website, MCP server read/write it (docs/registry-spec.md, Preset codes)
@@ -35,7 +35,7 @@ Not an item kind: `RegistryTheme+App.swift` carries no receipt entry, installer-
 
 ### Tokens
 
-Light/dark pair per color; unlisted values inherit `RegistryMetrics`/`RegistryTheme` defaults (Sources/SwiftUIRegistryFoundations/RegistryTheme.swift):
+Light/dark pair per color; unlisted values inherit `RegistryMetrics`/`RegistryTheme` defaults (Sources/SweetUIFoundations/RegistryTheme.swift):
 
 | Token | Value | Why |
 |---|---|---|
@@ -64,22 +64,22 @@ From Emil Kowalski's `apple-design` skill (an outside-skill example):
 
 ### The MANGO preset code
 
-Never type the code by hand: write the `RegistryTheme` value, run `swiftui-registry preset resolve <path>`, or encode via RegistryKit's `Preset` (docs/registry-spec.md, Preset codes). MANGO's code: `a74hGF01CVunaG0vzZJG`, pinned in `Registry/preset_vectors.json`; all three codecs reproduce it byte-for-byte.
+Never type the code by hand: write the `RegistryTheme` value, run `sweetui preset resolve <path>`, or encode via SweetUIKit's `Preset` (docs/registry-spec.md, Preset codes). MANGO's code: `a74hGF01CVunaG0vzZJG`, pinned in `Registry/preset_vectors.json`; all three codecs reproduce it byte-for-byte.
 
 ## Do the same for your brand
 
-1. `swiftui-registry preset apply <code> --destination <dir>` writes `RegistryTheme+App.swift` (`RegistryTheme.app`; apply once at scene root)
+1. `sweetui preset apply <code> --destination <dir>` writes `RegistryTheme+App.swift` (`RegistryTheme.app`; apply once at scene root)
 2. Edit accent, radii, surface, spacing
-3. `swiftui-registry preset resolve <path>` prints new code (never trusts file header)
-4. `swiftui-registry install <item> --destination <dir>` copies source, writes `.swiftui-registry/receipt.json`
+3. `sweetui preset resolve <path>` prints new code (never trusts file header)
+4. `sweetui install <item> --destination <dir>` copies source, writes `.sweetui/receipt.json`
 5. Edit owned copy
-6. `swiftui-registry install <item> --diff --destination <dir>` prints unified diff (exit 0 parity, 1 differences)
-7. `swiftui-registry install <item> --destination <dir> --update` merges upstream via `git merge-file`, keeps edits, `.merge` only on real conflict
+6. `sweetui install <item> --diff --destination <dir>` prints unified diff (exit 0 parity, 1 differences)
+7. `sweetui install <item> --destination <dir> --update` merges upstream via `git merge-file`, keeps edits, `.merge` only on real conflict
 8. Share: Create page at `?preset=<code>`; Showcase's Copy Code or Import
 
 ## What MANGO customized in the Showcase
 
-Canonical items under `Examples/Showcase/SwiftUIRegistryShowcasePackage/Sources/SwiftUIRegistryShowcaseFeature/Installed/`, byte-identical to registry source (`--diff`, generator freshness tests; docs/architecture.md, Installation behavior and Presentation policy). MANGO's copies sit beside them under `.../Mango/`, renamed, header per copy names item, version, edits:
+Canonical items under `Examples/Showcase/SweetUIShowcasePackage/Sources/SweetUIShowcaseFeature/Installed/`, byte-identical to registry source (`--diff`, generator freshness tests; docs/architecture.md, Installation behavior and Presentation policy). MANGO's copies sit beside them under `.../Mango/`, renamed, header per copy names item, version, edits:
 
 - `MangoButtonStyle`: `button` style plus MANGO's motion (press scale 0.97, critically-damped spring; cross-fade under Reduce Motion)
 - `MangoMetricCard`: `metric-card` with `.monospacedDigit()` on its changing value

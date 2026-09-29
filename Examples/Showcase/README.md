@@ -2,7 +2,7 @@
 
 Universal iOS app: compile/integration/visual consumer for registry; tune every item.
 
-Feature package depends only on `SwiftUIRegistryFoundations`; `swiftui-registry install` copies components/blocks into `Sources/SwiftUIRegistryShowcaseFeature/Installed/`, receipt/non-Swift snapshots: `.swiftui-registry/`.
+Feature package depends only on `SweetUIFoundations`; `sweetui install` copies components/blocks into `Sources/SweetUIShowcaseFeature/Installed/`, receipt/non-Swift snapshots: `.sweetui/`.
 
 ## What it shows
 
@@ -20,9 +20,9 @@ Feature package depends only on `SwiftUIRegistryFoundations`; `swiftui-registry 
 From repository root:
 
 ```sh
-DEST=Examples/Showcase/SwiftUIRegistryShowcasePackage/Sources/SwiftUIRegistryShowcaseFeature/Installed
-swift run swiftui-registry install activity-feed --destination "$DEST" --force
-swift run swiftui-registry generate showcase-manifest
+DEST=Examples/Showcase/SweetUIShowcasePackage/Sources/SweetUIShowcaseFeature/Installed
+swift run sweetui install activity-feed --destination "$DEST" --force
+swift run sweetui generate showcase-manifest
 ```
 
-Build shared `SwiftUIRegistryShowcase` scheme in `SwiftUIRegistryShowcase.xcworkspace`; UI suite: iPhone 17 iOS 27.0 (`docs/visual-testing.md`).
+Build shared `SweetUIShowcase` scheme in `SweetUIShowcase.xcworkspace`; UI suite: iPhone 17 iOS 27.0 (`docs/visual-testing.md`).

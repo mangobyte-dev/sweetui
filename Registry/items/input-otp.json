@@ -14,13 +14,13 @@
   ],
   "packageDependencies": [
     {
-      "package": "SwiftUIRegistry",
-      "product": "SwiftUIRegistryFoundations",
+      "package": "SweetUI",
+      "product": "SweetUIFoundations",
       "requirement": "0.x",
-      "sourceURL": "https://github.com/mangobyte-dev/swiftui-ui-registry.git",
+      "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
       "swiftPM": {
         "kind": "upToNextMinor",
-        "minimumVersion": "0.3.0"
+        "minimumVersion": "0.5.0"
       }
     }
   ],

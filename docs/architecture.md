@@ -6,12 +6,12 @@ Version 0: hybrid distribution.
 
 ```text
 consumer app
-├── depends on SwiftUIRegistryFoundations
+├── depends on SweetUIFoundations
 └── owns copied component and block source
 ```
 
 - Foundations: shallow, environment contract, 1 surface modifier, `registryItem(_:)` hook (environment value, anchor preference), `registryScreen(_:)`, reporter, knobs; inert without surface. Components/blocks not package products.
-- `SwiftUIRegistryDesignSurface`: 2nd, optional debug-build product (tuning panel, preset codec, token engine, per-item knobs), moved from Showcase 2026-09-08, behind `designSurface()`. Foundations independent; MUST NOT import registry items; item-only consumers SHOULD NOT add it; from seeFood's Design mode.
+- `SweetUIDesignSurface`: 2nd, optional debug-build product (tuning panel, preset codec, token engine, per-item knobs), moved from Showcase 2026-09-08, behind `designSurface()`. Foundations independent; MUST NOT import registry items; item-only consumers SHOULD NOT add it; from seeFood's Design mode.
 
 ## Why this split
 
@@ -21,25 +21,25 @@ Hypothesis: finance/nutrition test, not universal-reuse. Foundation-free item SH
 
 ## Source tree
 
-- `Sources/SwiftUIRegistryFoundations/`: stable package API
+- `Sources/SweetUIFoundations/`: stable package API
 - `Registry/items/`: machine-readable item declarations
 - `Registry/sources/components/`: copied styles, focused modifiers, compositions
 - `Registry/sources/blocks/`: copied block source
-- `Sources/RegistryKit/`, `Sources/SwiftUIRegistryCLI/`: `swiftui-registry`, SwiftUI-free: validation, resolution, receipts, install, conflict-aware updates, search, preset codes, MCP server, generators
+- `Sources/SweetUIKit/`, `Sources/SweetUICLI/`: `sweetui`, SwiftUI-free: validation, resolution, receipts, install, conflict-aware updates, search, preset codes, MCP server, generators
 - `Examples/Showcase/`: iOS consumer, catalog, demo per item, tuning panel, item-screenshot route
 - `Examples/TodoCounter/`: 2nd consumer (Composable Architecture), URL package at published tag, Homebrew install, customized preset theme
-- `swiftui-registry generate catalog | showcase-manifest | site-data | item-tokens | usage-checks`: derived from metadata
+- `sweetui generate catalog | showcase-manifest | site-data | item-tokens | usage-checks`: derived from metadata
 - `Website/`: Next.js static export, shadcn/ui, reads only `content/registry.json`; `npm run deploy` → Cloudflare Workers (`Website/wrangler.jsonc`); `.github/workflows/pages.yml` → alt GitHub Pages deploy
 - `Scripts/capture_previews.py`: per-item light/dark captures, pinned simulator
-- `Tests/RegistryKitTests/`: command, installer, validator, preset, MCP, generator contracts; fixtures, website codec check under `Fixtures/`
+- `Tests/SweetUIKitTests/`: command, installer, validator, preset, MCP, generator contracts; fixtures, website codec check under `Fixtures/`
 
 ## Running the tool
 
-3 ways, same engine: `swift run swiftui-registry <command>` (clone); `.build/release/swiftui-registry` (release build); Homebrew tap `swiftui-registry <command>` (any directory).
+3 ways, same engine: `swift run sweetui <command>` (clone); `.build/release/sweetui` (release build); Homebrew tap `sweetui <command>` (any directory).
 
 Registry lookup order: `--registry <path>` override; nearest ancestor clone (`Registry/registry.json`); cached pinned-release snapshot, published tag, first use (`docs/registry-spec.md`, Agent usage).
 
-`RegistryKit`: SwiftUI-free, no `SwiftUIRegistryFoundations` import. Deps: `swift-argument-parser` (parser), `swift-dependencies` (replaceable effects), `swift-snapshot-testing` (command/generator contracts). Executable owns parsing/output; foundations stays tokens only.
+`SweetUIKit`: SwiftUI-free, no `SweetUIFoundations` import. Deps: `swift-argument-parser` (parser), `swift-dependencies` (replaceable effects), `swift-snapshot-testing` (command/generator contracts). Executable owns parsing/output; foundations stays tokens only.
 
 ## View boundaries
 
@@ -54,19 +54,19 @@ Registry lookup order: `--registry <path>` override; nearest ancestor clone (`Re
 - `RegistryTheme`: `accent` (optional), `onAccent`, `surface`, `border`, `positive`, `negative`, `disabledOpacity`. `RegistryMetrics`: 3 spacings, control padding, 2 border widths, compact/control/card radii.
 - `registryTheme(_:)`: `EnvironmentValues`/`@Entry`, accent→subtree tint (1 scene-root call); `nil`→app tint (default MUST NOT override). `tint(nil)` resets not inherits: SwiftUICore's `environment(\.tintColor, tint)` (package-private). Toggle at runtime resets subtree; apply pre-scene, use `Color.accentColor`.
 - Presets: `system`, `graphite`, `indigo`, `rose`, `emerald`, `amber`, starting points not a theme engine. `graphite`: primary accent, background-colored label. `amber`: light accent, dark label, proves `onAccent`.
-- Semantic tokens replace repeated colors/metrics; token enters foundations once 2 items need it (`everyFoundationTokenHasTwoSemanticConsumers`, `Tests/RegistryKitTests/RegistryContractTests.swift`). Style stays source-owned until 2 items match.
+- Semantic tokens replace repeated colors/metrics; token enters foundations once 2 items need it (`everyFoundationTokenHasTwoSemanticConsumers`, `Tests/SweetUIKitTests/RegistryContractTests.swift`). Style stays source-owned until 2 items match.
 - Tuning panel: theme creator. Since Stage 9, Tune button (`tabViewBottomAccessory`) above tab bar opens a floating resizable card. Tool's own window, not a sheet; app stays live. Live tokens, one-tap presets, Copy Swift (`RegistryTheme` init), Copy Code, Import.
-- Custom accent: separate dark value, dynamic `UIColor`. Panel/model/tokens live in `SwiftUIRegistryDesignSurface`; swift-sharing persists `registry-tokens.json`.
+- Custom accent: separate dark value, dynamic `UIColor`. Panel/model/tokens live in `SweetUIDesignSurface`; swift-sharing persists `registry-tokens.json`.
 - Theme preview: `preview` block's `PreviewWall` (`ItemDemos` `theme-preview`), live in panel. `capture_previews.py --themes`/`--preset`: full screen/preset (not 1 strip); Create/Themes: first screen/preset, iPhone 17; else CSS board.
-- Preset code (`docs/registry-spec.md`, "Preset codes"): theme as 1 string. Read/written by Create page, Showcase, `swiftui-registry preset`, MCP server. `preset apply`→`RegistryTheme+App.swift`; `capture_previews.py --preset`: any code, pinned simulator. Create page: CSS board, real capture (6 presets), no SwiftUI render.
+- Preset code (`docs/registry-spec.md`, "Preset codes"): theme as 1 string. Read/written by Create page, Showcase, `sweetui preset`, MCP server. `preset apply`→`RegistryTheme+App.swift`; `capture_previews.py --preset`: any code, pinned simulator. Create page: CSS board, real capture (6 presets), no SwiftUI render.
 
 ## Compatibility policy
 
-Pre-1.0: patch source-compatible, minor MAY change contract. Items declare `upToNextMinor` from known-good floor, currently `0.3.0`, beta contract (`docs/registry-spec.md`). Source verified: platform floor, foundation range; receipt records requirement at install.
+Pre-1.0: patch source-compatible, minor MAY change contract. Items declare `upToNextMinor` from known-good floor, currently `0.5.0`, beta contract (`docs/registry-spec.md`). Source verified: platform floor, foundation range; receipt records requirement at install.
 
 ## Installation behavior
 
-Installer reads `Registry/registry.json`, resolves depth first, validates safe relative paths, preflights collisions, copies exact source. Records versions, dependency declarations, target paths, source/installed digests, non-Swift base snapshots (`.swiftui-registry/`). Prints package instruction (URL, requirement, product) for closure.
+Installer reads `Registry/registry.json`, resolves depth first, validates safe relative paths, preflights collisions, copies exact source. Records versions, dependency declarations, target paths, source/installed digests, non-Swift base snapshots (`.sweetui/`). Prints package instruction (URL, requirement, product) for closure.
 
 Repeated install skips exact receipt-backed source only; untracked/modified target fails unless `--force`. MUST NOT edit `.xcodeproj`, infer target membership, add package dependencies. Xcode buildable folders ease Showcase; not assumed elsewhere.
 
@@ -84,9 +84,9 @@ Website (sidebar, tabs, toggle group, command search, cards, tables) renders JSO
 
 ## Discovery policy
 
-`swiftui-registry search`: deterministic adapter over existing JSON. Filters kind/platform, requires every query term match indexed metadata, emits stable pre-install JSON.
+`sweetui search`: deterministic adapter over existing JSON. Filters kind/platform, requires every query term match indexed metadata, emits stable pre-install JSON.
 
-Search stays local. `swiftui-registry mcp`: stdio adapter, same engine; agent in a consumer searches/plans/installs without leaving editor. Hosted adapter matters if distribution, auth, or catalog scale varies independently of local metadata.
+Search stays local. `sweetui mcp`: stdio adapter, same engine; agent in a consumer searches/plans/installs without leaving editor. Hosted adapter matters if distribution, auth, or catalog scale varies independently of local metadata.
 
 ## Platform decision
 
@@ -104,6 +104,6 @@ Dependencies point down only. Registry source MUST NOT import application archit
 
 - 1 monolithic UI package: undermines source ownership, progressive adoption
 - Copying foundation files per item: duplicates theme contracts
-- Production CLI before product slices: validates packaging over product UI. Stage 6 owner authorized the rewrite, now shipped as `swiftui-registry`
+- Production CLI before product slices: validates packaging over product UI. Stage 6 owner authorized the rewrite, now shipped as `sweetui`
 - Generic Button, Toggle, Slider, List, navigation wrapper views: hide Apple primitives instead of native style protocols/modifiers
 - Mandatory TCA, MVVM, Observation model, persistence type: leaks application architecture into presentation

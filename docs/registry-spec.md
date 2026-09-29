@@ -38,7 +38,7 @@ Depth-first, deterministic declaration order, installs once. Fails loudly: unkno
 
 ## Validation
 
-`Sources/RegistryKit/Validation.swift`: single structural validator, checks:
+`Sources/SweetUIKit/Validation.swift`: single structural validator, checks:
 
 - schema constraints: required keys, types, enums, undeclared keys, recipe conditionals
 - index completeness both directions
@@ -49,13 +49,13 @@ Depth-first, deterministic declaration order, installs once. Fails loudly: unkno
 - non-empty `usage`
 - design-surface root tag
 
-Item depending on `SwiftUIRegistryFoundations` MUST apply `.registryItem("<name>")` in first source file: surface selects by tag, missing tag hides item from `Select`
+Item depending on `SweetUIFoundations` MUST apply `.registryItem("<name>")` in first source file: surface selects by tag, missing tag hides item from `Select`
 
-Same validator: installer (pre-resolve), search, `MCP` server, generators. `swiftui-registry validate` runs standalone, exits `0`/`1`, scoped to items/closures. `ValidationTests.swift` proves each defect rejected, issues in `Fixtures/validation-cases.json`. Unenforced: not in validator
+Same validator: installer (pre-resolve), search, `MCP` server, generators. `sweetui validate` runs standalone, exits `0`/`1`, scoped to items/closures. `ValidationTests.swift` proves each defect rejected, issues in `Fixtures/validation-cases.json`. Unenforced: not in validator
 
 ## Generated catalog
 
-`docs/catalog/`: from `swiftui-registry generate catalog`, one page per item + kind-grouped index. Page:
+`docs/catalog/`: from `sweetui generate catalog`, one page per item + kind-grouped index. Page:
 
 - description
 - lead screenshot + alternate links
@@ -69,7 +69,7 @@ No timestamps: byte-stable, `GeneratorTests.swift` asserts equality. MUST NOT ha
 
 ## Generated website data and Showcase manifest
 
-`Sources/SwiftUIRegistryDesignSurface/RegistryItemTokens.swift` (`generate item-tokens`): per component/block, sorted `RegistryTheme`/`RegistryMetrics` fields the sources + dependency closure read (`theme.<field>`, `theme.metrics.<field>`, + foundations' `registrySurface(level:)`/`surface(at:)`). Scopes design-surface panel per item. MUST NOT hand-edit
+`Sources/SweetUIDesignSurface/RegistryItemTokens.swift` (`generate item-tokens`): per component/block, sorted `RegistryTheme`/`RegistryMetrics` fields the sources + dependency closure read (`theme.<field>`, `theme.metrics.<field>`, + foundations' `registrySurface(level:)`/`surface(at:)`). Scopes design-surface panel per item. MUST NOT hand-edit
 
 `Website/content/registry.json` (captures to `Website/public/images/`) from `generate site-data`; `RegistryCatalogManifest.swift`/`RegistryItemNames.swift` from `generate showcase-manifest`. Both validated-path, deterministic, byte-equal to checked-in files
 
@@ -81,7 +81,7 @@ No timestamps: byte-stable, `GeneratorTests.swift` asserts equality. MUST NOT ha
 
 Target path relative to destination; v1: no groups, targets, module names, project-file mutation. After copy, consumer owns target file: registry is provenance, not remote authority
 
-Installer stores provenance under `.swiftui-registry/`. `receipt.json` records item versions, registry/package deps (`swiftPM` rule at install-time), content digests, targets, base snapshot paths. Base/conflict artifacts use non-`Swift` extensions, avoiding duplicate declarations
+Installer stores provenance under `.sweetui/`. `receipt.json` records item versions, registry/package deps (`swiftPM` rule at install-time), content digests, targets, base snapshot paths. Base/conflict artifacts use non-`Swift` extensions, avoiding duplicate declarations
 
 ## Package dependencies
 
@@ -93,7 +93,7 @@ Entry: `sourceURL` (location), `swiftPM` (requirement); `kind`: `upToNextMinor`/
 
 Pre-1.0 foundations evolve by minor version. `0.minor.patch`: patch stays source-compatible; minor MAY change contract, items pin `upToNextMinor` from known-good floor. Source verified against platform floor + foundation range; receipt records install-time requirement
 
-`SwiftUIRegistryFoundations` 0.1.0: initial contract, tagged 2026-09-05 (commit introducing accent/onAccent tokens); resolves once pushed
+`SwiftUIRegistryFoundations` 0.1.0 (`SweetUIFoundations` from 0.5.0): initial contract, tagged 2026-09-05 (commit introducing accent/onAccent tokens); resolves once pushed
 
 ## Evolution rules
 
@@ -107,10 +107,10 @@ Pre-1.0 foundations evolve by minor version. `0.minor.patch`: patch stays source
 
 Preset code: `RegistryTheme` as shadcn's `--preset` counterpart. `a13GkaOXWwIF` = `Indigo` preset
 
-- ref: `Preset.swift` (`RegistryKit`), `swiftui-registry preset`
+- ref: `Preset.swift` (`SweetUIKit`), `sweetui preset`
 - reproduced by `Website/lib/preset.ts` (`Create`) + Showcase `ThemePreset.swift` (`Copy Code`, `Import`, `-preset <code>`)
 - `Registry/preset_vectors.json` pins codes; all three MUST match byte-for-byte
-- checked by `PresetTests.swift`/`PresetContractTests.swift` (`RegistryKit` + `Node`/`TypeScript`); Showcase's `ThemePresetTests`
+- checked by `PresetTests.swift`/`PresetContractTests.swift` (`SweetUIKit` + `Node`/`TypeScript`); Showcase's `ThemePresetTests`
 
 Version `a`: version letter + base62 (`0-9A-Za-z`) little-endian packed-knob integer. Fields, `name (bits: range/step or enum)`:
 
@@ -154,7 +154,7 @@ Decoded `b`: `fontDesign`/`surfaceStep`/`chartPalette` + `background(Dark)`/`for
 - `decode <code>`: prints knobs/`Swift`/`URL`
 - `MCP`: `describe_preset`/`apply_preset`; not registry item: no receipt, installer-ignored
 
-Design tokens: `SwiftUIRegistryDesignSurface` (optional) keeps tuning as `registry-tokens.json` in `Documents`, `@Shared(.designTokens)` (swift-sharing)
+Design tokens: `SweetUIDesignSurface` (optional) keeps tuning as `registry-tokens.json` in `Documents`, `@Shared(.designTokens)` (swift-sharing)
 
 - `code`/`version`: preset-code knobs
 - `tuning`: keys from `preset decode --json` (always present, colors `#RRGGBB`)
@@ -174,13 +174,13 @@ Lookup order (`docs/architecture.md`): `--registry <path>`, enclosing clone, cac
 
 Agent steps:
 
-1. search metadata by name/kind/tags/platform/min version (`swiftui-registry search`)
+1. search metadata by name/kind/tags/platform/min version (`sweetui search`)
 2. read dependency closure + package requirements
-3. read usage snippet, accessibility notes, deps, requirements, source (`swiftui-registry describe <item>`)
-4. preview install (`swiftui-registry install <item> --plan --destination <path>`): read-only, prints closure, target statuses, requirements, collisions, manual steps, writes nothing
+3. read usage snippet, accessibility notes, deps, requirements, source (`sweetui describe <item>`)
+4. preview install (`sweetui install <item> --plan --destination <path>`): read-only, prints closure, target statuses, requirements, collisions, manual steps, writes nothing
 5. install item sources
 6. compose via public initializer. MUST NOT rewrite from memory
 7. compile consumer at deployment floor
-8. before `--update`, audit owned source (`swiftui-registry install <item> --diff --destination <path>`): needs receipt, exits `0` parity / `1` diffs
+8. before `--update`, audit owned source (`sweetui install <item> --diff --destination <path>`): needs receipt, exits `0` parity / `1` diffs
 
-Same steps as `MCP` tools (`swiftui-registry mcp`, `stdio`): `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`. `MCPTests.swift` pins wire shape (inline snapshots); `MCPContractTests.swift` drives registry
+Same steps as `MCP` tools (`sweetui mcp`, `stdio`): `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`. `MCPTests.swift` pins wire shape (inline snapshots); `MCPContractTests.swift` drives registry

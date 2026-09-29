@@ -1,5 +1,52 @@
 # Changelog
 
+## Unreleased
+
+The project is now SweetUI. Every product, module, and command changes name, so the next release
+is `0.5.0`, and every item declares that floor. The repository moved to
+`github.com/mangobyte-dev/sweetui`; GitHub redirects the old URL. The website moves to
+`https://sweetui.dev`.
+
+### Changed
+
+| Before | After |
+| --- | --- |
+| package `SwiftUIRegistry`, repository `swiftui-ui-registry` | `SweetUI`, `sweetui` |
+| `SwiftUIRegistryFoundations`, `SwiftUIRegistryDesignSurface` | `SweetUIFoundations`, `SweetUIDesignSurface` |
+| `RegistryKit` | `SweetUIKit` |
+| tool and Homebrew formula `swiftui-registry` | `sweetui` |
+| receipts `.swiftui-registry/` | `.sweetui/` |
+| cache `~/Library/Caches/swiftui-registry` | `~/Library/Caches/sweetui` |
+| tap tags `swiftui-registry-<version>` | `sweetui-<version>` |
+| skills `swiftui-registry`, `swiftui-registry-authoring`, `swiftui-registry-theming` | `sweetui`, `sweetui-authoring`, `sweetui-theming` |
+| website `swiftui-registry.mangobytekw.workers.dev` | `sweetui.dev` (the old URL keeps serving the same site) |
+| GitHub Pages mirror `mangobyte-dev.github.io/swiftui-ui-registry` | `mangobyte-dev.github.io/sweetui`, no redirect |
+
+`RegistryTheme`, `registryTheme(_:)`, `registryItem(_:)`, and every other `registry` prefixed API
+keep their names.
+
+### Migrating an app
+
+1. Package: `.package(url: "https://github.com/mangobyte-dev/sweetui.git", .upToNextMinor(from: "0.5.0"))`
+   and `.product(name: "SweetUIFoundations", package: "sweetui")`, plus
+   `.product(name: "SweetUIDesignSurface", package: "sweetui")` if the app links the design surface.
+   In an Xcode project, remove the old package and add the new URL with the same products.
+2. Sources: replace `SwiftUIRegistry` with `SweetUI` in every import.
+3. Receipts: the tool reads only `.sweetui/` and rejects a receipt that names another registry. In
+   each install destination run:
+
+   ```sh
+   mv .swiftui-registry .sweetui
+   sed -i '' -e 's/SwiftUIRegistry/SweetUI/g' -e 's/swiftui-ui-registry/sweetui/g' .sweetui/receipt.json
+   ```
+
+   Step 2 changed each installed file, so `info` reports it `modified`; `install <item> --update`
+   merges it back to `up-to-date`.
+4. Theme file: `preset apply` reads the header `// sweetui preset <code>`. Rename the old
+   `// swiftui-registry preset` header, or pass `--force`.
+5. Tool: `brew uninstall swiftui-registry`, then `brew install mangobyte-dev/tap/sweetui`. Register
+   the MCP server as `sweetui mcp`. The old cache MAY be deleted.
+
 ## 0.4.0 (2026-09-19)
 
 A minor release, source compatible with 0.3.x. `brew upgrade swiftui-registry` installs the tool.

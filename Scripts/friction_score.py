@@ -21,7 +21,7 @@ Usage:
                      that reads such a path with cat, sed, head, tail, grep,
                      rg, awk, less, more, or bat counts the same way, once per
                      command
-    empty_searches   `swiftui-registry search` invocations whose result was
+    empty_searches   `sweetui search` invocations whose result was
                      `[]` or the `No item matches` message
     retries          a Bash command whose exact text ran again within the next
                      three Bash commands
@@ -234,7 +234,7 @@ def public_symbols(source: str) -> set[str]:
 
 
 def mentions(symbol: str, text: str) -> bool:
-    """Whole-word match that ignores `swiftui-registry` and CamelCase prefixes."""
+    """Whole-word match that ignores `sweetui` and CamelCase prefixes."""
     return re.search(rf"(?<![\w-]){re.escape(symbol)}\b", text) is not None
 
 
@@ -292,13 +292,13 @@ def count_empty_searches(calls: list[dict]) -> list[dict]:
     hits = []
     for call in calls:
         command = bash_command(call)
-        if not command or "swiftui-registry" not in command or " search" not in command:
+        if not command or "sweetui" not in command or " search" not in command:
             continue
         result = call["result"] or ""
         no_match = [line for line in result.splitlines() if "No item matches" in line]
         empty_json = [line for line in result.splitlines() if line.strip() == "[]"]
         count = len(no_match) + len(empty_json)
-        invocations = len(re.findall(r"swiftui-registry(?:\S*)?\s+search\b", command))
+        invocations = len(re.findall(r"sweetui(?:\S*)?\s+search\b", command))
         if count == 0 and invocations == 1 and not result.strip():
             count = 1
             no_match = ["<blank output>"]
@@ -369,7 +369,7 @@ def installed_items(calls: list[dict], items: dict[str, dict]) -> set[str]:
     names: set[str] = set()
     for call in calls:
         command = bash_command(call)
-        if not command or "swiftui-registry" not in command:
+        if not command or "sweetui" not in command:
             continue
         for match in re.finditer(r"install\s+([a-z][a-z0-9-]*)", command):
             if match.group(1) in items and "--plan" not in command:

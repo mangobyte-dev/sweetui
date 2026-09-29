@@ -1,12 +1,12 @@
 # MCP server
 
-`swiftui-registry mcp`: registry as tools over stdio (CLI engine: search, describe, plan, diff, install, preset). Register Homebrew binary; Claude Code `.mcp.json`:
+`sweetui mcp`: registry as tools over stdio (CLI engine: search, describe, plan, diff, install, preset). Register Homebrew binary; Claude Code `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "swiftui-registry": {
-      "command": "swiftui-registry",
+    "sweetui": {
+      "command": "sweetui",
       "args": ["mcp"]
     }
   }

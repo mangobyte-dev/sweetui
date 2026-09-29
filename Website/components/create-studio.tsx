@@ -249,8 +249,8 @@ function PreviewPanel({
       </TabsContent>
       <TabsContent value="apply" className="flex flex-col gap-4 p-4">
         <ApplyStep
-          title="With the swiftui-registry tool"
-          detail="brew install mangobyte-dev/tap/swiftui-registry. This writes RegistryTheme+App.swift next to your installed items and declares RegistryTheme.app."
+          title="With the sweetui tool"
+          detail="brew install mangobyte-dev/tap/sweetui. This writes RegistryTheme+App.swift next to your installed items and declares RegistryTheme.app."
         >
           <Command text={applyCommand(code)} />
         </ApplyStep>
@@ -270,7 +270,7 @@ function PreviewPanel({
           title="For an agent"
           detail="The MCP server's describe_preset and apply_preset tools, or the CLI, decode the same code."
         >
-          <Command text={`swiftui-registry preset decode ${code}`} />
+          <Command text={`sweetui preset decode ${code}`} />
         </ApplyStep>
       </TabsContent>
       <TabsContent value="package" className="flex flex-col gap-4 p-4">

@@ -20,9 +20,9 @@ Usage (from the repository root):
     python3 Scripts/capture_previews.py --blocks   # the blocks only, on the iPad, same folder
     python3 Scripts/capture_previews.py --preset a13GkaOXWwIa --output /tmp/presets  # one preset code, both appearances
 
-`--app` points at a built SwiftUIRegistryShowcase.app; without it the script
+`--app` points at a built SweetUIShowcase.app; without it the script
 builds one with xcodebuild into a scratch derived-data directory. `--tool`
-points at a built `swiftui-registry` binary, which lists and validates the
+points at a built `sweetui` binary, which lists and validates the
 items and checks a preset code; without it the script builds the tool in
 release from this clone.
 """
@@ -43,9 +43,9 @@ _SCRIPTS = Path(__file__).resolve().parent
 
 REPOSITORY_ROOT = _SCRIPTS.parent
 PINNED_UDID = "1807166B-C557-4F6B-B177-D5F3F701CBD7"
-BUNDLE_ID = "com.example.swiftuiregistry.showcase"
-WORKSPACE = REPOSITORY_ROOT / "Examples" / "Showcase" / "SwiftUIRegistryShowcase.xcworkspace"
-SCHEME = "SwiftUIRegistryShowcase"
+BUNDLE_ID = "com.example.sweetui.showcase"
+WORKSPACE = REPOSITORY_ROOT / "Examples" / "Showcase" / "SweetUIShowcase.xcworkspace"
+SCHEME = "SweetUIShowcase"
 OUTPUT = REPOSITORY_ROOT / "docs" / "images" / "items"
 THEME_OUTPUT = REPOSITORY_ROOT / "docs" / "images" / "themes"
 IPAD_OUTPUT = REPOSITORY_ROOT / "docs" / "images" / "ipad"
@@ -63,13 +63,13 @@ def run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
 
 
 def registry_tool(explicit: Path | None) -> Path:
-    """The `swiftui-registry` tool, built in release from this clone unless given."""
+    """The `sweetui` tool, built in release from this clone unless given."""
     if explicit:
         return explicit
-    print("building swiftui-registry...", flush=True)
+    print("building sweetui...", flush=True)
     package = ["swift", "build", "--package-path", str(REPOSITORY_ROOT), "-c", "release"]
-    run(package + ["--product", "swiftui-registry"])
-    return Path(run(package + ["--show-bin-path"]).stdout.strip()) / "swiftui-registry"
+    run(package + ["--product", "sweetui"])
+    return Path(run(package + ["--show-bin-path"]).stdout.strip()) / "sweetui"
 
 
 def catalog(tool: Path) -> dict[str, str]:
@@ -99,7 +99,7 @@ def build_app(derived_data: Path, udid: str) -> Path:
         "build",
     ])
     products = derived_data / "Build" / "Products"
-    apps = list(products.glob("*/SwiftUIRegistryShowcase.app"))
+    apps = list(products.glob("*/SweetUIShowcase.app"))
     if not apps:
         raise RuntimeError(f"No built app under {products}")
     return apps[0]
@@ -242,15 +242,15 @@ def record_screenshots(names: list[str]) -> None:
             f"docs/images/items/{name}-{appearance}.png" for appearance in APPEARANCES
         ]
         path.write_text(json.dumps(item, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print("metadata updated; run swiftui-registry generate catalog, showcase-manifest, and site-data")
+    print("metadata updated; run sweetui generate catalog, showcase-manifest, and site-data")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("items", nargs="*", help="Item names to capture (default: every item)")
     parser.add_argument("--udid", default=PINNED_UDID)
-    parser.add_argument("--app", type=Path, help="A built SwiftUIRegistryShowcase.app")
-    parser.add_argument("--tool", type=Path, help="A built swiftui-registry binary (default: swift build -c release from this clone)")
+    parser.add_argument("--app", type=Path, help="A built SweetUIShowcase.app")
+    parser.add_argument("--tool", type=Path, help="A built sweetui binary (default: swift build -c release from this clone)")
     parser.add_argument("--themes", action="store_true", help="Capture the theme presets instead of items")
     parser.add_argument("--ipad", action="store_true", help="Capture the named items (every item by default) on the iPad into docs/images/ipad")
     parser.add_argument("--blocks", action="store_true", help="Capture only the blocks on the iPad into docs/images/ipad (--ipad limited to blocks)")

@@ -39,7 +39,7 @@ export const DOCS: DocPage[] = [
   {
     slug: "cli",
     title: "CLI",
-    description: "swiftui-registry commands: search, describe, plan, install, diff, update, info, presets, validate, generators.",
+    description: "sweetui commands: search, describe, plan, install, diff, update, info, presets, validate, generators.",
     group: "Guides",
     file: "docs/cli.md",
   },

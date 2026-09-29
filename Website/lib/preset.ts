@@ -1,7 +1,7 @@
 // Preset codes: a RegistryTheme as a short shareable string.
 //
-// Mirrors RegistryKit's Preset.swift, the reference implementation behind
-// `swiftui-registry preset`; the format rules live in docs/registry-spec.md
+// Mirrors SweetUIKit's Preset.swift, the reference implementation behind
+// `sweetui preset`; the format rules live in docs/registry-spec.md
 // and Registry/preset_vectors.json pins codes both must reproduce. Fields
 // pack little-endian in FIELDS order into one integer, written in base62
 // behind a version letter. Numeric fields store their slider-grid index, so a
@@ -443,7 +443,7 @@ export function decodePreset(code: string): PresetTuning | null {
   const accentIndex = take(4)
   if (accentIndex >= ACCENTS.length) return null
   // The a shape carries no version b keys; only a b code appends them, exactly
-  // as RegistryKit's Preset.decode does, so an a code decodes byte for byte the
+  // as SweetUIKit's Preset.decode does, so an a code decodes byte for byte the
   // same tuning it always did.
   const tuning = {
     accent: ACCENTS[accentIndex],
@@ -664,11 +664,11 @@ export function swiftSource(tuning: PresetTuning, fontFamily?: string): string {
 }
 
 export function applyCommand(code: string): string {
-  return `swiftui-registry preset apply ${code} --destination Sources/YourFeature/Components`
+  return `sweetui preset apply ${code} --destination Sources/YourFeature/Components`
 }
 
-/** The canonical site, mirroring Preset.siteURL in Sources/RegistryKit/Preset.swift. */
-export const SITE_URL = "https://swiftui-registry.mangobytekw.workers.dev"
+/** The canonical site, mirroring Preset.siteURL in Sources/SweetUIKit/Preset.swift. */
+export const SITE_URL = "https://sweetui.dev"
 
 export function createLink(code: string): string {
   return `${SITE_URL}/create?preset=${code}`
@@ -1019,11 +1019,11 @@ export function themeFileSource(
     Boolean(tuning.backgroundDark) ||
     Boolean(tuning.foregroundDark) ||
     Boolean(tuning.secondaryForegroundDark)
-  const lines = ["import SwiftUI", "import SwiftUIRegistryFoundations"]
+  const lines = ["import SwiftUI", "import SweetUIFoundations"]
   if (needsUIKit) lines.push("import UIKit")
   lines.push(
     "",
-    `// swiftui-registry preset ${code}`,
+    `// sweetui preset ${code}`,
     `// ${createLink(code)}`,
     "// Apply once at the scene root: ContentView().registryTheme(.app).",
     "",

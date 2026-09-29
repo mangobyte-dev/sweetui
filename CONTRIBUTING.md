@@ -6,9 +6,9 @@ Read `docs/philosophy.md` (why), `docs/architecture.md` (how). Follows `CODE_OF_
 
 | Path | Purpose |
 | --- | --- |
-| `Sources/SwiftUIRegistryFoundations/` | design-foundations package |
-| `Sources/SwiftUIRegistryDesignSurface/` | design-surface product |
-| `Sources/RegistryKit/`, `Sources/SwiftUIRegistryCLI/` | SwiftUI-free engine, `swiftui-registry` tool |
+| `Sources/SweetUIFoundations/` | design-foundations package |
+| `Sources/SweetUIDesignSurface/` | design-surface product |
+| `Sources/SweetUIKit/`, `Sources/SweetUICLI/` | SwiftUI-free engine, `sweetui` tool |
 | `Registry/items/` | item metadata, dependency graph |
 | `Registry/sources/components/`, `Registry/sources/blocks/` | components, blocks |
 | `docs/` | contracts, catalog |

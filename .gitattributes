@@ -2,7 +2,7 @@
 *.base linguist-generated=true
 docs/catalog/** linguist-generated=true
 Website/content/registry.json linguist-generated=true
-Examples/Showcase/SwiftUIRegistryShowcasePackage/Sources/SwiftUIRegistryShowcaseFeature/RegistryCatalogManifest.swift linguist-generated=true
-Examples/Showcase/SwiftUIRegistryShowcaseUITests/RegistryItemNames.swift linguist-generated=true
+Examples/Showcase/SweetUIShowcasePackage/Sources/SweetUIShowcaseFeature/RegistryCatalogManifest.swift linguist-generated=true
+Examples/Showcase/SweetUIShowcaseUITests/RegistryItemNames.swift linguist-generated=true
 Website/package-lock.json linguist-generated=true
 *.png binary

@@ -1,7 +1,7 @@
 {
   "$schema": "./schema.json",
   "schemaVersion": 1,
-  "name": "SwiftUIRegistry",
+  "name": "SweetUI",
   "items": [
     "items/aspect-ratio.json",
     "items/button.json",

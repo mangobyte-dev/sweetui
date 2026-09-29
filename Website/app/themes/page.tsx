@@ -192,7 +192,7 @@ export default function ThemesPage() {
                 code={`ContentView()\n    .registryTheme(.mango)\n    .fontDesign(.rounded)`}
               />
               <CodeBlock
-                code={`swiftui-registry preset apply ${mango.code} --destination Sources/YourFeature/Components`}
+                code={`sweetui preset apply ${mango.code} --destination Sources/YourFeature/Components`}
               />
               <p className="text-sm text-muted-foreground">
                 <Link href={`/create/?preset=${mango.code}`}>
@@ -250,11 +250,11 @@ export default function ThemesPage() {
         <CodeBlock code={TUNE_EXPORT} />
         <p className="text-sm text-muted-foreground">
           Open{" "}
-          <code>Examples/Showcase/SwiftUIRegistryShowcase.xcworkspace</code>, run
+          <code>Examples/Showcase/SweetUIShowcase.xcworkspace</code>, run
           Showcase, tap Tune above the tab bar. Panel: inspector on iPad, sheet on iPhone
           (catalog interactive beneath). Demos update live. Copy Code puts a preset code
           on pasteboard; <Link href="/create/">Create page</Link> and{" "}
-          <code>swiftui-registry preset</code> read it. Captures: preview wall&apos;s first
+          <code>sweetui preset</code> read it. Captures: preview wall&apos;s first
           screen ({" "}
           <code>preview</code> block, 33 cards), iPhone 17.
         </p>
