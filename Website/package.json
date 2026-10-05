@@ -44,7 +44,7 @@
     "shadcn": "4.19.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "wrangler": "4.127.1"
+    "wrangler": "4.147.0"
   },
   "overrides": {
     "sharp": ">=0.35.0",
