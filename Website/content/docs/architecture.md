@@ -90,7 +90,7 @@ Search stays local. `sweetui mcp`: stdio adapter, same engine; agent in a consum
 
 ## Platform decision
 
-V0 targeted iOS 18/iPadOS (iOS SDK); 2026-08-31 reversed to iOS 26 floor. Items inherit Liquid Glass natively, no pre-26 styling/27-only APIs. Evidence: iOS 27 simulator only, no iOS 26 runtime here; compile-time + 27-runtime verify floor-26. No macOS, watchOS, tvOS, visionOS declared.
+V0 targeted iOS 18/iPadOS (iOS SDK); 2026-08-31 reversed to iOS 26 floor. Items inherit Liquid Glass natively, no pre-26 styling/27-only APIs. One exception, 2026-10-10: `fold-companion` reads the iPhone Duo fold (`reservedRegions`, iOS 27.1) behind `#available` and opens a sheet below it, so it runs from 26.0 but builds only with the 27.1 SDK; the `fold-arrangement` recipe declares 27.1. Evidence: iOS 27 simulator only, no iOS 26 runtime here; compile-time + 27-runtime verify floor-26. No macOS, watchOS, tvOS, visionOS declared.
 
 ## Dependency direction
 

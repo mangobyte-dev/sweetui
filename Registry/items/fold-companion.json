@@ -1,0 +1,55 @@
+{
+  "$schema": "../schema.json",
+  "schemaVersion": 1,
+  "version": "0.1.0",
+  "name": "fold-companion",
+  "kind": "component",
+  "description": "Companion pane across the iPhone Duo fold; sheet on every other display.",
+  "usage": "@State private var isShowingDetails = false\n\nNavigationStack {\n    List {\n        LabeledContent(\"Merchant\", value: \"Mishmash Bakery\")\n        LabeledContent(\"Amount\", value: \"KWD 8.750\")\n    }\n    .navigationTitle(\"Transaction\")\n    .toolbar {\n        Button(\"Details\", systemImage: \"sidebar.trailing\") {\n            isShowingDetails.toggle()\n        }\n    }\n    .foldCompanion(isPresented: $isShowingDetails) {\n        List {\n            LabeledContent(\"Category\", value: \"Dining\")\n            LabeledContent(\"Status\", value: \"Cleared\")\n        }\n    }\n}",
+  "docs": "Builds with the iOS 27.1 SDK (Xcode 27.1 or later): the fold comes from `GeometryProxy.reservedRegions(kind: .division, options: .includeInactive)`, behind `#available(iOS 27.1, *)`. On iOS 26.0 to 27.0 the companion always opens in a sheet. Apply it inside the `NavigationStack`, on the screen's root content, so the measured container spans the display; a container offset from the fold leaves a pane under 300 points and falls back to the sheet. For two panes that always show, use the `fold-arrangement` recipe (native `ArrangementView`).",
+  "files": [
+    {
+      "source": "sources/components/FoldCompanion.swift",
+      "target": "FoldCompanion.swift"
+    }
+  ],
+  "registryDependencies": [],
+  "packageDependencies": [
+    {
+      "package": "SweetUI",
+      "product": "SweetUIFoundations",
+      "requirement": "0.x",
+      "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+      "swiftPM": {
+        "kind": "upToNextMinor",
+        "minimumVersion": "0.5.0"
+      }
+    }
+  ],
+  "platforms": [
+    {
+      "name": "iOS",
+      "minimumVersion": "26.0"
+    }
+  ],
+  "tags": [
+    "foldable",
+    "iphone-duo",
+    "fold",
+    "two-pane",
+    "companion",
+    "detail-panel"
+  ],
+  "accessibility": [
+    "Companion keeps its open state across poses; only the person closes it.",
+    "Off the fold: system sheet, VoiceOver dismiss; on the fold: second pane in reading order."
+  ],
+  "preview": {
+    "source": "sources/components/FoldCompanion.swift",
+    "name": "Fold Companion",
+    "screenshots": [
+      "docs/images/items/fold-companion-light.png",
+      "docs/images/items/fold-companion-dark.png"
+    ]
+  }
+}

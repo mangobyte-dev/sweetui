@@ -36,6 +36,7 @@ enum ItemDemos {
         case "command": AnyView(CommandPaletteDemo())
         case "field": AnyView(FieldDemo())
         case "validated-input": AnyView(ValidatedInputDemo())
+        case "fold-companion": AnyView(FoldCompanionDemo())
         case "table": AnyView(TableDemo())
         case "breadcrumb": AnyView(BreadcrumbDemo())
         case "combobox": AnyView(ComboboxDemo())
@@ -81,6 +82,7 @@ enum ItemDemos {
         case "input-otp": AnyView(InputOTPRecipe())
         case "menubar": AnyView(MenubarRecipe())
         case "sheet": AnyView(SheetRecipe())
+        case "fold-arrangement": AnyView(FoldArrangementRecipe())
         case "typography": AnyView(TypographyRecipe())
         // Not a registry item: the theme preview is the `preview` block's wall, captured per preset for the website's Create and Themes pages
         case "theme-preview": AnyView(PreviewWall())

@@ -314,6 +314,24 @@ enum RegistryCatalogManifest {
             tags: ["finance", "dashboard", "overview", "transactions"]
         ),
         CatalogEntry(
+            name: "fold-arrangement",
+            kind: "recipe",
+            version: "0.1.0",
+            description: "Two panes around the iPhone Duo fold: native ArrangementView.",
+            usage: "ArrangementView {\n    List {\n        LabeledContent(\"Merchant\", value: \"Mishmash Bakery\")\n        LabeledContent(\"Amount\", value: \"KWD 8.750\")\n    }\n} secondary: {\n    List {\n        LabeledContent(\"Category\", value: \"Dining\")\n        LabeledContent(\"Status\", value: \"Cleared\")\n    }\n}\n.arrangementViewStyle(.split)\n.registryItem(\"fold-arrangement\")",
+            dependencies: [],
+            tags: ["foldable", "iphone-duo", "fold", "two-pane", "split", "guidance"]
+        ),
+        CatalogEntry(
+            name: "fold-companion",
+            kind: "component",
+            version: "0.1.0",
+            description: "Companion pane across the iPhone Duo fold; sheet on every other display.",
+            usage: "@State private var isShowingDetails = false\n\nNavigationStack {\n    List {\n        LabeledContent(\"Merchant\", value: \"Mishmash Bakery\")\n        LabeledContent(\"Amount\", value: \"KWD 8.750\")\n    }\n    .navigationTitle(\"Transaction\")\n    .toolbar {\n        Button(\"Details\", systemImage: \"sidebar.trailing\") {\n            isShowingDetails.toggle()\n        }\n    }\n    .foldCompanion(isPresented: $isShowingDetails) {\n        List {\n            LabeledContent(\"Category\", value: \"Dining\")\n            LabeledContent(\"Status\", value: \"Cleared\")\n        }\n    }\n}",
+            dependencies: [],
+            tags: ["foldable", "iphone-duo", "fold", "two-pane", "companion", "detail-panel"]
+        ),
+        CatalogEntry(
             name: "input",
             kind: "component",
             version: "0.5.1",

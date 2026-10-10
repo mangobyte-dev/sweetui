@@ -11,6 +11,7 @@ private let recipeNames: Set<String> = [
   "alert-dialog", "calendar", "collapsible", "context-menu", "dialog", "drawer", "dropdown-menu",
   "popover", "scroll-area", "sidebar", "tooltip",
   "carousel", "chart-tooltip", "date-picker", "input-otp", "menubar", "sheet", "typography",
+  "fold-arrangement",
 ]
 
 private func previewSource(_ registry: Registry, _ name: String) throws -> String {
@@ -125,7 +126,7 @@ extension Commands {
       let registry = try Registry(root: repositoryRoot)
       let kinds = registry.items.mapValues { $0["kind"].text }
       #expect(Set(kinds.filter { $0.value == "recipe" }.keys) == recipeNames)
-      #expect(kinds.values.filter { $0 == "component" }.count == 38)
+      #expect(kinds.values.filter { $0 == "component" }.count == 39)
       #expect(kinds.values.filter { $0 == "block" }.count == 11)
     }
   }

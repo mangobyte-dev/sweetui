@@ -2,9 +2,9 @@
   "name": "SweetUI",
   "repositoryURL": "https://github.com/mangobyte-dev/sweetui",
   "counts": {
-    "component": 38,
+    "component": 39,
     "block": 11,
-    "recipe": 25
+    "recipe": 26
   },
   "items": [
     {
@@ -1978,6 +1978,95 @@
       "wideScreenshots": {
         "light": "/images/ipad/finance-overview-ipad-light.png",
         "dark": "/images/ipad/finance-overview-ipad-dark.png"
+      },
+      "requirements": [
+        {
+          "instruction": "add package https://github.com/mangobyte-dev/sweetui.git (from 0.5.0 up to the next minor version) and link product SweetUIFoundations",
+          "manifest": "// Package.swift\ndependencies: [\n    .package(url: \"https://github.com/mangobyte-dev/sweetui.git\", .upToNextMinor(from: \"0.5.0\"))\n]\n\n// In the consuming target's dependencies:\n.product(name: \"SweetUIFoundations\", package: \"sweetui\")",
+          "xcode": "In an Xcode app project instead, choose File > Add Package Dependency, enter https://github.com/mangobyte-dev/sweetui.git with the same version rule, and add the SweetUIFoundations product to your app target"
+        }
+      ]
+    },
+    {
+      "name": "fold-arrangement",
+      "kind": "recipe",
+      "version": "0.1.0",
+      "description": "Two panes around the iPhone Duo fold: native ArrangementView.",
+      "usage": "ArrangementView {\n    List {\n        LabeledContent(\"Merchant\", value: \"Mishmash Bakery\")\n        LabeledContent(\"Amount\", value: \"KWD 8.750\")\n    }\n} secondary: {\n    List {\n        LabeledContent(\"Category\", value: \"Dining\")\n        LabeledContent(\"Status\", value: \"Cleared\")\n    }\n}\n.arrangementViewStyle(.split)\n.registryItem(\"fold-arrangement\")",
+      "docs": "`ArrangementView` (iOS 27.1): two panes that always show. `.split` puts them side by side or stacked by container shape and keeps both out of an active fold; `.split.axes(.horizontal)` shows only the primary pane in a vertical layout; `.overlay` layers the primary over the secondary until the device half opens. Do not nest it in a `List`, `ScrollView`, or `NavigationSplitView` (Apple). Measured on the iPhone Duo simulator, iOS 27.1: flat open, `.split` halves the container and ignores the inactive fold; an empty secondary still keeps its pane. For a companion that opens and closes, install `fold-companion`. A custom layout reads `GeometryProxy.reservedRegions(kind: .division, options: .includeInactive)`; the region's `frame` includes its margins. The hinge angle (`onHingeChange`) drives effects only, never layout. A toolbar item joins the vertical bar only with a title and a symbol (`Button(\"Details\", systemImage:)`).",
+      "tags": [
+        "foldable",
+        "iphone-duo",
+        "fold",
+        "two-pane",
+        "split",
+        "guidance"
+      ],
+      "aliases": [],
+      "platforms": [
+        "iOS 27.1+"
+      ],
+      "dependencies": [],
+      "installOrder": [],
+      "accessibility": [
+        "Both panes stay in reading order: primary, then secondary.",
+        "System places panes; Dynamic Type and right to left follow the content."
+      ],
+      "sourcePath": null,
+      "sourceURL": null,
+      "source": null,
+      "previewName": null,
+      "screenshots": {
+        "light": "/images/items/fold-arrangement-light.png",
+        "dark": "/images/items/fold-arrangement-dark.png"
+      },
+      "wideScreenshots": {
+        "light": null,
+        "dark": null
+      },
+      "requirements": []
+    },
+    {
+      "name": "fold-companion",
+      "kind": "component",
+      "version": "0.1.0",
+      "description": "Companion pane across the iPhone Duo fold; sheet on every other display.",
+      "usage": "@State private var isShowingDetails = false\n\nNavigationStack {\n    List {\n        LabeledContent(\"Merchant\", value: \"Mishmash Bakery\")\n        LabeledContent(\"Amount\", value: \"KWD 8.750\")\n    }\n    .navigationTitle(\"Transaction\")\n    .toolbar {\n        Button(\"Details\", systemImage: \"sidebar.trailing\") {\n            isShowingDetails.toggle()\n        }\n    }\n    .foldCompanion(isPresented: $isShowingDetails) {\n        List {\n            LabeledContent(\"Category\", value: \"Dining\")\n            LabeledContent(\"Status\", value: \"Cleared\")\n        }\n    }\n}",
+      "docs": "Builds with the iOS 27.1 SDK (Xcode 27.1 or later): the fold comes from `GeometryProxy.reservedRegions(kind: .division, options: .includeInactive)`, behind `#available(iOS 27.1, *)`. On iOS 26.0 to 27.0 the companion always opens in a sheet. Apply it inside the `NavigationStack`, on the screen's root content, so the measured container spans the display; a container offset from the fold leaves a pane under 300 points and falls back to the sheet. For two panes that always show, use the `fold-arrangement` recipe (native `ArrangementView`).",
+      "tags": [
+        "foldable",
+        "iphone-duo",
+        "fold",
+        "two-pane",
+        "companion",
+        "detail-panel"
+      ],
+      "aliases": [],
+      "platforms": [
+        "iOS 26.0+"
+      ],
+      "dependencies": [],
+      "installOrder": [
+        {
+          "name": "fold-companion",
+          "version": "0.1.0"
+        }
+      ],
+      "accessibility": [
+        "Companion keeps its open state across poses; only the person closes it.",
+        "Off the fold: system sheet, VoiceOver dismiss; on the fold: second pane in reading order."
+      ],
+      "sourcePath": "Registry/sources/components/FoldCompanion.swift",
+      "sourceURL": "https://github.com/mangobyte-dev/sweetui/blob/main/Registry/sources/components/FoldCompanion.swift",
+      "source": "import SwiftUI\nimport SweetUIFoundations\n\nextension View {\n    /// Shows `content` as a companion to this view: in the second pane on the open display of a\n    /// foldable iPhone, and in a sheet on every other display.\n    ///\n    /// The fold divides the display into two panes, and nothing sits under the hinge. `isPresented`\n    /// stays with the caller. A pose change moves an open companion between the pane and the sheet\n    /// and keeps it open; only the person closes it. The view keeps its identity in every pose, so\n    /// its scroll position and focus survive a fold or an unfold.\n    public func foldCompanion<Companion: View>(\n        isPresented: Binding<Bool>,\n        @ViewBuilder content: () -> Companion\n    ) -> some View {\n        modifier(FoldCompanionModifier(isPresented: isPresented, companion: content()))\n    }\n}\n\n/// How a fold divides a container into a content pane, the fold itself, and a companion pane.\n///\n/// Apple's guidance for iPhone Duo: lay out around the fold's division reserved region, not around\n/// the hinge angle. A fold that runs down the display splits it side by side, active (half open) or\n/// inactive (flat open), so the panes do not move when the device folds. A fold that runs across\n/// the display splits it only while it is active (tabletop); flat in portrait, one tall pane reads\n/// best. The cover display, an iPhone, an iPad, and a narrow window report no fold, so the\n/// companion opens in a sheet there.\nstruct FoldCompanionLayout: Equatable, Sendable {\n    /// `.horizontal`: side by side, content on the leading side. `.vertical`: content on top.\n    let axis: Axis\n    let contentLength: CGFloat\n    let foldLength: CGFloat\n    let companionLength: CGFloat\n\n    /// The narrowest pane worth showing beside another. Below it, the companion opens in a sheet.\n    static let minimumPaneWidth: CGFloat = 300\n    /// The shortest stacked pane worth showing.\n    static let minimumPaneHeight: CGFloat = 220\n\n    /// The panes for a container and the fold's frame in the container's space, or nil when the\n    /// companion belongs in a sheet: no fold, an inactive fold across the display, or a pane that\n    /// does not fit outside the fold.\n    static func resolve(container: CGSize, fold: CGRect?, isActive: Bool) -> Self? {\n        guard let fold else { return nil }\n        if fold.height > fold.width {\n            return split(\n                axis: .horizontal, start: fold.minX, end: fold.maxX, length: container.width,\n                minimum: minimumPaneWidth)\n        }\n        guard isActive else { return nil }\n        return split(\n            axis: .vertical, start: fold.minY, end: fold.maxY, length: container.height,\n            minimum: minimumPaneHeight)\n    }\n\n    private static func split(\n        axis: Axis, start: CGFloat, end: CGFloat, length: CGFloat, minimum: CGFloat\n    ) -> Self? {\n        let companion = length - end\n        guard start >= minimum, companion >= minimum else { return nil }\n        return Self(axis: axis, contentLength: start, foldLength: end - start, companionLength: companion)\n    }\n}\n\nprivate struct FoldCompanionModifier<Companion: View>: ViewModifier {\n    @Binding var isPresented: Bool\n    let companion: Companion\n    @State private var layout: FoldCompanionLayout?\n\n    func body(content: Content) -> some View {\n        let pane = isPresented ? layout : nil\n        let stack =\n            pane?.axis == .vertical\n            ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: 0))\n        stack {\n            content\n                .paneFrame(length: pane?.contentLength, axis: pane?.axis)\n            if let pane {\n                Color.clear\n                    .paneFrame(length: pane.foldLength, axis: pane.axis)\n                    .accessibilityHidden(true)\n                companion\n                    .paneFrame(length: pane.companionLength, axis: pane.axis)\n            }\n        }\n        .background {\n            GeometryReader { proxy in\n                Color.clear.onChange(of: Self.layout(in: proxy), initial: true) { _, newValue in\n                    layout = newValue\n                }\n            }\n        }\n        .sheet(isPresented: sheetIsPresented) {\n            companion\n                .presentationDetents([.medium, .large])\n                .presentationBackgroundInteraction(.enabled(upThrough: .medium))\n        }\n        .registryItem(\"fold-companion\")\n    }\n\n    /// The sheet shows only where no fold splits the display. When an unfold moves the companion\n    /// into its pane, SwiftUI dismisses the sheet and writes `false` here. That write is not the\n    /// person closing the companion, so it is dropped.\n    private var sheetIsPresented: Binding<Bool> {\n        Binding {\n            layout == nil && isPresented\n        } set: { newValue in\n            guard newValue || layout == nil else { return }\n            isPresented = newValue\n        }\n    }\n\n    /// The division region in the container's space. The default `.mirrors` behavior measures it\n    /// from the leading edge, the same edge the stack starts from, so right to left needs no flip.\n    private static func layout(in proxy: GeometryProxy) -> FoldCompanionLayout? {\n        guard #available(iOS 27.1, *),\n            let region = proxy.reservedRegions(kind: .division, options: .includeInactive).first\n        else { return nil }\n        // `frame` already includes the region's margins.\n        return .resolve(container: proxy.size, fold: region.frame, isActive: region.isActive)\n    }\n}\n\nextension View {\n    /// At most `length` along the split axis and the whole proposal across it, or the whole\n    /// proposal both ways when there is no split. A maximum, not a fixed size: when the container\n    /// shrinks before the fold is measured again (a rotation that brings in a vertical bar), the\n    /// panes shrink with it, so the measured size follows the container and the next pass fixes\n    /// the split.\n    fileprivate func paneFrame(length: CGFloat?, axis: Axis?) -> some View {\n        frame(\n            maxWidth: axis == .horizontal ? length : .infinity,\n            maxHeight: axis == .vertical ? length : .infinity\n        )\n    }\n}\n\nprivate struct FoldCompanionPreview: View {\n    @State private var isShowingDetails = true\n\n    var body: some View {\n        NavigationStack {\n            List {\n                LabeledContent(\"Merchant\", value: \"Mishmash Bakery\")\n                LabeledContent(\"Amount\", value: \"KWD 8.750\")\n                LabeledContent(\"Date\", value: \"10 Oct 2026\")\n            }\n            .navigationTitle(\"Transaction\")\n            .toolbar {\n                Button(\"Details\", systemImage: \"sidebar.trailing\") {\n                    isShowingDetails.toggle()\n                }\n            }\n            .foldCompanion(isPresented: $isShowingDetails) {\n                List {\n                    LabeledContent(\"Category\", value: \"Dining\")\n                    LabeledContent(\"Card\", value: \"Visa 4321\")\n                    LabeledContent(\"Status\", value: \"Cleared\")\n                }\n            }\n        }\n    }\n}\n\n#Preview(\"Fold Companion\") {\n    FoldCompanionPreview()\n}\n\n#Preview(\"Fold Companion Dark\") {\n    FoldCompanionPreview().preferredColorScheme(.dark)\n}\n\n#Preview(\"Fold Companion Accessibility Size\") {\n    FoldCompanionPreview().dynamicTypeSize(.accessibility3)\n}\n\n#Preview(\"Fold Companion Right to Left\") {\n    FoldCompanionPreview().environment(\\.layoutDirection, .rightToLeft)\n}\n",
+      "previewName": "Fold Companion",
+      "screenshots": {
+        "light": "/images/items/fold-companion-light.png",
+        "dark": "/images/items/fold-companion-dark.png"
+      },
+      "wideScreenshots": {
+        "light": null,
+        "dark": null
       },
       "requirements": [
         {

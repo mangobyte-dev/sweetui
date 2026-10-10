@@ -369,6 +369,31 @@ private struct UsageSnippet_FinanceOverview: View {
     }
 }
 
+// MARK: fold-companion
+private struct UsageSnippet_FoldCompanion: View {
+    @State private var isShowingDetails = false
+    var body: some View {
+        NavigationStack {
+            List {
+                LabeledContent("Merchant", value: "Mishmash Bakery")
+                LabeledContent("Amount", value: "KWD 8.750")
+            }
+            .navigationTitle("Transaction")
+            .toolbar {
+                Button("Details", systemImage: "sidebar.trailing") {
+                    isShowingDetails.toggle()
+                }
+            }
+            .foldCompanion(isPresented: $isShowingDetails) {
+                List {
+                    LabeledContent("Category", value: "Dining")
+                    LabeledContent("Status", value: "Cleared")
+                }
+            }
+        }
+    }
+}
+
 // MARK: input
 private struct UsageSnippet_Input: View {
     @State private var email = ""

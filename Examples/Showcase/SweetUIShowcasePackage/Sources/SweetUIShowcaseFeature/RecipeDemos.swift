@@ -400,3 +400,30 @@ struct TooltipRecipe: View {
         }
     }
 }
+
+struct FoldArrangementRecipe: View {
+    var body: some View {
+        Group {
+            if #available(iOS 27.1, *) {
+                ArrangementView {
+                    List {
+                        LabeledContent("Merchant", value: "Mishmash Bakery")
+                        LabeledContent("Amount", value: "KWD 8.750")
+                    }
+                } secondary: {
+                    List {
+                        LabeledContent("Category", value: "Dining")
+                        LabeledContent("Status", value: "Cleared")
+                    }
+                }
+                .arrangementViewStyle(.split)
+            } else {
+                Text("ArrangementView needs iOS 27.1.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(height: 360)
+        .registrySurface()
+        .registryItem("fold-arrangement")
+    }
+}

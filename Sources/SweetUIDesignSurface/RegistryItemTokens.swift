@@ -43,6 +43,8 @@ public enum RegistryItemTokens {
             "empty": ["border", "borderWidth", "cardRadius", "standardSpacing", "surface"],
             "field": ["border", "borderWidth", "compactSpacing", "controlHorizontalPadding", "controlRadius", "disabledOpacity", "emphasizedBorderWidth", "negative", "standardSpacing", "surface"],
             "finance-overview": ["border", "borderWidth", "cardRadius", "compactSpacing", "negative", "positive", "sectionSpacing", "standardSpacing", "surface"],
+            "fold-arrangement": [],
+            "fold-companion": [],
             "input": ["border", "borderWidth", "controlHorizontalPadding", "controlRadius", "disabledOpacity", "emphasizedBorderWidth", "negative", "surface"],
             "input-group": ["border", "borderWidth", "compactSpacing", "controlHorizontalPadding", "controlRadius", "disabledOpacity", "emphasizedBorderWidth", "negative", "onAccent", "surface"],
             "input-otp": ["border", "borderWidth", "controlHorizontalPadding", "controlRadius", "disabledOpacity", "emphasizedBorderWidth", "negative", "onAccent", "surface"],

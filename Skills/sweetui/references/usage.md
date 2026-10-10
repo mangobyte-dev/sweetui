@@ -270,6 +270,33 @@ FieldGroup {
 ```
 
 
+### fold-companion (component 0.1.0)
+
+
+```swift
+@State private var isShowingDetails = false
+
+NavigationStack {
+    List {
+        LabeledContent("Merchant", value: "Mishmash Bakery")
+        LabeledContent("Amount", value: "KWD 8.750")
+    }
+    .navigationTitle("Transaction")
+    .toolbar {
+        Button("Details", systemImage: "sidebar.trailing") {
+            isShowingDetails.toggle()
+        }
+    }
+    .foldCompanion(isPresented: $isShowingDetails) {
+        List {
+            LabeledContent("Category", value: "Dining")
+            LabeledContent("Status", value: "Cleared")
+        }
+    }
+}
+```
+
+
 ### input (component 0.5.1)
 
 
@@ -590,6 +617,20 @@ ControlGroup {
 ```
 
 
+### transaction-row (component 0.5.1)
+
+
+```swift
+TransactionRow(
+    title: Text("Mishmash Bakery"),
+    subtitle: Text("Today, 09:41"),
+    amount: Text(-8.75, format: .currency(code: "KWD")),
+    systemImage: "cup.and.saucer.fill"
+)
+.registryTone(.negative)
+```
+
+
 ### validated-input (component 0.1.0)
 
 
@@ -610,20 +651,6 @@ ValidatedInput("Confirm password", text: $confirmation, validations: [.required,
 
 ValidatedInput("Phone", text: $phone, validations: [.required, .internationalPhone])
     .keyboardType(.phonePad)
-```
-
-
-### transaction-row (component 0.5.1)
-
-
-```swift
-TransactionRow(
-    title: Text("Mishmash Bakery"),
-    subtitle: Text("Today, 09:41"),
-    amount: Text(-8.75, format: .currency(code: "KWD")),
-    systemImage: "cup.and.saucer.fill"
-)
-.registryTone(.negative)
 ```
 
 
@@ -1168,6 +1195,26 @@ Menu("Sort", systemImage: "arrow.up.arrow.down") {
 }
 .buttonStyle(.registryOutline)
 .registryItem("dropdown-menu")
+```
+
+
+### fold-arrangement (recipe 0.1.0)
+
+
+```swift
+ArrangementView {
+    List {
+        LabeledContent("Merchant", value: "Mishmash Bakery")
+        LabeledContent("Amount", value: "KWD 8.750")
+    }
+} secondary: {
+    List {
+        LabeledContent("Category", value: "Dining")
+        LabeledContent("Status", value: "Cleared")
+    }
+}
+.arrangementViewStyle(.split)
+.registryItem("fold-arrangement")
 ```
 
 

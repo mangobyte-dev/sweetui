@@ -35,7 +35,7 @@ struct SelectionCoverageTests {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             try encoder.encode(report).write(to: URL(fileURLWithPath: path))
         }
-        #expect(items.count == 74, "the dataset is the whole catalog")
+        #expect(items.count == 76, "the dataset is the whole catalog")
         #expect(report.percent >= Self.floor, "coverage fell below the best measured \(Self.floor)%")
     }
 

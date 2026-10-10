@@ -62,6 +62,8 @@
     "items/command-search.json",
     "items/field.json",
     "items/validated-input.json",
+    "items/fold-companion.json",
+    "items/fold-arrangement.json",
     "items/table.json",
     "items/breadcrumb.json",
     "items/combobox.json",

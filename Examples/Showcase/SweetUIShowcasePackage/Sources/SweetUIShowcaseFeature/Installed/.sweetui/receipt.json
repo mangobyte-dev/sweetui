@@ -84,6 +84,13 @@
       "sourceDigest": "sha256:0dd9e83c41a3181ff2290414bb661e23781e22c357f2660563f2754f4a595bd6",
       "version": "0.4.3"
     },
+    "FoldCompanion.swift": {
+      "base": "bases/b3a7013e5f83dcbb6112cf4833559912e56ccf03f5c01d8be75fd11a4eee6368.base",
+      "installedDigest": "sha256:6c01592b9cd4e2c4aa6df1b511d493dc657fa83fe39c27b506f512735aa65678",
+      "item": "fold-companion",
+      "sourceDigest": "sha256:6c01592b9cd4e2c4aa6df1b511d493dc657fa83fe39c27b506f512735aa65678",
+      "version": "0.1.0"
+    },
     "InlineAlert.swift": {
       "base": "bases/ea8c868eda9aec86e5cd2571ffc9a41b5baccc19ce3f9847eb287a16dc368901.base",
       "installedDigest": "sha256:d3cfa3eb9eae2ad5a3098990fba65867d7cdc666e7de4406753e3be602d67324",
@@ -1206,6 +1213,22 @@
         "empty"
       ],
       "version": "0.4.3"
+    },
+    "fold-companion": {
+      "packageDependencies": [
+        {
+          "package": "SweetUI",
+          "product": "SweetUIFoundations",
+          "requirement": "0.x",
+          "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+          "swiftPM": {
+            "kind": "upToNextMinor",
+            "minimumVersion": "0.5.0"
+          }
+        }
+      ],
+      "registryDependencies": [],
+      "version": "0.1.0"
     },
     "input": {
       "packageDependencies": [

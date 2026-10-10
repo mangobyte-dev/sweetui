@@ -1,0 +1,48 @@
+{
+  "$schema": "../schema.json",
+  "schemaVersion": 1,
+  "version": "0.1.0",
+  "name": "fold-arrangement",
+  "kind": "recipe",
+  "description": "Two panes around the iPhone Duo fold: native ArrangementView.",
+  "usage": "ArrangementView {\n    List {\n        LabeledContent(\"Merchant\", value: \"Mishmash Bakery\")\n        LabeledContent(\"Amount\", value: \"KWD 8.750\")\n    }\n} secondary: {\n    List {\n        LabeledContent(\"Category\", value: \"Dining\")\n        LabeledContent(\"Status\", value: \"Cleared\")\n    }\n}\n.arrangementViewStyle(.split)\n.registryItem(\"fold-arrangement\")",
+  "docs": "`ArrangementView` (iOS 27.1): two panes that always show. `.split` puts them side by side or stacked by container shape and keeps both out of an active fold; `.split.axes(.horizontal)` shows only the primary pane in a vertical layout; `.overlay` layers the primary over the secondary until the device half opens. Do not nest it in a `List`, `ScrollView`, or `NavigationSplitView` (Apple). Measured on the iPhone Duo simulator, iOS 27.1: flat open, `.split` halves the container and ignores the inactive fold; an empty secondary still keeps its pane. For a companion that opens and closes, install `fold-companion`. A custom layout reads `GeometryProxy.reservedRegions(kind: .division, options: .includeInactive)`; the region's `frame` includes its margins. The hinge angle (`onHingeChange`) drives effects only, never layout. A toolbar item joins the vertical bar only with a title and a symbol (`Button(\"Details\", systemImage:)`).",
+  "files": [],
+  "registryDependencies": [],
+  "packageDependencies": [
+    {
+      "package": "SweetUI",
+      "product": "SweetUIFoundations",
+      "requirement": "0.x",
+      "sourceURL": "https://github.com/mangobyte-dev/sweetui.git",
+      "swiftPM": {
+        "kind": "upToNextMinor",
+        "minimumVersion": "0.5.0"
+      }
+    }
+  ],
+  "platforms": [
+    {
+      "name": "iOS",
+      "minimumVersion": "27.1"
+    }
+  ],
+  "tags": [
+    "foldable",
+    "iphone-duo",
+    "fold",
+    "two-pane",
+    "split",
+    "guidance"
+  ],
+  "accessibility": [
+    "Both panes stay in reading order: primary, then secondary.",
+    "System places panes; Dynamic Type and right to left follow the content."
+  ],
+  "preview": {
+    "screenshots": [
+      "docs/images/items/fold-arrangement-light.png",
+      "docs/images/items/fold-arrangement-dark.png"
+    ]
+  }
+}
