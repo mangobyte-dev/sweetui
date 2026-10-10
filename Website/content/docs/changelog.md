@@ -1,6 +1,42 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 (2026-10-10)
+
+A minor release that adds iPhone Duo support. Foundations do not change, so every item keeps the
+`0.5.0` floor, and a package pinned `.upToNextMinor(from: "0.5.0")` needs no change.
+`brew upgrade sweetui` installs the tool.
+
+### Added
+
+- `fold-companion` 0.1.0: `.foldCompanion(isPresented:content:)` shows a companion in the second pane
+  on the open display of iPhone Duo, and in a sheet on every other display. The panes split on the
+  fold's division reserved region, so nothing sits under the hinge: side by side around a fold down
+  the display (flat or half open), stacked around a fold across it only while half open (tabletop).
+  The closed cover display, an iPhone, an iPad, and a pane under 300 points use the sheet. A pose
+  change keeps the companion open, and the content keeps its identity, so its focus and scroll
+  position survive a fold. Right to left puts the content on the right. It builds with the iOS 27.1
+  SDK and runs from iOS 26.0, where the companion always opens in a sheet.
+- `fold-arrangement` 0.1.0, a recipe: Apple's `ArrangementView` (iOS 27.1) for two panes that always
+  show, with the measured limits that make `fold-companion` necessary for a companion that opens and
+  closes.
+
+### Fixed
+
+- `Scripts/capture_previews.py` cropped around the screen center when the demo started at the top
+  edge, because `sips` ignores a crop offset of 0. The iPhone Duo cover display has no top status bar,
+  so its captures came out shifted. The offset is now at least one pixel row; the iPhone captures do
+  not change.
+
+### Known limitations
+
+- The pinned iPhone 17 (iOS 27.0) and iPad simulators are not on the release machine, whose only
+  runtime is iOS 27.1 with the iPhone Duo. The new items' captures come from the iPhone Duo cover
+  display, so its side status bar shows in them. The Showcase UI suite and its visual references did
+  not run for this release; the Showcase package tests ran on the iPhone Duo.
+- Verified on the iPhone Duo simulator, iOS 27.1: closed, half open (book and tabletop), flat open in
+  both orientations, left to right and right to left. Real hardware is unverified.
+
+## 0.5.1 (2026-10-05)
 
 ### Fixed
 
@@ -11,9 +47,11 @@
   after each snapshot. The scroll helper swiped the tuning strip's swatch row, not the page, and a swipe
   flung targets under the navigation bar or tab bar. It now drags the page without momentum until the
   target sits mid-screen.
+- Website dependencies: Next.js 16.3.3 to 16.3.6 and fast-uri 3.1.6 to 3.1.8, for security fixes.
 
 ### Known limitations
 
+- The `0.5.1` tool reports `0.5.0` (`sweetui --version`), and the Homebrew tap stayed at `0.5.0`.
 - On the pinned iPad Pro 13-inch (M5) simulator, Xcode 27.0 (27A5252f), the pointer-effect test reads a
   0.00% pixel change under hover. It fails the same way at `bd9881c`, the commit that added it and passed on
   2026-09-07, so the simulator environment changed, not the code. The iPhone pin is unaffected. The iPad's

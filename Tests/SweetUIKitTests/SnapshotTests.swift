@@ -8,7 +8,7 @@ import Testing
 private let cacheRoot = "/home/test/Library/Caches/sweetui"
 private let snapshotDirectory = cacheRoot + "/registries/" + RegistryRelease.version
 private let notice =
-  "\nsweetui 0.6.0 is available. Run 'brew update && brew upgrade sweetui' to install.\n"
+  "\nsweetui 0.7.0 is available. Run 'brew update && brew upgrade sweetui' to install.\n"
 
 /// An empty working directory outside any clone, so resolution reaches the snapshot.
 private func workspace() throws -> InMemoryFileSystem {
@@ -177,7 +177,7 @@ extension Commands {
   @Test func updateNoticeFollowsTheTapTagsAndThrottlesByTheClock() throws {
     let fs = try fixture()
     let requests = Mutex(0)
-    let tags = Mutex(["sweetui-0.6.0", "sweetui-" + RegistryRelease.version])
+    let tags = Mutex(["sweetui-0.7.0", "sweetui-" + RegistryRelease.version])
     let stamp = cacheRoot + "/update-check.json"
     func install(at date: Date, _ extra: [String] = []) throws -> CommandOutput {
       try withDependencies {
@@ -200,7 +200,7 @@ extension Commands {
         try readText(fs.fileSystem, stamp) == """
           {
             "checkedAt": "\(fixedNow.formatted(.iso8601))",
-            "latest": "0.6.0"
+            "latest": "0.7.0"
           }
 
           """)
@@ -214,11 +214,11 @@ extension Commands {
       #expect(third.stdout == "up-to-date: example\n")
       #expect(requests.withLock { $0 } == 2)
       // --refresh asks regardless of the stamp.
-      tags.withLock { $0 = ["sweetui-0.7.0", "sweetui-0.6.0"] }
+      tags.withLock { $0 = ["sweetui-0.8.0", "sweetui-0.7.0"] }
       let forced = try install(at: fixedNow.addingTimeInterval(25 * 3600 + 60), ["--refresh"])
       #expect(
         forced.stdout.hasSuffix(
-          "\nsweetui 0.7.0 is available. Run 'brew update && brew upgrade sweetui' to install.\n"
+          "\nsweetui 0.8.0 is available. Run 'brew update && brew upgrade sweetui' to install.\n"
         ))
       #expect(requests.withLock { $0 } == 3)
       // Tags without the tool's prefix mean no release; the stamp records that.
@@ -257,8 +257,8 @@ extension Commands {
   @Test func updateNoticeNeverAdvertisesATapTagThatIsNotNewer() throws {
     // A tap still on the previous release is below the running tool, so an install must not
     // prompt an upgrade to an older version. A tag equal to the current version is silent too.
-    let older = "0.4.0"
-    #expect(RegistryRelease.version == "0.5.0")
+    let older = "0.5.0"
+    #expect(RegistryRelease.version == "0.6.0")
     for tag in [older, RegistryRelease.version] {
       let fs = try fixture()
       let result = try withDependencies {

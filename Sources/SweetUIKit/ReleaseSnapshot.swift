@@ -4,7 +4,7 @@ import Synchronization
 
 /// The pinned release the tool resolves against when no clone is at hand.
 public enum RegistryRelease {
-  public static let version = "0.5.0"
+  public static let version = "0.6.0"
   public static let repository = "mangobyte-dev/sweetui"
   public static let tap = "mangobyte-dev/homebrew-tap"
   /// Tap tags are `sweetui-<version>`, the convention measured from pfw's `pfw-<version>`.

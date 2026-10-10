@@ -8,8 +8,8 @@
 class Sweetui < Formula
   desc "Copy source-owned SwiftUI registry items into your app and keep them updatable"
   homepage "https://github.com/mangobyte-dev/sweetui"
-  url "https://github.com/mangobyte-dev/sweetui/releases/download/0.5.0/sweetui-macos-universal.tar.gz"
-  version "0.5.0"
+  url "https://github.com/mangobyte-dev/sweetui/releases/download/0.6.0/sweetui-macos-universal.tar.gz"
+  version "0.6.0"
   sha256 "0000000000000000000000000000000000000000000000000000000000000000"
   license "MIT"
 
@@ -20,6 +20,6 @@ class Sweetui < Formula
   end
 
   test do
-    assert_match "0.5.0", shell_output("#{bin}/sweetui --version")
+    assert_match "0.6.0", shell_output("#{bin}/sweetui --version")
   end
 end

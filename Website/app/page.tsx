@@ -177,7 +177,7 @@ export default function HomePage() {
       <section className="flex flex-col gap-6 pt-6">
         <div className="flex flex-wrap gap-2">
           <Link href={docHref("changelog")}>
-            <Badge>0.5.0</Badge>
+            <Badge>0.6.0</Badge>
           </Link>
           <Badge variant="secondary">iOS 26+</Badge>
           <Badge variant="secondary">MIT</Badge>
