@@ -216,11 +216,13 @@ def capture(
     top = max(0, int((info["y"] - TOP_MARGIN_POINTS) * scale))
     bottom = min(pixel_height, int((info["y"] + info["height"] + BOTTOM_MARGIN_POINTS) * scale))
     height = max(1, bottom - top)
-    # sips crops around the center; offset it to the content's top edge.
+    # sips crops around the center; offset it to the content's top edge. sips ignores an offset
+    # of 0 and crops around the center, which a display without a top status bar (the iPhone Duo
+    # cover display) hits, so the offset is at least one pixel row.
     run([
         "sips", str(raw_path),
         "--cropToHeightWidth", str(height), str(pixel_width),
-        "--cropOffset", str(top), "0",
+        "--cropOffset", str(max(top, 1)), "0",
         "--out", str(raw_path),
     ])
     destination.parent.mkdir(parents=True, exist_ok=True)
