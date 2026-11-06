@@ -44,10 +44,19 @@
     "shadcn": "4.19.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "wrangler": "4.127.1"
+    "wrangler": "4.156.0"
   },
   "overrides": {
     "sharp": ">=0.35.0",
-    "postcss": ">=8.5.26"
+    "postcss": ">=8.5.26",
+    "shadcn": {
+      "zod": ">=4.6.6"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": ">=11.0.1"
+    },
+    "@ts-morph/common": {
+      "minimatch": ">=11.0.1"
+    }
   }
 }
