@@ -1,6 +1,98 @@
 # SweetUI 🍭
 
+<p align="center">
+  <a href="https://github.com/mangobyte-dev/sweetui/actions/workflows/ci.yml"><img src="https://github.com/mangobyte-dev/sweetui/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/mangobyte-dev/sweetui/releases/latest"><img src="https://img.shields.io/github/v/release/mangobyte-dev/sweetui?color=FF6F91" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/Swift-6.2%2B-F05138?logo=swift&logoColor=white" alt="Swift 6.2+">
+  <img src="https://img.shields.io/badge/iOS-26%2B-000000?logo=apple&logoColor=white" alt="iOS 26+">
+  <a href="#quickstart"><img src="https://img.shields.io/badge/brew-mangobyte--dev%2Ftap%2Fsweetui-FBB040?logo=homebrew&logoColor=white" alt="Homebrew"></a>
+  <a href="https://sweetui.dev"><img src="https://img.shields.io/badge/browse-sweetui.dev-7C5CFF" alt="sweetui.dev"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
+</p>
+
+<p align="center"><b>Beautiful SwiftUI you copy in and own.</b><br>Theme once, install with one command, keep Apple's controls at the call site.</p>
+
 Native-first SwiftUI components and registry: copy in, own (shadcn/ui spirit). Swift source, metadata, not framework. Theme once, search, inspect, copy, customize, audit. Apple controls stay visible at the call site
+
+### One modifier, seven themes
+
+`.registryTheme(.indigo)` at the scene root restyles every item. Captures follow your GitHub light or dark mode
+
+<table>
+  <tr>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/system-dark.png"><img src="docs/images/themes/system-light.png" alt="system theme" width="104"></picture><br><code>.system</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/graphite-dark.png"><img src="docs/images/themes/graphite-light.png" alt="graphite theme" width="104"></picture><br><code>.graphite</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/indigo-dark.png"><img src="docs/images/themes/indigo-light.png" alt="indigo theme" width="104"></picture><br><code>.indigo</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/rose-dark.png"><img src="docs/images/themes/rose-light.png" alt="rose theme" width="104"></picture><br><code>.rose</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/emerald-dark.png"><img src="docs/images/themes/emerald-light.png" alt="emerald theme" width="104"></picture><br><code>.emerald</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/amber-dark.png"><img src="docs/images/themes/amber-light.png" alt="amber theme" width="104"></picture><br><code>.amber</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/mango-dark.png"><img src="docs/images/themes/mango-light.png" alt="mango theme" width="104"></picture><br><code>.mango</code></td>
+  </tr>
+</table>
+
+### Blocks: whole screens, one install
+
+<table>
+  <tr>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/finance-overview-dark.png"><img src="docs/images/items/finance-overview-light.png" alt="finance-overview block" width="250"></picture><br><code>finance-overview</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/nutrition-overview-dark.png"><img src="docs/images/items/nutrition-overview-light.png" alt="nutrition-overview block" width="250"></picture><br><code>nutrition-overview</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/activity-feed-dark.png"><img src="docs/images/items/activity-feed-light.png" alt="activity-feed block" width="250"></picture><br><code>activity-feed</code></td>
+  </tr>
+  <tr>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/message-scroller-dark.png"><img src="docs/images/items/message-scroller-light.png" alt="message-scroller block" width="250"></picture><br><code>message-scroller</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/signup-form-dark.png"><img src="docs/images/items/signup-form-light.png" alt="signup-form block" width="250"></picture><br><code>signup-form</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/questionnaire-dark.png"><img src="docs/images/items/questionnaire-light.png" alt="questionnaire block" width="250"></picture><br><code>questionnaire</code></td>
+  </tr>
+  <tr>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/dashboard-dark.png"><img src="docs/images/items/dashboard-light.png" alt="dashboard block" width="250"></picture><br><code>dashboard</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/calendar-dark.png"><img src="docs/images/items/calendar-light.png" alt="calendar" width="250"></picture><br><code>calendar</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/chart-dark.png"><img src="docs/images/items/chart-light.png" alt="chart" width="250"></picture><br><code>chart</code></td>
+  </tr>
+</table>
+
+### Components: native controls, themed
+
+<table>
+  <tr>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/button-dark.png"><img src="docs/images/items/button-light.png" alt="button" width="250"></picture><br><code>button</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/input-otp-dark.png"><img src="docs/images/items/input-otp-light.png" alt="input-otp" width="250"></picture><br><code>input-otp</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/avatar-dark.png"><img src="docs/images/items/avatar-light.png" alt="avatar" width="250"></picture><br><code>avatar</code></td>
+  </tr>
+  <tr>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/toast-dark.png"><img src="docs/images/items/toast-light.png" alt="toast" width="250"></picture><br><code>toast</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/alert-dark.png"><img src="docs/images/items/alert-light.png" alt="alert" width="250"></picture><br><code>alert</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/metric-card-dark.png"><img src="docs/images/items/metric-card-light.png" alt="metric-card" width="250"></picture><br><code>metric-card</code></td>
+  </tr>
+  <tr>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/slider-dark.png"><img src="docs/images/items/slider-light.png" alt="slider" width="250"></picture><br><code>slider</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/macro-progress-dark.png"><img src="docs/images/items/macro-progress-light.png" alt="macro-progress" width="250"></picture><br><code>macro-progress</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/items/fold-companion-dark.png"><img src="docs/images/items/fold-companion-light.png" alt="fold-companion for iPhone Duo" width="250"></picture><br><code>fold-companion</code> (iPhone Duo)</td>
+  </tr>
+</table>
+
+Every item, in light and dark, with its install command: [catalog](docs/catalog/index.md) and [sweetui.dev](https://sweetui.dev)
+
+### Tune on device, ship the code
+
+<table>
+  <tr>
+    <td width="260"><img src="docs/images/design-surface/iphone-card-light.png" alt="Design surface tuning panel over the auth-form block" width="240"></td>
+    <td>Add <code>SweetUIDesignSurface</code> and a debug build gets a Tune button. Select any item on screen, move the sliders, then <b>Copy Swift</b> to paste a <code>RegistryTheme(...)</code> back into your app. Release builds stay unchanged. Details: <a href="#tune-on-device">Tune on device</a></td>
+  </tr>
+</table>
+
+### Built by agents
+
+Four apps an agent built from the registry alone. Screens, commands and every friction point it hit: [case studies](docs/case-studies.md)
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/case-studies/chat-thread.png" alt="Chat app built from the registry" width="185"><br>Chat</td>
+    <td align="center"><img src="docs/images/case-studies/finance-overview.png" alt="Finance app built from the registry" width="185"><br>Finance</td>
+    <td align="center"><img src="docs/images/case-studies/settings-profile.png" alt="Settings app built from the registry" width="185"><br>Settings</td>
+    <td align="center"><img src="docs/images/case-studies/shop-detail.png" alt="Shop app built from the registry" width="185"><br>Shop</td>
+  </tr>
+</table>
 
 Browse 3 ways:
 
@@ -235,18 +327,6 @@ Version 0, honest prototype:
 - Installer writes exact-content receipts, performs conflict-aware three-way updates
 - Showcase compiles installables, recipes at iOS 26 floor. Pins visual contract checks for blocks, runs accessibility-audited demo walk per item
 - Published: `0.1.0` (2026-09-06), `0.2.0` (2026-09-07) as tags/GitHub releases, shipping universal `swiftui-registry` binary (`sweetui` from 0.5.0), Homebrew tap `mangobyte-dev/tap`. `0.3.0`: design-surface's public beta. `0.3.1`: exports reproduce the panel; recipes are selectable. `0.4.0`: `validated-input`, the case studies, search words and API fixes from the agent study. `0.5.0`: the project renamed SweetUI (`sweetui` tool and formula, `SweetUIFoundations`, `sweetui.dev`). `0.5.1`: visual references and the UI-test scroll helper. `0.6.0`: iPhone Duo support (`fold-companion`, `fold-arrangement`). Not yet: hosted registry, Xcode-project mutation, platforms beyond iOS. Known limitations: `CHANGELOG.md`
-
-## Showcase screenshots
-
-| Activity | Authentication | Finance |
-| --- | --- | --- |
-| ![](docs/images/items/activity-feed-light.png) | ![](docs/images/items/auth-form-light.png) | ![](docs/images/items/finance-overview-light.png) |
-
-| Button | Alert | Item |
-| --- | --- | --- |
-| ![](docs/images/items/button-light.png) | ![](docs/images/items/alert-light.png) | ![](docs/images/items/item-light.png) |
-
-Dark captures sit beside light under `docs/images/items/`; site toggles them
 
 ## Requirements
 
