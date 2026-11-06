@@ -216,19 +216,24 @@ def capture(
     top = max(0, int((info["y"] - TOP_MARGIN_POINTS) * scale))
     bottom = min(pixel_height, int((info["y"] + info["height"] + BOTTOM_MARGIN_POINTS) * scale))
     height = max(1, bottom - top)
+    # The demo's frame includes its padding, so cropping to its width keeps even side margins and
+    # drops chrome beside it: the iPhone Duo cover display shows its status bar at the side. On an
+    # iPhone the frame spans the screen, so the crop is the whole width.
+    left = max(0, int(info["x"] * scale))
+    width = max(1, min(pixel_width - left, int(info["width"] * scale)))
     # sips crops around the center; offset it to the content's top edge. sips ignores an offset
     # of 0 and crops around the center, which a display without a top status bar (the iPhone Duo
     # cover display) hits, so the offset is at least one pixel row.
     run([
         "sips", str(raw_path),
-        "--cropToHeightWidth", str(height), str(pixel_width),
-        "--cropOffset", str(max(top, 1)), "0",
+        "--cropToHeightWidth", str(height), str(width),
+        "--cropOffset", str(max(top, 1)), str(left),
         "--out", str(raw_path),
     ])
     destination.parent.mkdir(parents=True, exist_ok=True)
     run([
         "sips", str(raw_path),
-        "--resampleWidth", str(pixel_width // 2),
+        "--resampleWidth", str(width // 2),
         "--setProperty", "format", "png",
         "--out", str(destination),
     ])

@@ -402,6 +402,8 @@ struct TooltipRecipe: View {
 }
 
 struct FoldArrangementRecipe: View {
+    @Environment(\.registryTheme) private var theme
+
     var body: some View {
         Group {
             if #available(iOS 27.1, *) {
@@ -417,12 +419,14 @@ struct FoldArrangementRecipe: View {
                     }
                 }
                 .arrangementViewStyle(.split)
+                .contentMargins(.horizontal, 16, for: .scrollContent)
             } else {
                 Text("ArrangementView needs iOS 27.1.")
                     .foregroundStyle(.secondary)
             }
         }
         .frame(height: 360)
+        .clipShape(RoundedRectangle(cornerRadius: theme.metrics.cardRadius, style: .continuous))
         .registrySurface()
         .registryItem("fold-arrangement")
     }

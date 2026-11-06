@@ -984,6 +984,7 @@ struct ChartDemo: View {
 }
 
 struct FoldCompanionDemo: View {
+    @Environment(\.registryTheme) private var theme
     @State private var isShowingDetails = false
 
     var body: some View {
@@ -1006,6 +1007,7 @@ struct FoldCompanionDemo: View {
             }
         }
         .frame(height: 360)
+        .clipShape(RoundedRectangle(cornerRadius: theme.metrics.cardRadius, style: .continuous))
         .registrySurface()
     }
 }
