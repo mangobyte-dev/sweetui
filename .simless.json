@@ -1,0 +1,14 @@
+{
+  "appTarget": "SweetUIShowcase",
+  "device": "iphone",
+  "kitDir": "Examples/Showcase/SweetUIShowcase/Simless",
+  "project": "Examples/Showcase/SweetUIShowcase.xcodeproj",
+  "scheme": "SweetUIShowcaseSimless",
+  "sourceDirs": [
+    "Examples/Showcase/SweetUIShowcase",
+    "Examples/Showcase/SweetUIShowcasePackage/Sources",
+    "Sources/SweetUIFoundations",
+    "Sources/SweetUIDesignSurface"
+  ],
+  "testTarget": "SweetUIShowcaseTests"
+}

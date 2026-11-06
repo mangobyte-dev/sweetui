@@ -5,6 +5,9 @@ import SweetUIShowcaseFeature
 @main
 struct SweetUIShowcaseApp: App {
     init() {
+        #if DEBUG && os(iOS)
+        SimlessHost.startIfRequested()
+        #endif
         // A test-harness switch, never set by a person: the UI suite passes it
         // on the iPad destination, where the iOS 27.0 simulator's in-process
         // keyboard animation intermittently never reports completion and every

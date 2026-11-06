@@ -19,11 +19,19 @@
 			remoteGlobalIDString = 8B41F6442DEDD0D5001A66F9;
 			remoteInfo = SweetUIShowcase;
 		};
+		511355000000000000000007 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8B41F63D2DEDD0D5001A66F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8B41F6442DEDD0D5001A66F9;
+			remoteInfo = SweetUIShowcase;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		8B41F6452DEDD0D5001A66F9 /* SweetUIShowcase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SweetUIShowcase.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B41F65C2DEDD0D6001A66F9 /* SweetUIShowcase.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SweetUIShowcase.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		511355000000000000000001 /* SweetUIShowcaseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SweetUIShowcaseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,6 +66,7 @@
 			path = Config;
 			sourceTree = "<group>";
 		};
+		511355000000000000000002 /* SweetUIShowcaseTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SweetUIShowcaseTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +86,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		511355000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -88,6 +104,7 @@
 				8B41F65F2DEDD0D6001A66F9 /* SweetUIShowcaseUITests */,
 				8B41F6812DEDD23B001A66F9 /* Frameworks */,
 				8B41F6462DEDD0D5001A66F9 /* Products */,
+				511355000000000000000002 /* SweetUIShowcaseTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -96,6 +113,7 @@
 			children = (
 				8B41F6452DEDD0D5001A66F9 /* SweetUIShowcase.app */,
 				8B41F65C2DEDD0D6001A66F9 /* SweetUIShowcase.xctest */,
+				511355000000000000000001 /* SweetUIShowcaseTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -158,6 +176,29 @@
 			productReference = 8B41F65C2DEDD0D6001A66F9 /* SweetUIShowcase.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		511355000000000000000003 /* SweetUIShowcaseTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 511355000000000000000009 /* Build configuration list for PBXNativeTarget "SweetUIShowcaseTests" */;
+			buildPhases = (
+				511355000000000000000004 /* Sources */,
+				511355000000000000000005 /* Frameworks */,
+				511355000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				511355000000000000000008 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				511355000000000000000002 /* SweetUIShowcaseTests */,
+			);
+			name = SweetUIShowcaseTests;
+			packageProductDependencies = (
+			);
+			productName = SweetUIShowcaseTests;
+			productReference = 511355000000000000000001 /* SweetUIShowcaseTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -168,6 +209,10 @@
 				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					511355000000000000000003 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 8B41F6442DEDD0D5001A66F9;
+					};
 					8B41F6442DEDD0D5001A66F9 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -187,12 +232,16 @@
 			mainGroup = 8B41F63C2DEDD0D5001A66F9;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
+			packageReferences = (
+				5113550000000000A0000001 /* XCLocalSwiftPackageReference "SweetUIShowcasePackage" */,
+			);
 			productRefGroup = 8B41F6462DEDD0D5001A66F9 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				8B41F6442DEDD0D5001A66F9 /* SweetUIShowcase */,
 				8B41F65B2DEDD0D6001A66F9 /* SweetUIShowcaseUITests */,
+				511355000000000000000003 /* SweetUIShowcaseTests */,
 			);
 		};
 /* End PBXProject section */
@@ -206,6 +255,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		8B41F65A2DEDD0D6001A66F9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		511355000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -229,6 +285,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		511355000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -236,6 +299,11 @@
 			isa = PBXTargetDependency;
 			target = 8B41F6442DEDD0D5001A66F9 /* SweetUIShowcase */;
 			targetProxy = 8B41F65D2DEDD0D6001A66F9 /* PBXContainerItemProxy */;
+		};
+		511355000000000000000008 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8B41F6442DEDD0D5001A66F9 /* SweetUIShowcase */;
+			targetProxy = 511355000000000000000007 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -437,6 +505,40 @@
 			};
 			name = Release;
 		};
+		51135500000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = E9M62S6JBG;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.sweetui.showcase.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SweetUIShowcase.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SweetUIShowcase";
+			};
+			name = Debug;
+		};
+		51135500000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = E9M62S6JBG;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.sweetui.showcase.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SweetUIShowcase.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SweetUIShowcase";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -467,15 +569,33 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		511355000000000000000009 /* Build configuration list for PBXNativeTarget "SweetUIShowcaseTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				51135500000000000000000A /* Debug */,
+				51135500000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5113550000000000A0000001 /* XCLocalSwiftPackageReference "SweetUIShowcasePackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = SweetUIShowcasePackage;
+		};
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		8B41F6822DEDD23B001A66F9 /* SweetUIShowcaseFeature */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 5113550000000000A0000001 /* XCLocalSwiftPackageReference "SweetUIShowcasePackage" */;
 			productName = SweetUIShowcaseFeature;
 		};
 		8B41F6842DEDD25C001A66F9 /* SweetUIShowcaseFeature */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 5113550000000000A0000001 /* XCLocalSwiftPackageReference "SweetUIShowcasePackage" */;
 			productName = SweetUIShowcaseFeature;
 		};
 /* End XCSwiftPackageProductDependency section */
