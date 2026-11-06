@@ -20,13 +20,13 @@ Native-first SwiftUI components and registry: copy in, own (shadcn/ui spirit). S
 
 <table>
   <tr>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/system-dark.png"><img src="docs/images/themes/system-light.png" alt="system theme" width="104"></picture><br><code>.system</code></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/graphite-dark.png"><img src="docs/images/themes/graphite-light.png" alt="graphite theme" width="104"></picture><br><code>.graphite</code></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/indigo-dark.png"><img src="docs/images/themes/indigo-light.png" alt="indigo theme" width="104"></picture><br><code>.indigo</code></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/rose-dark.png"><img src="docs/images/themes/rose-light.png" alt="rose theme" width="104"></picture><br><code>.rose</code></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/emerald-dark.png"><img src="docs/images/themes/emerald-light.png" alt="emerald theme" width="104"></picture><br><code>.emerald</code></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/amber-dark.png"><img src="docs/images/themes/amber-light.png" alt="amber theme" width="104"></picture><br><code>.amber</code></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/mango-dark.png"><img src="docs/images/themes/mango-light.png" alt="mango theme" width="104"></picture><br><code>.mango</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/system-dark.png"><img src="docs/images/themes/system-light.png" alt="system theme" width="88" height="191"></picture><br><code>.system</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/graphite-dark.png"><img src="docs/images/themes/graphite-light.png" alt="graphite theme" width="88" height="191"></picture><br><code>.graphite</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/indigo-dark.png"><img src="docs/images/themes/indigo-light.png" alt="indigo theme" width="88" height="191"></picture><br><code>.indigo</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/rose-dark.png"><img src="docs/images/themes/rose-light.png" alt="rose theme" width="88" height="191"></picture><br><code>.rose</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/emerald-dark.png"><img src="docs/images/themes/emerald-light.png" alt="emerald theme" width="88" height="191"></picture><br><code>.emerald</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/amber-dark.png"><img src="docs/images/themes/amber-light.png" alt="amber theme" width="88" height="191"></picture><br><code>.amber</code></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/themes/mango-dark.png"><img src="docs/images/themes/mango-light.png" alt="mango theme" width="88" height="191"></picture><br><code>.mango</code></td>
   </tr>
 </table>
 
