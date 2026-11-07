@@ -4,74 +4,98 @@
 
 ### Added
 
-- The Tune panel audits contrast. A Contrast section beside Export measures the label on the accent
-  and the accent as text, plus the text pairs once the theme sets a foreground or background, as
-  WCAG 2.2 ratios in light and dark and again under Increase Contrast. A row reads Passes, Passes
-  with Increase Contrast, or Fails against the 4.5:1 the Human Interface Guidelines apply to text up
-  to 17 points, with the ratios beside it. When the other label (white or black) would pass, a button
-  applies it. Ratios agree with WebAIM's checker to two decimals (`ContrastAuditTests`).
-- Two simless fixtures, `TunePanel` and `TunePanelEmerald`, render the embedded panel headless.
-- Notes for the agent. A Notes section under the screen and the selection takes a note about the
-  selected item, or about the screen when nothing is selected, and appends it to `design-notes.json`
-  beside `registry-tokens.json`: the text, the item and its chain, the named screen, the tokens the
-  item reads (from the generated map), its moved knobs, its frame in window points, the preset code
-  that was up, an ISO 8601 date, and `resolved: false`. Open notes list newest first; swipe to
-  delete. An agent reads the file from the app container and sets `resolved` when the work is done.
-  Absent keys mean `nil` (a screen note has no `item` or `frame`).
-- MCP `list_design_notes` and `resolve_design_note` read that file back and mark a note done. Give
-  `file`, or `udid` and `bundleId` for the simulator app container (`xcrun simctl get_app_container`).
-  The `sweetui` skill tells an agent to read the notes before tuning a reviewed screen.
-- Variants from the agent. An agent writes `design-variants.json` beside the tokens, `{"variants":
-  [{"name", "code"}]}`, and the panel shows one chip per variant under the presets. A tap applies
-  the code over the current tuning (the environment switches stay) and writes the pick back as
-  `chosen`. A chip reads selected while the knobs still match its code. No build or capture per
-  variant: a preset code applies at runtime. A code the panel cannot decode applies nothing.
-- The agent's eyes. While the panel is up it rewrites `design-context.json` beside the tokens when
-  the screen, its items, the selection, the theme, or a knob changes (never on a scroll): the named
-  screen, every registry item on it with its frame in window points, ancestors, the tokens it reads
-  and its moved knobs, the selection chain, the preset code, the environment switches, and the last
-  screenshot. Saving a note, or the Capture the screen button, renders the app's window without the
-  tool's own window, outlines the selected item, and saves `notes/<id>.png`; a note carries its
-  `screenshot` path. MCP `get_design_context` returns the file with absolute screenshot paths, so
-  an agent reads what the person saw, as Figma's `get_screenshot` lets its agent do.
-- The agent's hand. MCP `set_tuning` writes a theme into the device's `registry-tokens.json` as a
-  preset code (a code, or a tuning object merged over the device's theme; the environment switches
-  stay) and `set_knobs` merges an item's knob values into `design-knobs.json` (`null` returns a knob
-  to its shipped default). The panel and every registry item follow through the file watch, no
-  rebuild. Each write records the previous values in `design-agent-change.json`; the panel shows
-  "From the agent" with Undo and Keep. Verified on the iPhone Duo: a `set_tuning` over the real MCP
-  server turned the running app pink and the banner's Undo put indigo back. Undo is one step deep.
-- Note threads. `resolve_design_note` takes a `reply` and `changedFiles`, and stamps `resolvedAt`.
-  The panel shows an answered note under Answered with the agent's reply and the files it changed;
-  swipe to reopen it (the reply stays as the thread so far) or delete it.
-- History. Every settled state of the design on the device (a knob or preset the person moved, a
-  write by the agent, a variant pick) is an entry in `design-history.json`: the preset code, the
-  knob values, the source, and a name once the person checkpoints it. The panel's History section
-  has Undo and Redo, a Checkpoint field that names the current state, the named states to restore
-  by a tap, and Compare to shipped, which lists each knob that differs from the defaults with its
-  from and to values. Two hundred entries are kept; named ones outlive the unnamed.
+- Tune, the card `designSurface()` puts over a running debug build, with three places: Tokens (Start
+  from, the theme groups with Contrast, the selected item's knobs, the host's sections), Notes (the
+  conversation with the agent), and Versions (the history, the code and the Swift, Hand off). The
+  toolbar holds Select and the item menu; the bottom bar holds Undo, Redo, Preview, and Note. Preview
+  is one menu of appearance, text size, direction (System, Left to right, Right to left), outlines,
+  and guides, applied beside the theme and never part of a version, also for a host that paints the
+  items from its own tokens. The place picker becomes a menu at an accessibility text size and in a
+  card too short to keep 120 pt for the place. `DesignSurface.card(at:tunesRegistryTheme:sample:)`
+  draws the card over in-memory files for previews and render checks; the simless fixtures
+  `TuneCard*` render it, the Notes states included.
+- Versions. Each settled gesture is one version in `design-history.json`: a slider on release, a menu
+  or a switch at once, a color 0.6 s after its last change. A version names its author (you or the
+  agent), what it came from, and its parent. Versions form a tree: a change after Undo branches from
+  Current and never deletes a named version. Undo goes to the parent, Redo to the newest child, and
+  Undo right after Restore returns to the version left. Past 200 versions the oldest unnamed one
+  drops, never Current, a trial's base, or Shipped. A device with the older list-shaped file keeps
+  its history. On launch the value files are the truth, so a change lost to a kill is recorded once.
+  While Tune sets no token the app shows its own theme (Source); Source and Default are versions.
+- Notes. A note is about the selected item, or the screen when the item is not on it, and goes to
+  `design-notes.json` with a screenshot under `notes/`, the item and its chain, the tokens it reads,
+  its moved knobs, its frame, and the design's code (empty under Source). Threads list oldest first:
+  the note, the agent's answer with the files it changed, the proposals that answer it, then the
+  replies. A note reads Not read yet, Read, or Answered, and a line above the threads says when the
+  agent last read them. Reply on any note or proposal threads the next note to it (`inReplyTo`) with
+  that note's subject. Delete is a swipe, mirrored as an accessibility action. The composer sits at
+  the bottom of the card.
+- Proposals. The agent offers a design: a full code, or tokens as a delta, and knob values. One that
+  asks to be applied is tried as soon as it arrives, card open or closed, merged over the current
+  version; one that arrives while a slider is held is tried on release, on top of it. The Trying
+  strip ("Trying Warm. Accent, Card radius.") offers Keep and Discard. Discard puts the base back
+  exactly, Keep turns down the other proposals that answer the same note, and an edit keeps it ("Kept
+  Warm. Your change is on top."). Undo, Restore, or Apply while trying discards it; Redo or Restore
+  onto a proposal's version tries it again; Undo past a kept one records it discarded. A proposal row
+  shows its reason and its Changes in words, with Try, Keep, Discard, or Try again for its state.
+  Notes and the Tune button count what is new from the agent ("Tune, 1 new from the agent"), and
+  VoiceOver announces each try, decision, and answer.
+- One writer per file. Tune writes `registry-tokens.json`, `design-knobs.json`, `design-notes.json`,
+  `design-history.json`, `design-context.json`, and `design-handoff.json`. The agent writes only
+  `design-agent.json`: read dates by note and hand-off id, answers keyed by id, and proposals. Tune
+  reads it through `@SharedReader` and never saves it, so neither side loses the other's write. A
+  0-byte `design-agent.json`, as Sharing creates the file it watches, reads as empty on both sides.
+- The agent's eyes. With the surface on, card open or closed, Tune rewrites `design-context.json`
+  after each version, screen change, and try, and when the keyboard hides: the named screen, every
+  item with its frame, tokens, and moved knobs, the selection, the design's code, the code its last
+  screenshot shows, the proposal trying, Preview's overrides, and `tunesTheme`. It saves
+  `notes/context.png` once the app has drawn, never while Selecting.
+- Hand off, in Versions, keeps a proposal that is trying, then writes `design-handoff.json` and
+  `notes/handoff.png`: an id, the design's code (empty under Source) and its Swift, the moved knobs,
+  the changes from Default, the notes the agent has not answered, and the previous hand-off. Its
+  status reads "Handed off at 10:42. Not read yet.", "Read by the agent at 10:43.", "Shipped at
+  10:51. Changed RegistryTheme+App.swift.", or the agent's answer. An answer with changed files is
+  Shipped: Tune clears its token and knob overrides so the source shows. Where a code is shown under
+  Source, Tune says Source.
+- Six MCP design tools beside the seven released: `get_design_context`;
+  `list_design_notes(includeAnswered)`, which joins answers, proposals with their state (offered,
+  trying, kept, discarded), and the person's decisions, and stamps a read date per note returned;
+  `propose_design(name, reason?, note?, code? or tokens?, knobs?, apply = true)`, which validates the
+  code, the token keys and values, and the knobs (`null` is a knob's default), refuses code and
+  tokens when `tunesTheme` is false, and never writes the value files; `answer_design_note`, which
+  refuses an unknown id; `read_handoff`, which stamps the hand-off read; and `answer_handoff`, which
+  takes the current or the previous hand-off and says when a newer one waits. Give `file`, or `udid`
+  and `bundleId` for the simulator app container (`xcrun simctl get_app_container`). The `sweetui`
+  skill walks the loop: see, read, propose, answer, ship.
+- Contrast, in Tokens' Color group. It measures the label on the accent and the accent as text, plus
+  the text pairs once the theme sets a foreground or background, as WCAG 2.2 ratios in light and dark
+  and again under Increase Contrast. A row reads Passes, Passes with Increase Contrast, or Fails
+  against the 4.5:1 the Human Interface Guidelines apply to text up to 17 points, with the ratios
+  beside it. When the other label (white or black) would pass, a button applies it. Ratios agree with
+  WebAIM's checker to two decimals (`ContrastAuditTests`).
 - Knobs the agent declares, and two new kinds. `ItemKnob.bool` draws a switch stored as 0 or 1 and
-  `ItemKnob.choice` draws a picker stored as the option's index, so `design-knobs.json`, `set_knobs`,
-  and the history keep their numeric shape; foundations gain `registryKnob(_:_:default: Bool)` and
-  `registryKnob(_:_:options:default:)` to read them. An agent writes `design-knob-specs.json`
-  beside the tokens, `{"<item>": [{"name", "title", "kind": "number" | "bool" | "choice", "min",
-  "max", "step", "options", "shipped"}]}`, and the panel shows the controls under the item at once;
-  a host knob of the same name wins, and a spec the panel cannot draw is dropped with a log line.
-  The item reads a new knob after one build, as before.
-- Hand off. Send to agent, under Export, writes `design-handoff.json` beside the tokens and takes a
-  screenshot: the theme as a preset code and as Swift, the chosen variant, every moved knob, each
-  knob that differs from the shipped theme, the open notes with their screenshots, and the named
-  checkpoints. MCP `read_handoff` returns it with absolute screenshot paths and the steps that put
-  it into source: `apply_preset` for the theme, the knobs as new shipped defaults, the notes
-  resolved with replies.
+  `ItemKnob.choice` draws a picker stored as the option's index, so `design-knobs.json`, proposals,
+  and versions keep their numeric shape; foundations gain `registryKnob(_:_:default: Bool)` and
+  `registryKnob(_:_:options:default:)` to read them. An agent writes `design-knob-specs.json` beside
+  the tokens, `{"<item>": [{"name", "title", "kind": "number" | "bool" | "choice", "min", "max",
+  "step", "options", "shipped"}]}`, and Tune shows the controls under the item at once; a host knob
+  of the same name wins, and a spec Tune cannot draw is dropped with a log line. The item reads a new
+  knob after one build.
+- Two simless fixtures, `TunePanel` and `TunePanelEmerald`, render the embedded `TuningPanel` headless.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
   background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only
   when there is something to measure, so a code with a system accent prints what it always did; the
-  Tune panel measures system accents on the device.
+  Tune measures system accents on the device.
 
 ### Known limitations
 
+- Changes name a token by its key in words ("Card radius") with points for the metrics, until the
+  token catalog gives titles and units.
+- In a card too short to keep 120 pt for Notes, the composer drops its subject line (the field's hint
+  still names it) and stands in for the strip and the bottom bar; Keep and Discard stay on the
+  proposal's row.
+- `design-variants.json` and `design-agent-change.json` from earlier builds are ignored, not deleted.
 - On the iPhone Duo cover display (iOS 27.1 simulator) Tune's Preview menu opens upward and runs past
   the top edge: Outlines and Guides sit off screen when it opens, so they take more than 2 taps.
   Whether the system color picker presents there is not checked. Unverified on the pinned iPhone 17.

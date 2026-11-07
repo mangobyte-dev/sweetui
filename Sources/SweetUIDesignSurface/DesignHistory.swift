@@ -120,7 +120,8 @@ public struct DesignHistory: Codable, Equatable, Sendable {
 
     /// Moves Current back and returns the version it lands on: the base while
     /// a proposal is on trial, which discards it; the version the last Restore
-    /// left, right after it; otherwise the parent. `nil` at a root.
+    /// left, right after it; otherwise the parent, which discards a kept
+    /// proposal whose version it leaves. `nil` at a root.
     @discardableResult
     public mutating func undo() -> Entry? {
         if trial != nil {
@@ -132,22 +133,28 @@ public struct DesignHistory: Codable, Equatable, Sendable {
             self.returnTo = nil
             return entry(returnTo)
         }
-        guard let parent = entry(current)?.parent else { return nil }
+        guard let leaving = entry(current), let parent = leaving.parent else { return nil }
+        if case .proposal(let id) = leaving.origin, decisions[id]?.state == .kept {
+            decisions[id] = Decision(state: .discarded, date: .now)
+        }
         current = parent
         return entry(parent)
     }
 
     /// Moves Current to its newest child and returns it; `nil` at a leaf.
+    /// A proposal's version that is not kept goes back on trial.
     @discardableResult
     public mutating func redo() -> Entry? {
         guard let current, let child = entries.last(where: { $0.parent == current }) else { return nil }
         self.current = child.id
         returnTo = nil
+        resumeTrial(child)
         return child
     }
 
     /// Makes a past version current and remembers the one it left, deleting
-    /// nothing; a trial is discarded first. `nil` for an id the history lacks.
+    /// nothing; a trial is discarded first, and a proposal's version that is
+    /// not kept goes back on trial. `nil` for an id the history lacks.
     @discardableResult
     public mutating func restore(_ id: UUID) -> Entry? {
         guard let target = entry(id) else { return nil }
@@ -156,7 +163,17 @@ public struct DesignHistory: Codable, Equatable, Sendable {
             returnTo = current
             current = id
         }
+        resumeTrial(target)
         return target
+    }
+
+    /// The tree decides the state: Current on a proposal's version puts the
+    /// proposal on trial again over that version's parent, unless it is kept.
+    private mutating func resumeTrial(_ entry: Entry) {
+        guard case .proposal(let id) = entry.origin, !id.isEmpty, let base = entry.parent,
+              trial?.version != entry.id, decisions[id]?.state != .kept else { return }
+        trial = Trial(proposal: id, version: entry.id, base: base)
+        decisions[id] = Decision(state: .tried, date: .now)
     }
 
     /// Names Current; an empty name clears it.
@@ -187,6 +204,13 @@ public struct DesignHistory: Codable, Equatable, Sendable {
         decisions[trial.proposal] = Decision(state: .kept, date: .now)
         for id in offered { decisions[id] = Decision(state: .discarded, date: .now) }
         self.trial = nil
+    }
+
+    /// Turns down a proposal that is offered, not on trial; the device keeps
+    /// what it shows.
+    public mutating func discard(offered id: String) {
+        guard trial?.proposal != id else { return }
+        decisions[id] = Decision(state: .discarded, date: .now)
     }
 
     /// Makes the trial's base current again and discards the proposal. Its

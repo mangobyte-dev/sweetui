@@ -4,10 +4,12 @@ import Sharing
 import SwiftUI
 
 /// Tune's card under the drag bar: the toolbar with Select and the item
-/// menu, the place picker, the place, and the bottom bar with Undo, Redo,
-/// Preview, and Note. At an accessibility text size, or when the card is
-/// too short to keep 120 pt for the place under the picker, the picker
-/// moves into the toolbar as a menu. The toolbar is the card's own 44 pt
+/// menu, the place picker, the place, the Trying strip while a proposal is
+/// trying, and the bottom bar with Undo, Redo, Preview, and Note. At an
+/// accessibility text size, or when the card is too short to keep 120 pt for
+/// the place under the picker, the picker moves into the toolbar as a menu;
+/// in a card that short one row sits at the bottom: Notes' composer, else the
+/// strip while it shows, else the bottom bar. The toolbar is the card's own 44 pt
 /// row under an empty inline navigation bar, which takes no height on the
 /// place and carries Back on a pushed host page (measured 2026-11-07 at
 /// 300 × 260: toolbar items in the navigation bar left the place 114 pt,
@@ -24,8 +26,10 @@ struct TuneCard: View {
     /// and the bottom bar take the rest.
     static let heightForPickerRow: CGFloat = 44 + 40 + 44 + 120
 
+    private var isShort: Bool { height < Self.heightForPickerRow }
+
     private var placeIsMenu: Bool {
-        typeSize.isAccessibilitySize || height < Self.heightForPickerRow
+        typeSize.isAccessibilitySize || isShort
     }
 
     var body: some View {
@@ -50,14 +54,19 @@ struct TuneCard: View {
                     }
                     .background(.bar)
                 }
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    bottom(composes: model.place == .notes)
+                }
                 .navigationTitle("")
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationDestination(for: String.self) { name in
-                    if let page = model.stage.hostPage?(name) { page } else { Text(verbatim: name) }
+                    Group {
+                        if let page = model.stage.hostPage?(name) { page } else { Text(verbatim: name) }
+                    }
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        bottom(composes: false)
+                    }
                 }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            BottomBar(model: model)
         }
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
@@ -75,6 +84,23 @@ struct TuneCard: View {
         // about the selected item.
         .onChange(of: model.stage.selection.item) { _, item in
             if item == nil { path = [] }
+        }
+    }
+
+    /// The rows at the bottom, inside each page of the stack so its scroll
+    /// view keeps its last row above them (an inset outside the stack does
+    /// not reach the page): Notes' composer, the strip, the bottom bar.
+    private func bottom(composes: Bool) -> some View {
+        VStack(spacing: 0) {
+            if composes {
+                NotesComposer(model: model, compact: isShort)
+            }
+            if !(isShort && composes) {
+                TryingStrip(model: model)
+            }
+            if !(isShort && (composes || model.showsStrip)) {
+                BottomBar(model: model)
+            }
         }
     }
 
@@ -114,14 +140,15 @@ private struct Toolbar: View {
     }
 }
 
-/// Tokens, Notes, and Versions as segments.
+/// Tokens, Notes, and Versions as segments; Notes counts what is new from
+/// the agent.
 private struct PlacePicker: View {
     @Bindable var model: TuneModel
 
     var body: some View {
         Picker("Place", selection: $model.place) {
             ForEach(TuneModel.Place.allCases) { place in
-                Text(place.title)
+                Text(verbatim: model.title(place))
                     .tag(place)
                     .accessibilityIdentifier("tuning.place.\(place.rawValue)")
             }
@@ -140,7 +167,7 @@ private struct PlaceMenu: View {
         Menu {
             Picker("Place", selection: $model.place) {
                 ForEach(TuneModel.Place.allCases) { place in
-                    Text(place.title)
+                    Text(verbatim: model.title(place))
                         .tag(place)
                         .accessibilityIdentifier("tuning.place.\(place.rawValue)")
                 }
@@ -211,6 +238,57 @@ private struct ItemMenu: View {
         .accessibilityLabel(model.itemMenuTitle)
         .accessibilityHint("Lists the items on this screen, to select one.")
         .accessibilityIdentifier("tuning.screen")
+    }
+}
+
+/// While a proposal is trying: "Trying Warm. Accent, Card radius." with Keep
+/// and Discard, the one colored block on the card; then for 2 s what became
+/// of it. The name opens Notes at the proposal.
+private struct TryingStrip: View {
+    let model: TuneModel
+
+    var body: some View {
+        Group {
+            if let proposal = model.trying {
+                HStack(spacing: ToolChrome.compactSpacing) {
+                    Button {
+                        model.stripNameTapped()
+                    } label: {
+                        Text(verbatim: model.tryingLine(proposal))
+                            .font(.subheadline.weight(.semibold))
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityHint("Shows the proposal in Notes.")
+                    Button {
+                        withAnimation(ToolChrome.animation) { model.discardButtonTapped() }
+                    } label: {
+                        Text("Discard").frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+                    }
+                    .accessibilityIdentifier("tuning.trying.discard")
+                    Button {
+                        withAnimation(ToolChrome.animation) { model.keepButtonTapped() }
+                    } label: {
+                        Text("Keep").fontWeight(.semibold).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+                    }
+                    .accessibilityIdentifier("tuning.trying.keep")
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("tuning.trying")
+            } else if let message = model.stripMessage {
+                Text(verbatim: message)
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .accessibilityIdentifier("tuning.trying")
+            }
+        }
+        .buttonStyle(.borderless)
+        .foregroundStyle(.white)
+        .tint(.white)
+        .padding(.horizontal, ToolChrome.spacing)
+        .background(ToolChrome.accent)
     }
 }
 
@@ -367,34 +445,94 @@ extension View {
 }
 
 extension DesignSurface {
+    /// What a card preview holds: nothing yet, a conversation with the
+    /// agent (notes it read and answered, its proposals, a reply), or that
+    /// conversation with a proposal trying.
+    public enum CardSample: Sendable {
+        case firstOpen, conversation, trying
+    }
+
     /// Tune's card open at a place, drawn as the surface draws it, over a
     /// stage and files of its own kept in memory, so a preview or a render
     /// check shows the card without its window. Its controls work on that
     /// copy and write nothing for the agent.
     @MainActor
-    public static func card(at place: Place, tunesRegistryTheme: Bool = true) -> some View {
-        TuneCardPreview(place: place, tunesTheme: tunesRegistryTheme)
+    public static func card(at place: Place, tunesRegistryTheme: Bool = true, sample: CardSample = .firstOpen) -> some View {
+        TuneCardPreview(place: place, tunesTheme: tunesRegistryTheme, sample: sample)
     }
 }
 
 private struct TuneCardPreview: View {
     @State private var model: TuneModel
 
-    init(place: TuneModel.Place, tunesTheme: Bool) {
+    init(place: TuneModel.Place, tunesTheme: Bool, sample: DesignSurface.CardSample) {
         let model = withDependencies {
             $0.defaultFileStorage = .inMemory
             $0.defaultAppStorage = .inMemory
             $0.designOutbox = .inert
         } operation: {
+            if sample != .firstOpen {
+                let agent = Shared(
+                    wrappedValue: AgentRecord(),
+                    .fileStorage(AgentRecord.fileURL, decode: AgentRecord.decode, encode: AgentRecord.encode))
+                agent.withLock { $0 = Self.conversation.agent }
+            }
             let stage = DesignSurfaceState()
             stage.tunesTheme = tunesTheme
             return TuneModel(stage: stage)
         }
         // A first open: the files are the first version.
         model.$history.withLock { $0.reconcile(values: model.liveDesign) }
+        if sample != .firstOpen {
+            model.$notes.withLock { $0 = Self.conversation.notes }
+        }
+        if sample == .trying {
+            model.tryButtonTapped(Self.conversation.agent.proposals[0].id)
+        }
         model.place = place
         _model = State(initialValue: model)
     }
+
+    /// Three notes and two proposals, at fixed times on 7 November 2026.
+    private static let conversation: (notes: [DesignNote], agent: AgentRecord) = {
+        let day = Date(timeIntervalSince1970: 1_794_038_400)
+        func at(_ minutes: Double) -> Date { day.addingTimeInterval(minutes * 60) }
+        let flat = UUID(uuidString: "6F1C2A10-0000-4000-8000-0000000000A1")!
+        let reply = UUID(uuidString: "6F1C2A10-0000-4000-8000-0000000000A2")!
+        let crowded = UUID(uuidString: "6F1C2A10-0000-4000-8000-0000000000A3")!
+        var notes = [
+            DesignNote(
+                id: flat, createdAt: at(2), text: "The cards sit flat on the background.", item: "card",
+                chain: ["card"], screen: "Components", tokens: ["cardRadius", "surface"], knobs: [:], frame: nil,
+                presetCode: ""),
+            DesignNote(
+                id: reply, createdAt: at(9), text: "Warmer, but keep the buttons as they are.", item: "card",
+                chain: ["card"], screen: "Components", tokens: ["cardRadius", "surface"], knobs: [:], frame: nil,
+                presetCode: ""),
+            DesignNote(
+                id: crowded, createdAt: at(12), text: "This screen feels crowded.", item: nil, chain: [],
+                screen: "Components", tokens: [], knobs: [:], frame: nil, presetCode: ""),
+        ]
+        notes[0].screenshot = "notes/\(flat.uuidString).png"
+        notes[1].inReplyTo = "warm"
+        let agent = AgentRecord(
+            read: .init(notes: [flat.uuidString: at(5), reply.uuidString: at(10)]),
+            answers: [
+                flat.uuidString: .init(
+                    reply: "Raised the card surface and rounded the corners.",
+                    changedFiles: ["RegistryTheme+App.swift"], date: at(6)),
+            ],
+            proposals: [
+                Proposal(
+                    id: "warm", date: at(7), name: "Warm", reason: "An orange accent with rounder cards.",
+                    note: flat.uuidString, tokens: ["accent": .string("orange"), "cardRadius": .number(20)],
+                    apply: false),
+                Proposal(
+                    id: "mango", date: at(8), name: "Mango", reason: "The MANGO preset, whole.",
+                    note: flat.uuidString, code: "a74hGF01CVunaG0vzZJG", apply: false),
+            ])
+        return (notes, agent)
+    }()
 
     var body: some View {
         VStack(spacing: 0) {

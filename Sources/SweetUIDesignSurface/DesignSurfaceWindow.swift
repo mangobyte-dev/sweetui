@@ -173,7 +173,7 @@ private struct DesignSurfaceOverlayRoot: View {
             }
             // The card has its own collapse control, so the button steps out while it is up.
             if !state.hostOwnsTrigger && !state.isPresented {
-                FloatingTuneButton()
+                FloatingTuneButton(unseen: model.unseen)
             }
             }
         }
@@ -326,9 +326,11 @@ enum FloatingButtonStorage {
     static let restingTrailing = "designSurface.button.trailing"
 }
 
-/// The draggable button that opens the card. It settles to the nearer side
-/// after a drag and remembers its place.
+/// The draggable button that opens the card, badged with what is new from
+/// the agent. It settles to the nearer side after a drag and remembers its
+/// place.
 private struct FloatingTuneButton: View {
+    let unseen: Int
     private let state = DesignSurfaceState.shared
     @AppStorage(FloatingButtonStorage.restingY) private var restingY = 0.72
     @AppStorage(FloatingButtonStorage.restingTrailing) private var restingTrailing = true
@@ -350,7 +352,18 @@ private struct FloatingTuneButton: View {
             }
             .buttonStyle(.borderedProminent)
             .clipShape(Circle())
-            .accessibilityLabel("Tune")
+            .overlay(alignment: .topTrailing) {
+                if unseen > 0 {
+                    Text(verbatim: "\(unseen)")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.red, in: Capsule())
+                        .accessibilityHidden(true)
+                }
+            }
+            .accessibilityLabel(unseen > 0 ? "Tune, \(unseen) new from the agent" : "Tune")
             .accessibilityHint("Opens Tune.")
             .accessibilityIdentifier("designSurface.button")
             .shadow(radius: 8, y: 4)

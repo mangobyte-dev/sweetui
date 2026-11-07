@@ -11,7 +11,7 @@ struct VersionsPlace: View {
         Form {
             HistorySection(model: model)
             if model.stage.tunesTheme {
-                ExportSection(tuning: model.tuning)
+                ExportSection(tuning: model.tuning, isSource: model.liveDesign.code.isEmpty)
             }
             HandoffSection(model: model)
         }
@@ -74,32 +74,33 @@ private struct HistorySection: View {
         } header: {
             Text("History")
         } footer: {
-            Text("Every settled change is kept in design-history.json, by the person, the agent, or a variant.")
+            Text("Every settled change is kept in design-history.json, by you or the agent.")
         }
     }
 }
 
-/// The device to code hand-off: one tap writes design-handoff.json with the
-/// theme, the chosen variant, the moved knobs, the open notes, and the
-/// checkpoints, and takes a screenshot; the agent reads it with read_handoff
-/// and writes the theme and the knob defaults into source.
+/// The device to code hand-off: one tap keeps a proposal trying, writes the
+/// design and the open notes with a screenshot, and shows where it stands
+/// from the agent's file: not read yet, read, Shipped with the files changed,
+/// or the agent's answer.
 private struct HandoffSection: View {
     let model: TuneModel
 
     var body: some View {
         Section {
-            Button("Send to agent", systemImage: "paperplane") { model.handOffButtonTapped() }
-                .accessibilityIdentifier("tuning.handoff")
-            if let sentAt = model.handOffSentAt {
-                LabeledContent("Sent") {
-                    Text(sentAt, format: .dateTime.hour().minute().second())
-                }
-                .accessibilityIdentifier("tuning.handoff.sent")
+            Button("Hand off", systemImage: "paperplane") {
+                withAnimation(ToolChrome.animation) { model.handOffButtonTapped() }
+            }
+            .accessibilityIdentifier("tuning.handoff")
+            if let status = model.handOffStatus {
+                Text(verbatim: status.text)
+                    .font(.footnote)
+                    .accessibilityIdentifier("tuning.handoff.status")
             }
         } header: {
             Text("Hand off")
         } footer: {
-            Text("Writes design-handoff.json: the theme as a code and as Swift, the chosen variant, the moved knobs, the open notes, and the checkpoints. The agent reads it with read_handoff and writes the theme and the knob defaults into source.")
+            Text("Sends the design and the open notes to the agent for source. Once it answers with the files it changed, Tune clears its overrides so the source shows.")
         }
     }
 }

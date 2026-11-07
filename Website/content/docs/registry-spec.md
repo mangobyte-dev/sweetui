@@ -183,4 +183,12 @@ Agent steps:
 7. compile consumer at deployment floor
 8. before `--update`, audit owned source (`sweetui install <item> --diff --destination <path>`): needs receipt, exits `0` parity / `1` diffs
 
-Same steps as `MCP` tools (`sweetui mcp`, `stdio`): `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`, `list_design_notes`, `resolve_design_note`, `get_design_context`, `set_tuning`, `set_knobs`, `read_handoff`. `MCPTests.swift` pins wire shape (inline snapshots); `MCPContractTests.swift` drives registry
+Same steps as `MCP` tools (`sweetui mcp`, `stdio`): `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`. `MCPTests.swift` pins wire shape (inline snapshots); `MCPContractTests.swift` drives registry, pins all 13 tool names
+
+Design loop with Tune (`docs/design-surface.md`), `MCP` only. Each file in the app's `Documents` has one writer: Tune writes the values, notes, history, context, and hand-off; the agent writes only `design-agent.json`, atomically (0 bytes reads as empty: Sharing creates the file it watches). Each tool takes its file as `file`, or `udid` + `bundleId` (simulator app container):
+
+1. `get_design_context`: screen, items with frames and tokens, the design's code (empty under Source), `trying`, `tunesTheme`, screenshots under `notes/`
+2. `list_design_notes(includeAnswered)`: notes oldest first, with `inReplyTo` and the agent's answer; every proposal with its state (offered, trying, kept, discarded) from the person's decisions in `design-history.json`; stamps a read date per note returned
+3. `propose_design(name, reason?, note?, code? or tokens?, knobs?, apply = true)`: `tokens` a delta of `preset decode --json` keys, `knobs` `{item: {knob: number or null}}` (null = default). Refuses a bad code, a key outside the decode keys, and code or tokens when `tunesTheme` is false, writing nothing. MUST NOT write `registry-tokens.json` or `design-knobs.json`: with `apply`, Tune merges the delta over the current version and tries it, card open or closed
+4. `answer_design_note(id, reply, changedFiles?)`: refuses an id `design-notes.json` lacks
+5. `read_handoff`: the hand-off with its id; stamps its read date. `answer_handoff(id, reply, changedFiles?)`: current or previous id, says when a newer one waits, refuses older. `changedFiles` makes it Shipped: Tune clears its token and knob overrides so the source shows

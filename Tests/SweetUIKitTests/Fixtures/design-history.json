@@ -1,0 +1,163 @@
+{
+  "current" : "95CC411E-FC59-4627-9742-76394F23C4F6",
+  "decisions" : {
+    "C9818B9F-FD38-42C5-BB40-CC38CEB593A6" : {
+      "date" : "2026-11-07T05:51:26Z",
+      "state" : "kept"
+    },
+    "F02A19ED-4434-4DC4-A3BE-253C909384CD" : {
+      "date" : "2026-11-07T05:52:56Z",
+      "state" : "discarded"
+    }
+  },
+  "entries" : [
+    {
+      "author" : "agent",
+      "date" : "2026-11-07T01:01:37Z",
+      "design" : {
+        "code" : "a13GkaOXWwIF",
+        "knobs" : {
+
+        }
+      },
+      "id" : "F3F65877-ADDF-41CF-ACE2-60B2CA93C22E",
+      "origin" : {
+        "proposal" : {
+          "id" : ""
+        }
+      }
+    },
+    {
+      "author" : "you",
+      "date" : "2026-11-07T01:02:41Z",
+      "design" : {
+        "code" : "a13GkaOXWwIH",
+        "knobs" : {
+
+        }
+      },
+      "id" : "021A30FF-290D-4697-981B-9DB716060C13",
+      "origin" : {
+        "edit" : {
+
+        }
+      },
+      "parent" : "F3F65877-ADDF-41CF-ACE2-60B2CA93C22E"
+    },
+    {
+      "author" : "you",
+      "date" : "2026-11-07T04:12:10Z",
+      "design" : {
+        "code" : "a13GkaOXWwIH",
+        "knobs" : {
+
+        }
+      },
+      "id" : "78946A5F-3F57-4386-A8D6-1F9634463AD8",
+      "origin" : {
+        "preset" : {
+          "name" : "Rose"
+        }
+      },
+      "parent" : "F3F65877-ADDF-41CF-ACE2-60B2CA93C22E"
+    },
+    {
+      "author" : "you",
+      "date" : "2026-11-07T04:43:24Z",
+      "design" : {
+        "code" : "a13GkaOXWwIE",
+        "knobs" : {
+
+        }
+      },
+      "id" : "FB75DE14-E46D-47A8-A9CB-A134D9E280B8",
+      "origin" : {
+        "edit" : {
+
+        }
+      },
+      "parent" : "F3F65877-ADDF-41CF-ACE2-60B2CA93C22E"
+    },
+    {
+      "author" : "you",
+      "date" : "2026-11-07T04:44:11Z",
+      "design" : {
+        "code" : "",
+        "knobs" : {
+
+        }
+      },
+      "id" : "383F6859-0D87-4E67-A3FD-F3A7C946A0CD",
+      "origin" : {
+        "source" : {
+
+        }
+      },
+      "parent" : "F3F65877-ADDF-41CF-ACE2-60B2CA93C22E"
+    },
+    {
+      "author" : "you",
+      "date" : "2026-11-07T05:04:41Z",
+      "design" : {
+        "code" : "",
+        "knobs" : {
+
+        }
+      },
+      "id" : "5E6D953D-4EE8-4FFD-9BB2-5738097D7BE5",
+      "origin" : {
+        "source" : {
+
+        }
+      },
+      "parent" : "F3F65877-ADDF-41CF-ACE2-60B2CA93C22E"
+    },
+    {
+      "author" : "agent",
+      "date" : "2026-11-07T05:50:41Z",
+      "design" : {
+        "code" : "a13GkahIBv4Z",
+        "knobs" : {
+
+        }
+      },
+      "id" : "DE167EBC-D282-4F98-BECB-A4FBC7EA46F6",
+      "origin" : {
+        "proposal" : {
+          "id" : "C9818B9F-FD38-42C5-BB40-CC38CEB593A6"
+        }
+      },
+      "parent" : "F3F65877-ADDF-41CF-ACE2-60B2CA93C22E"
+    },
+    {
+      "author" : "agent",
+      "date" : "2026-11-07T05:54:05Z",
+      "design" : {
+        "code" : "",
+        "knobs" : {
+
+        }
+      },
+      "id" : "95CC411E-FC59-4627-9742-76394F23C4F6",
+      "origin" : {
+        "source" : {
+
+        }
+      },
+      "parent" : "DE167EBC-D282-4F98-BECB-A4FBC7EA46F6"
+    }
+  ],
+  "shipped" : {
+    "changedFiles" : [
+      "Sources\/App\/RegistryTheme+App.swift"
+    ],
+    "date" : "2026-11-07T05:54:05Z",
+    "design" : {
+      "code" : "a13GkahIBv4Z",
+      "knobs" : {
+
+      }
+    },
+    "handoff" : "041B63FF-70EA-4BBA-83C4-02D25C924F7B"
+  }
+}

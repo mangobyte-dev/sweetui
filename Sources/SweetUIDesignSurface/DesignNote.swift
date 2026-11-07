@@ -4,9 +4,10 @@ import Sharing
 
 /// What a person says about an item while looking at it, with everything an
 /// agent needs to act on it without the screen: the item and the items around
-/// it, the tokens it reads, its knob values, where it sat, and the theme that
-/// was up. Notes persist in `design-notes.json` beside the tokens file; an
-/// agent reads the file, does the work, and marks the note resolved.
+/// it, the tokens it reads, its knob values, where it sat, and the design
+/// that was up. Notes persist in `design-notes.json` beside the tokens file,
+/// which Tune alone writes; the agent's answer and the date it read the note
+/// live in `design-agent.json`.
 public struct DesignNote: Codable, Equatable, Identifiable, Sendable {
     public struct Frame: Codable, Equatable, Sendable {
         public var x, y, width, height: Double
@@ -27,22 +28,13 @@ public struct DesignNote: Codable, Equatable, Identifiable, Sendable {
     public var knobs: [String: Double]
     /// The first visible instance's frame in window points.
     public var frame: Frame?
-    /// The preset code that was up when the note was taken.
+    /// The design's code when the note was taken; empty under Source, while
+    /// the app showed its own theme.
     public var presetCode: String
     /// The screenshot taken with the note, relative to Documents (`notes/<id>.png`).
     public var screenshot: String? = nil
-    public var resolved = false
-    /// What the agent answered when it resolved the note, and when.
-    public var reply: String? = nil
-    public var changedFiles: [String]? = nil
-    public var resolvedAt: Date? = nil
-
-    /// Puts an answered note back in the agent's queue, keeping the reply
-    /// as the thread so far.
-    public mutating func reopen() {
-        resolved = false
-        resolvedAt = nil
-    }
+    /// The note or proposal this one replies to, by id.
+    public var inReplyTo: String? = nil
 
     public init(
         id: UUID = UUID(), createdAt: Date = .now, text: String, item: String?, chain: [String],
@@ -89,9 +81,10 @@ extension DesignNote {
 
     /// A note about the current selection, filled from the tool state: the
     /// chain and screen from the selection, the tokens from the generated
-    /// map, the knobs and frame from the stores.
+    /// map, the knobs and frame from the stores, and `code`, the design's
+    /// code (empty under Source).
     @MainActor
-    static func take(_ text: String, selection: ItemSelection, tuning: ThemeTuning, state: DesignSurfaceState) -> DesignNote {
+    static func take(_ text: String, selection: ItemSelection, code: String, state: DesignSurfaceState) -> DesignNote {
         let item = selection.item
         var knobs: [String: Double] = [:]
         if let item {
@@ -109,7 +102,7 @@ extension DesignNote {
             tokens: item.flatMap(RegistryItemTokens.tokens(for:)) ?? [],
             knobs: knobs,
             frame: frame.map { Frame(x: $0.minX, y: $0.minY, width: $0.width, height: $0.height) },
-            presetCode: tuning.presetCode
+            presetCode: code
         )
     }
 }

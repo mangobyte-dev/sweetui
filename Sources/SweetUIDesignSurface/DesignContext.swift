@@ -5,12 +5,18 @@ import UIKit
 
 /// What the person is looking at, for an agent that cannot see the screen:
 /// the named screen, every registry item on it with its frame and the tokens
-/// it reads, the selection, the moved knobs, the preset code, and the
-/// environment switches. Tune rewrites `design-context.json` beside the
+/// it reads, the selection, the moved knobs, the design's code, the proposal
+/// trying, and Preview's overrides. Tune rewrites `design-context.json` beside the
 /// tokens after each settled version and screen change, card open or closed,
 /// and saves `notes/context.png` of the app once it has drawn, with Tune left
 /// out and the selected item outlined.
 public struct DesignContext: Codable, Equatable, Sendable {
+    /// The proposal on the device on top of its base.
+    public struct Trying: Codable, Equatable, Sendable {
+        public var id: String
+        public var name: String
+    }
+
     public struct Item: Codable, Equatable, Sendable {
         public var name: String
         public var title: String
@@ -41,6 +47,8 @@ public struct DesignContext: Codable, Equatable, Sendable {
     /// Whether the host tunes the registry theme; `false` for a host that
     /// paints the items from its own tokens.
     public var tunesTheme: Bool
+    /// The proposal trying now, `nil` when the device shows a decided design.
+    public var trying: Trying? = nil
 
     public static let fileURL = URL.documentsDirectory.appending(component: "design-context.json")
     public static let screenshotsDirectory = URL.documentsDirectory.appending(component: "notes")

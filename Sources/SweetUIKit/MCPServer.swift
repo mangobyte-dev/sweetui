@@ -75,8 +75,8 @@ public struct MCPServer {
     guard let name,
       [
         "search_items", "describe_item", "plan_install", "diff_item", "install_item",
-        "describe_preset", "apply_preset", "list_design_notes", "resolve_design_note",
-        "get_design_context", "set_tuning", "set_knobs", "read_handoff",
+        "describe_preset", "apply_preset", "list_design_notes", "answer_design_note",
+        "propose_design", "get_design_context", "read_handoff", "answer_handoff",
       ].contains(name)
     else {
       throw InvalidParams(message: "Unknown tool: \(params["name"].string ?? "None")")
@@ -126,89 +126,114 @@ public struct MCPServer {
     }
     return code
   }
-  private func notesFile(_ arguments: JSON) throws -> String {
-    try DesignNotes.locate(
-      file: optional(arguments, "file"), udid: optional(arguments, "udid"),
+  private func bool(_ arguments: JSON, _ key: String, default fallback: Bool) throws -> Bool {
+    if arguments.object?[key] == nil { return fallback }
+    guard case .bool(let value) = arguments[key] else {
+      throw InvalidArgument(message: "\(key) must be a boolean")
+    }
+    return value
+  }
+  private func changedFiles(_ arguments: JSON) throws -> [String] {
+    let changed = arguments["changedFiles"]
+    if changed == .null { return [] }
+    guard let files = changed.array, files.allSatisfy({ $0.string != nil }) else {
+      throw InvalidArgument(message: "changedFiles must be an array of strings")
+    }
+    return changed.strings
+  }
+  private func object(_ arguments: JSON, _ key: String) throws -> JSON? {
+    let value = arguments[key]
+    if value == .null { return nil }
+    guard value.object != nil else { throw InvalidArgument(message: "\(key) must be an object") }
+    return value
+  }
+  /// A design tool's file: `file` as given, or `name` in the simulator app container.
+  private func designFile(_ name: String, _ arguments: JSON) throws -> String {
+    try AppContainer.locate(
+      name, file: optional(arguments, "file"), udid: optional(arguments, "udid"),
       bundleId: optional(arguments, "bundleId"))
   }
   private func perform(_ tool: String, _ arguments: JSON) throws -> OrderedJSON {
     if tool == "list_design_notes" {
-      let includeResolved: Bool
-      if arguments.object?["includeResolved"] == nil {
-        includeResolved = false
-      } else if case .bool(let value) = arguments["includeResolved"] {
-        includeResolved = value
-      } else {
-        throw InvalidArgument(message: "includeResolved must be a boolean")
-      }
-      let file = try notesFile(arguments)
-      let notes = try DesignNotes.list(file: file, includeResolved: includeResolved)
+      let includeAnswered = try bool(arguments, "includeAnswered", default: false)
+      let file = try designFile(DesignNotes.fileName, arguments)
+      let listed = try DesignNotes.list(file: file, includeAnswered: includeAnswered)
       return [
-        "file": .string(file), "notes": .array(notes.map { OrderedJSON($0) }),
+        "file": .string(file), "notes": .array(listed.notes.map { OrderedJSON($0) }),
+        "proposals": .array(listed.proposals.map { OrderedJSON($0) }),
         "nextSteps": [
-          "A note names the item and the tokens it reads; tune those tokens or the item's source, then call resolve_design_note with its id"
+          "A note names its subject and the tokens the item reads; act on it in source, or offer a design with propose_design and its note id",
+          "Answer each note with answer_design_note; a reply note follows the note or proposal named by inReplyTo",
+          "A proposal's state is the person's decision: offered, trying, kept, or discarded",
         ],
       ]
     }
-    if tool == "set_tuning" {
-      let file = try AppContainer.locate(
-        DesignWrites.tokensFileName, file: optional(arguments, "file"),
-        udid: optional(arguments, "udid"), bundleId: optional(arguments, "bundleId"))
-      let tuning = arguments["tuning"]
-      if tuning != .null, tuning.object == nil {
-        throw InvalidArgument(message: "tuning must be an object")
-      }
-      let code = try DesignWrites.setTuning(
-        code: optional(arguments, "code"), tuning: tuning == .null ? nil : tuning, file: file)
+    if tool == "answer_design_note" {
+      let file = try designFile(DesignNotes.fileName, arguments)
+      let answered = try DesignNotes.answer(
+        id: string(arguments, "id"), reply: string(arguments, "reply"),
+        changedFiles: changedFiles(arguments), file: file)
+      return ["file": .string(file), "note": OrderedJSON(answered)]
+    }
+    if tool == "propose_design" {
+      let file = try designFile(DesignAgentFile.fileName, arguments)
+      let proposal = try DesignProposals.propose(
+        .init(
+          name: string(arguments, "name"), reason: optional(arguments, "reason"),
+          note: optional(arguments, "note"), code: optional(arguments, "code"),
+          tokens: object(arguments, "tokens"), knobs: object(arguments, "knobs"),
+          apply: bool(arguments, "apply", default: true)),
+        file: file)
       return [
-        "file": .string(file), "code": .string(code), "url": .string(Preset.url(code)),
+        "file": .string(file), "proposal": OrderedJSON(proposal),
         "nextSteps": [
-          "The panel applies the file at once; call get_design_context and read its screenshot to check the result",
-          "The person can undo this from the panel; a later write replaces the undo",
+          proposal["apply"] == true
+            ? "Tune tries it on the device at once, merged over the current version; call get_design_context and read its screenshot to check it"
+            : "It waits in Tune's Notes for the person to try",
+          "list_design_notes reports whether the person kept or discarded it",
         ],
       ]
-    }
-    if tool == "set_knobs" {
-      let file = try AppContainer.locate(
-        DesignWrites.knobsFileName, file: optional(arguments, "file"),
-        udid: optional(arguments, "udid"), bundleId: optional(arguments, "bundleId"))
-      let item = try string(arguments, "item")
-      let knobs = try DesignWrites.setKnobs(item: item, values: arguments["values"], file: file)
-      return ["file": .string(file), "item": .string(item), "knobs": OrderedJSON(knobs)]
     }
     if tool == "read_handoff" {
-      let file = try AppContainer.locate(
-        DesignHandoff.fileName, file: optional(arguments, "file"),
-        udid: optional(arguments, "udid"), bundleId: optional(arguments, "bundleId"))
-      let handoff = try DesignHandoff.read(file: file)
+      let file = try designFile(DesignHandoffs.fileName, arguments)
+      let handoff = try DesignHandoffs.read(file: file)
+      let code = handoff["presetCode"].text
       return [
         "file": .string(file), "handoff": OrderedJSON(handoff),
         "nextSteps": [
           .string(
-            "Write the theme into source: apply_preset with code \(handoff["presetCode"].text) and the app's destination, or paste the swift field at the scene root"
+            code.isEmpty
+              ? "The design is Source, the app's own theme: leave the theme in source as it is"
+              : "Write the theme into source: apply_preset with code \(code) and the app's destination, or paste the swift field at the scene root"
           ),
-          "Write each knob under knobs as the item's new shipped default in its source, then remove it from design-knobs.json with set_knobs values null",
-          "Act on each open note (read its screenshotPath), then resolve_design_note with a reply",
+          "Write each knob under knobs as the item's new shipped default in its source",
+          "Act on each open note (read its screenshotPath), then answer_design_note with its id",
+          .string(
+            "Then answer_handoff with id \(handoff["id"].text) and the changedFiles; Tune clears its token and knob overrides so the source shows"
+          ),
         ],
       ]
     }
-    if tool == "get_design_context" {
-      let file = try AppContainer.locate(
-        DesignContext.fileName, file: optional(arguments, "file"),
-        udid: optional(arguments, "udid"),
-        bundleId: optional(arguments, "bundleId"))
-      return ["file": .string(file), "context": OrderedJSON(try DesignContext.read(file: file))]
-    }
-    if tool == "resolve_design_note" {
-      let file = try notesFile(arguments)
-      let changed = arguments["changedFiles"]
-      if changed != .null, changed.array == nil {
-        throw InvalidArgument(message: "changedFiles must be an array of strings")
+    if tool == "answer_handoff" {
+      let file = try designFile(DesignHandoffs.fileName, arguments)
+      let answered = try DesignHandoffs.answer(
+        id: string(arguments, "id"), reply: string(arguments, "reply"),
+        changedFiles: changedFiles(arguments), file: file)
+      var result: OrderedJSON = [
+        "file": .string(file), "id": .string(answered.id), "answer": OrderedJSON(answered.answer),
+      ]
+      if let newer = answered.newer {
+        result["newer"] = OrderedJSON(newer)
+        result["nextSteps"] = [
+          .string(
+            "A newer hand-off waits (\(newer["id"].text)); call read_handoff to read it")
+        ]
       }
-      let note = try DesignNotes.resolve(
-        id: string(arguments, "id"), file: file, reply: optional(arguments, "reply"),
-        changedFiles: changed.strings)
-      return ["file": .string(file), "note": OrderedJSON(note)]
+      return result
+    }
+    if tool == "get_design_context" {
+      let file = try designFile(DesignContext.fileName, arguments)
+      return ["file": .string(file), "context": OrderedJSON(try DesignContext.read(file: file))]
     }
     if tool == "describe_preset" {
       return try OrderedJSON.read(Data(Preset.description(presetCode(arguments), json: true).utf8))

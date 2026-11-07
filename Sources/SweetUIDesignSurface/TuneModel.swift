@@ -3,6 +3,7 @@ import Combine
 import Dependencies
 import Foundation
 import Sharing
+import SwiftUI
 import SweetUIFoundations
 
 /// Tune's one model: the design on the device, the place the card shows,
@@ -10,8 +11,9 @@ import SweetUIFoundations
 /// version, and the call site names its author: release for a slider or a
 /// stepper, at once for a menu or a switch, 0.6 s after the last change for
 /// a color; a place change, Select, and a collapse settle a held edit first.
-/// A change from outside Tune's controls (the host's own strip, the agent's
-/// writes) records one version by whoever the agent's last record names.
+/// A change from outside Tune's controls (the host's own strip) records one
+/// version by you. The agent never writes the value files: it proposes, and
+/// Tune tries a proposal that asks to be applied as soon as it arrives.
 @MainActor
 @Observable
 final class TuneModel {
@@ -20,6 +22,8 @@ final class TuneModel {
 
     /// Where the last place is remembered between launches.
     static let placeStorageKey = "designSurface.place"
+    /// The answers and proposals the person has seen on Notes.
+    static let seenStorageKey = "designSurface.seen"
     static let codeError = "That is not a code Tune can read. Copy one from sweetui.dev/create."
 
     let stage: DesignSurfaceState
@@ -30,17 +34,29 @@ final class TuneModel {
     /// The composer's text and focus.
     var noteDraft = ""
     var composerFocused = false
+    /// The note or proposal the composer replies to; `nil` writes a new note.
+    var replyTarget: ReplyTarget?
+    /// The row Notes scrolls to next: a proposal the strip named, or the newest.
+    var scrollTarget: String?
     /// The name typed for Current.
     var versionName = ""
-    var handOffSentAt: Date?
+    /// The last hand-off written, read back at launch for its status.
+    var handOff: DesignHandoff?
+    var handOffError: String?
+    /// What the strip says for 2 s after a proposal is kept or discarded.
+    var stripMessage: String?
+    /// Why the last note did not save; the draft stays.
+    var noteSaveError: String?
+    /// The answers and proposals the person saw on Notes, by key.
+    var seen: Set<String> = []
 
     @ObservationIgnored @Shared(.designTokens) var tuning
     @ObservationIgnored @Shared(.designHistory) var history
     @ObservationIgnored @Shared(.designNotes) var notes
-    @ObservationIgnored @Shared(.designVariants) var variants
-    @ObservationIgnored @Shared(.agentChange) var agentChange
+    /// The agent's file; read only, so a write to it does not compile.
+    @ObservationIgnored @SharedReader(.designAgent) var agent
     /// The host's defaults, where the last place is remembered.
-    @ObservationIgnored @Dependency(\.defaultAppStorage) private var defaults
+    @ObservationIgnored @Dependency(\.defaultAppStorage) var defaults
     @ObservationIgnored @Dependency(\.continuousClock) private var clock
     @ObservationIgnored @Dependency(\.date.now) var now
     @ObservationIgnored @Dependency(\.uuid) var uuid
@@ -53,11 +69,18 @@ final class TuneModel {
     @ObservationIgnored private(set) var colorSettle: Task<Void, Never>?
     @ObservationIgnored private(set) var contextCapture: Task<Void, Never>?
     @ObservationIgnored private var contextScreenshot: (path: String, code: String)?
+    /// The agent wrote while a control was held: its proposals are tried,
+    /// and a shipped hand-off cleared, on release.
+    @ObservationIgnored private var agentWaits = false
+    /// The answers already announced, so a relaunch announces none again.
+    @ObservationIgnored private var announced: Set<String>?
+    @ObservationIgnored private(set) var stripClear: Task<Void, Never>?
     private var shownPlace = Place.tokens
 
     init(stage: DesignSurfaceState) {
         self.stage = stage
         shownPlace = defaults.string(forKey: Self.placeStorageKey).flatMap(Place.init(rawValue:)) ?? .tokens
+        seen = Set(defaults.stringArray(forKey: Self.seenStorageKey) ?? [])
     }
 
     // MARK: Places
@@ -70,6 +93,7 @@ final class TuneModel {
             flush()
             shownPlace = newValue
             defaults.set(newValue.rawValue, forKey: Self.placeStorageKey)
+            if newValue == .notes { notesSeen() }
         }
     }
 
@@ -114,11 +138,17 @@ final class TuneModel {
         if !editing { settle() }
     }
 
-    /// Records the live design as one version by you when it moved.
+    /// Records the live design as one version by you when it moved, then
+    /// tries a proposal that arrived while the control was held, on top.
     func settle() {
         colorSettle?.cancel()
         colorSettle = nil
         record(liveDesign, author: .you, origin: .edit)
+        if agentWaits {
+            agentWaits = false
+            shipAnswered()
+            tryArrivals()
+        }
     }
 
     /// Settles a held edit or a color still waiting, for an affordance that
@@ -138,11 +168,44 @@ final class TuneModel {
     }
 
     /// Records a version as a child of Current and refreshes the agent's
-    /// context; nothing when the design is Current's.
+    /// context; nothing when the design is Current's. While a proposal is
+    /// trying, an edit keeps it and anything else discards it first.
     func record(_ design: Design, author: DesignHistory.Author, origin: DesignHistory.Origin) {
         guard design != current?.design else { return }
-        $history.withLock { $0.record(design, author: author, origin: origin) }
+        changeHistory(edited: origin == .edit) { $0.record(design, author: author, origin: origin) }
         refreshContext()
+    }
+
+    /// Changes the history and says what became of a proposal that was
+    /// trying: kept, or discarded, in the strip for 2 s and to VoiceOver.
+    func changeHistory(edited: Bool = false, _ change: (inout DesignHistory) -> Void) {
+        let before = history.trial
+        $history.withLock(change)
+        if let after = history.trial, after.proposal != before?.proposal {
+            announce("Trying \(proposal(after.proposal)?.name ?? "a proposal").")
+        }
+        guard let before, history.trial?.proposal != before.proposal else { return }
+        let name = proposal(before.proposal)?.name ?? "the proposal"
+        switch history.decisions[before.proposal]?.state {
+        case .kept: showStrip(edited ? "Kept \(name). Your change is on top." : "Kept \(name).")
+        case .discarded: showStrip("Discarded \(name).")
+        case .tried, nil: break
+        }
+    }
+
+    /// Shows a message in the strip for 2 s and announces it.
+    func showStrip(_ message: String) {
+        stripMessage = message
+        announce(message)
+        stripClear?.cancel()
+        stripClear = Task { [weak self, clock] in
+            do { try await clock.sleep(for: .seconds(2)) } catch { return }
+            self?.stripMessage = nil
+        }
+    }
+
+    func announce(_ message: String) {
+        AccessibilityNotification.Announcement(message).post()
     }
 
     /// Puts a version's design on the device: its code over the tuning (the
@@ -154,33 +217,60 @@ final class TuneModel {
     }
 
     /// Reconciles the history with the value files, then records each change
-    /// made outside Tune's controls until the surface goes away.
+    /// made outside Tune's controls and follows the agent's file until the
+    /// surface goes away.
     func task() async {
+        handOff = outbox.readHandOff()
         $history.withLock { $0.reconcile(values: liveDesign) }
         refreshContext()
         // The maps are Sendable, so not isolated to the main actor: the loop
         // asks for the next value off it, and a value buffered by two quick
-        // writes runs the map there, which traps an isolated closure.
-        let changes = Publishers.Merge(
-            $tuning.publisher.map { @Sendable _ in }, stage.knobs.$values.publisher.map { @Sendable _ in })
-        for await _ in changes.values {
-            outsideChange()
+        // writes runs the map there, which traps an isolated closure. Each
+        // publisher sends its current value first, so the agent's file is
+        // read once at launch.
+        let changes = Publishers.Merge3(
+            $tuning.publisher.map { @Sendable _ in Change.values },
+            stage.knobs.$values.publisher.map { @Sendable _ in Change.values },
+            $agent.publisher.map { @Sendable _ in Change.agent })
+        for await change in changes.values {
+            switch change {
+            case .values: outsideChange()
+            case .agent: agentChanged()
+            }
         }
     }
 
-    /// A change Tune's controls did not make: the host's own strip, or the
-    /// agent's write. The agent's record or a staged variant names it the
-    /// agent's; anything else is yours.
+    private enum Change { case values, agent }
+
+    /// A change Tune's controls did not make, such as the host's own strip:
+    /// one version by you.
     private func outsideChange() {
         guard !isHoldingSlider, colorSettle == nil else { return }
-        let design = liveDesign
-        guard design != current?.design else { return }
-        if agentChange?.code == design.code {
-            record(design, author: .agent, origin: .edit)
-        } else if let variant = variants.matching(tuning) {
-            record(design, author: .agent, origin: .proposal(id: variant.id))
+        record(liveDesign, author: .you, origin: .edit)
+    }
+
+    /// The agent wrote its file: a new answer is announced, a hand-off
+    /// answered with files ships, and a proposal that asks to be applied is
+    /// tried; the last two wait for the release while a control is held.
+    func agentChanged() {
+        announceAnswers()
+        if stage.isPresented && place == .notes { notesSeen() }
+        if isHoldingSlider || colorSettle != nil {
+            agentWaits = true
         } else {
-            record(design, author: .you, origin: .edit)
+            shipAnswered()
+            tryArrivals()
+        }
+    }
+
+    /// Announces the first sentence of each answer that is new since launch.
+    private func announceAnswers() {
+        let keys = Set(agent.answers.map { "\($0.key) \($0.value.date.timeIntervalSince1970)" })
+        defer { announced = keys }
+        guard let announced else { return }
+        for (id, answer) in agent.answers where !announced.contains("\(id) \(answer.date.timeIntervalSince1970)") {
+            let sentence = answer.reply.split(separator: ".", maxSplits: 1).first.map { String($0) + "." } ?? answer.reply
+            announce("The agent answered: \(sentence)")
         }
     }
 
@@ -217,6 +307,7 @@ final class TuneModel {
         var context = DesignContext.capture(
             state: stage, tuning: tuning, screenshot: contextScreenshot?.path, screenshotCode: contextScreenshot?.code)
         context.presetCode = liveDesign.code
+        context.trying = trying.map { DesignContext.Trying(id: $0.id, name: $0.name) }
         return context
     }
 

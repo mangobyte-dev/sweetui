@@ -39,9 +39,10 @@ extension Commands {
       #expect(
         Set(tools.map { $0["name"].text }) == [
           "search_items", "describe_item", "plan_install", "diff_item", "install_item",
-          "describe_preset", "apply_preset", "list_design_notes", "resolve_design_note",
-          "get_design_context", "set_tuning", "set_knobs", "read_handoff",
+          "describe_preset", "apply_preset", "list_design_notes", "answer_design_note",
+          "propose_design", "get_design_context", "read_handoff", "answer_handoff",
         ])
+      #expect(tools.count == 13, "A name listed twice hides a missing tool.")
       for tool in tools { #expect(tool["inputSchema"]["type"] == "object") }
       let search = try rpc(server, call(3, "search_items", ["query": "dropdown"]))
       #expect(search["result"]["isError"] == false)

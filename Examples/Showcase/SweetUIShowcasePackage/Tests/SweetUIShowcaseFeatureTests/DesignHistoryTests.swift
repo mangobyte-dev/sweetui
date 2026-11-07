@@ -213,6 +213,58 @@ struct DesignHistoryTests {
         #expect(history.trial == nil)
     }
 
+    /// The tree decides a proposal's state, so the person can change their
+    /// mind with Undo and Redo alone: going forward onto a discarded
+    /// proposal's version puts it back on trial, and going back past a kept
+    /// one tells the agent it was turned down after all.
+    @Test func `Redo onto a trial version re-enters Trying and Undo past Kept records Discarded`() throws {
+        var history = DesignHistory()
+        history.record(Self.indigo, author: .you, origin: .first)
+        let base = try #require(history.current)
+        history.tryProposal("P1", design: Self.mango)
+        let p1 = try #require(history.current)
+        history.undo()
+        #expect(history.decisions["P1"]?.state == .discarded)
+        #expect(history.trial == nil)
+
+        #expect(history.redo()?.id == p1)
+        #expect(history.trial == DesignHistory.Trial(proposal: "P1", version: p1, base: base), "Redo onto the trial version is Trying again.")
+        #expect(history.decisions["P1"]?.state == .tried)
+
+        history.keep()
+        #expect(history.decisions["P1"]?.state == .kept)
+        history.undo()
+        #expect(history.current == base)
+        #expect(history.decisions["P1"]?.state == .discarded, "Undo past a kept proposal is a Discard the agent must read.")
+        #expect(history.trial == nil)
+
+        history.record(Self.tall, author: .you, origin: .edit)
+        let edit = try #require(history.current)
+        #expect(history.restore(p1)?.id == p1)
+        #expect(history.trial?.proposal == "P1", "Restore onto a proposal's version is Trying too.")
+        #expect(history.trial?.base == base, "Its base is its parent, not the version Restore left.")
+        history.keep()
+        history.restore(edit)
+        history.restore(p1)
+        #expect(history.trial == nil, "A kept proposal's version is the decided design, not a trial.")
+        #expect(history.decisions["P1"]?.state == .kept)
+    }
+
+    /// Discard on an offered row turns the proposal down without touching
+    /// the device; it must never discard the one trying.
+    @Test func `Discarding an offered proposal leaves the device and the trial alone`() throws {
+        var history = DesignHistory()
+        history.record(Self.indigo, author: .you, origin: .first)
+        history.tryProposal("P1", design: Self.mango)
+        let p1 = try #require(history.current)
+        history.discard(offered: "P2")
+        #expect(history.decisions["P2"]?.state == .discarded)
+        #expect(history.current == p1)
+        history.discard(offered: "P1")
+        #expect(history.trial?.proposal == "P1", "The trying proposal is decided by Keep or Discard, not by an offered row.")
+        #expect(history.decisions["P1"]?.state == .tried)
+    }
+
     /// Restore is a jump the person can take back: Undo right after it
     /// returns to the version they left, not to the restored one's parent.
     @Test func `Undo right after Restore returns to the version it left`() throws {

@@ -173,25 +173,6 @@ extension TuneModelTests {
             #expect(record.contexts.value.last?.presetCode == tuning.presetCode)
         }
 
-        @Test func `An outside write the agent's record names is the agent's`() async throws {
-            let model = TuneModel(stage: DesignSurfaceState())
-            let task = Task { await model.task() }
-            defer { task.cancel() }
-            await Task.megaYield()
-
-            var agentTheme = ThemeTuning.default
-            agentTheme.accent = .teal
-            model.$agentChange.withLock {
-                $0 = AgentChange(what: .tuning, changedAt: .now, previousCode: nil, code: agentTheme.presetCode)
-            }
-            @Shared(.designTokens) var tuning
-            $tuning.withLock { $0.accent = .teal }
-            await Task.megaYield()
-
-            let version = try #require(model.current)
-            #expect(version.author == .agent)
-            #expect(version.origin == .edit)
-        }
     }
 
     @MainActor
@@ -287,15 +268,21 @@ extension TuneModelTests {
     }
 }
 
-/// What Tune wrote for the agent, in order.
+/// What Tune wrote for the agent, in order; the hand-off file holds the last
+/// hand-off written.
 final class OutboxRecord: Sendable {
     let contexts = LockIsolated<[DesignContext]>([])
     let screenshots = LockIsolated<[String]>([])
+    let handOffs = LockIsolated<[DesignHandoff]>([])
 
     var outbox: DesignOutbox {
         DesignOutbox(
             writeContext: { [contexts] context in contexts.withValue { $0.append(context) } },
-            writeHandOff: { _ in true },
+            writeHandOff: { [handOffs] handOff in
+                handOffs.withValue { $0.append(handOff) }
+                return true
+            },
+            readHandOff: { [handOffs] in handOffs.value.last },
             saveScreenshot: { [screenshots] name, _ in
                 screenshots.withValue { $0.append(name) }
                 return "notes/\(name).png"

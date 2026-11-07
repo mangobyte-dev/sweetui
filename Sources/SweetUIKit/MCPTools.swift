@@ -2,7 +2,7 @@ import Foundation
 
 extension MCPServer {
   static let instructions =
-    "Search the registry, describe an item to read its usage snippet and source, plan an install to see the dependency closure and target writes, then install. Installs copy Swift source into the destination and write a receipt; they never edit project files. Recipes are native guidance and install nothing. A preset code from the website's /create page or the Showcase's tuning panel describes a RegistryTheme; apply_preset writes it as RegistryTheme+App.swift next to the installed items."
+    "Search the registry, describe an item to read its usage snippet and source, plan an install to see the dependency closure and target writes, then install. Installs copy Swift source into the destination and write a receipt; they never edit project files. Recipes are native guidance and install nothing. A preset code from the website's /create page or Tune's Copy code describes a RegistryTheme; apply_preset writes it as RegistryTheme+App.swift next to the installed items."
   static let tools: OrderedJSON = {
     // Protocol declarations carried over unchanged from the former Python server; MCPTests pins the wire shape.
     try! OrderedJSON.read(
@@ -198,7 +198,7 @@ extension MCPServer {
           {
             "name": "list_design_notes",
             "title": "List design notes",
-            "description": "Read the notes a person left in the app's Tune panel (design-notes.json): each names the item and its chain, the screen, the tokens the item reads, its moved knobs, its frame, the preset code that was up, and whether it is resolved. Give the file, or the simulator udid and the app's bundleId to find it in the app container.",
+            "description": "Read the notes the person left in Tune (design-notes.json), oldest first: each names its subject (the item and its chain, or the screen), the tokens the item reads, its moved knobs, its frame, the design's code (empty under Source), its screenshot, inReplyTo when it follows a note or a proposal, and your answer once you gave one. Also every proposal you made, with its state: offered, trying, kept, or discarded, which is what the person decided. Listing stamps each returned note read, so the person sees that you read it. Give the file, or the simulator udid and the app's bundleId to find it in the app container.",
             "inputSchema": {
               "type": "object",
               "properties": {
@@ -214,64 +214,10 @@ extension MCPServer {
                   "type": "string",
                   "description": "The app's bundle identifier, with udid"
                 },
-                "includeResolved": {
+                "includeAnswered": {
                   "type": "boolean",
-                  "default": false
-                }
-              }
-            },
-            "annotations": {
-              "readOnlyHint": true,
-              "idempotentHint": true
-            }
-          },
-          {
-            "name": "get_design_context",
-            "title": "Get the design context",
-            "description": "What the person sees on the device while the Tune panel is up (design-context.json): the named screen, every registry item on it with its frame in window points, the tokens it reads and its moved knobs, the selection, the preset code, the environment switches, and the screenshots saved under notes/ (absolute paths; read one to see the screen). Locate the file as list_design_notes does.",
-            "inputSchema": {
-              "type": "object",
-              "properties": {
-                "file": {
-                  "type": "string",
-                  "description": "Path of design-context.json"
-                },
-                "udid": {
-                  "type": "string"
-                },
-                "bundleId": {
-                  "type": "string"
-                }
-              }
-            },
-            "annotations": {
-              "readOnlyHint": true,
-              "idempotentHint": true
-            }
-          },
-          {
-            "name": "set_tuning",
-            "title": "Set the theme on the device",
-            "description": "Write a theme into the app's registry-tokens.json; the Tune panel and every registry item follow at once, no rebuild. Give a preset code, or a tuning object (any subset of the describe_preset keys) merged over the theme the device has now. The previous theme is recorded so the person can undo. Locate the file as list_design_notes does.",
-            "inputSchema": {
-              "type": "object",
-              "properties": {
-                "code": {
-                  "type": "string",
-                  "description": "A preset code, with or without --preset"
-                },
-                "tuning": {
-                  "type": "object",
-                  "description": "Knobs to change, by describe_preset key, such as {\"accent\": \"green\", \"cardRadius\": 20}"
-                },
-                "file": {
-                  "type": "string"
-                },
-                "udid": {
-                  "type": "string"
-                },
-                "bundleId": {
-                  "type": "string"
+                  "default": false,
+                  "description": "Also list the notes you already answered"
                 }
               }
             },
@@ -282,66 +228,9 @@ extension MCPServer {
             }
           },
           {
-            "name": "set_knobs",
-            "title": "Set an item's knobs on the device",
-            "description": "Write per-item knob values into the app's design-knobs.json; the item follows at once. values maps a knob name to a number, or null to return it to its shipped default. The previous values are recorded so the person can undo. Locate the file as list_design_notes does.",
-            "inputSchema": {
-              "type": "object",
-              "properties": {
-                "item": {
-                  "type": "string"
-                },
-                "values": {
-                  "type": "object"
-                },
-                "file": {
-                  "type": "string"
-                },
-                "udid": {
-                  "type": "string"
-                },
-                "bundleId": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "item",
-                "values"
-              ]
-            },
-            "annotations": {
-              "readOnlyHint": false,
-              "destructiveHint": false,
-              "idempotentHint": true
-            }
-          },
-          {
-            "name": "read_handoff",
-            "title": "Read the hand-off from the device",
-            "description": "What the person sent from the Tune panel's Send to agent (design-handoff.json): the theme as a preset code and as Swift, the chosen variant, every moved knob, each knob that differs from the shipped theme, the open notes with their screenshots, and the named checkpoints. Write the theme and the knob defaults into source, then resolve the notes. Locate the file as list_design_notes does.",
-            "inputSchema": {
-              "type": "object",
-              "properties": {
-                "file": {
-                  "type": "string"
-                },
-                "udid": {
-                  "type": "string"
-                },
-                "bundleId": {
-                  "type": "string"
-                }
-              }
-            },
-            "annotations": {
-              "readOnlyHint": true,
-              "idempotentHint": true
-            }
-          },
-          {
-            "name": "resolve_design_note",
-            "title": "Resolve a design note",
-            "description": "Mark a note resolved in design-notes.json once its work is done, with a reply the person reads under the note in the Tune panel and the files you changed; the panel moves it to Answered, where the person can reopen it. Locate the file as list_design_notes does.",
+            "name": "answer_design_note",
+            "title": "Answer a design note",
+            "description": "Answer a note in Tune: the reply the person reads under the note and the files you changed for it, written to design-agent.json beside the notes. A later answer to the same note replaces the earlier one. Refuses an id design-notes.json does not hold. Locate the file as list_design_notes does.",
             "inputSchema": {
               "type": "object",
               "properties": {
@@ -361,17 +250,179 @@ extension MCPServer {
                   "description": "Paths you changed for this note"
                 },
                 "file": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Path of design-notes.json"
                 },
                 "udid": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Simulator UDID, with bundleId, when file is not given"
                 },
                 "bundleId": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "The app's bundle identifier, with udid"
                 }
               },
               "required": [
-                "id"
+                "id",
+                "reply"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": false,
+              "destructiveHint": false,
+              "idempotentHint": true
+            }
+          },
+          {
+            "name": "propose_design",
+            "title": "Propose a design",
+            "description": "Offer the person a design in Tune, appended to design-agent.json: a name, a reason, the note it answers, and either a full code or tokens as a delta of describe_preset keys (only what changes), plus knobs per item, with null returning a knob to its default. With apply true Tune tries it on the device at once, merged over the current version, card open or closed; with apply false it waits in Notes for the person to try. The person keeps or discards it, and list_design_notes reports which. Validates the code, the token keys and values, and the knobs before writing, and refuses code and tokens when the host does not tune the theme (tunesTheme false in design-context.json). Never writes registry-tokens.json or design-knobs.json.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "A short name the person reads in the Trying strip, such as Warm"
+                },
+                "reason": {
+                  "type": "string",
+                  "description": "Why this design, in a sentence"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "The id of the note it answers, from list_design_notes"
+                },
+                "code": {
+                  "type": "string",
+                  "description": "A full preset code, with or without --preset; give this or tokens"
+                },
+                "tokens": {
+                  "type": "object",
+                  "description": "Only the tokens that change, by describe_preset key, such as {\"accent\": \"teal\", \"cardRadius\": 20}"
+                },
+                "knobs": {
+                  "type": "object",
+                  "description": "Knob values per item, such as {\"button\": {\"height\": 44, \"radius\": null}}; null is the knob's default"
+                },
+                "apply": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Try it on the device at once"
+                },
+                "file": {
+                  "type": "string",
+                  "description": "Path of design-agent.json"
+                },
+                "udid": {
+                  "type": "string",
+                  "description": "Simulator UDID, with bundleId, when file is not given"
+                },
+                "bundleId": {
+                  "type": "string",
+                  "description": "The app's bundle identifier, with udid"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": false,
+              "destructiveHint": false,
+              "idempotentHint": false
+            }
+          },
+          {
+            "name": "get_design_context",
+            "title": "Get the design context",
+            "description": "What the person sees on the device while Tune is on, card open or closed (design-context.json): the named screen, every registry item on it with its frame in window points, the tokens it reads and its moved knobs, the selection, the design's code (empty under Source, when the app shows its own theme), the code the last screenshot shows, the proposal trying now, whether the host tunes the theme (tunesTheme), Preview's overrides, and the screenshots saved under notes/ (absolute paths; read one to see the screen). Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "Path of design-context.json"
+                },
+                "udid": {
+                  "type": "string",
+                  "description": "Simulator UDID, with bundleId, when file is not given"
+                },
+                "bundleId": {
+                  "type": "string",
+                  "description": "The app's bundle identifier, with udid"
+                }
+              }
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "idempotentHint": true
+            }
+          },
+          {
+            "name": "read_handoff",
+            "title": "Read the hand-off from the device",
+            "description": "Read the hand-off the person sent from Tune's Versions (design-handoff.json): its id, the design's code (empty under Source) and its Swift, every moved knob, the changes from Default, the open notes with their screenshots, and the previous hand-off's id. Reading stamps this hand-off read, so the person sees it. Write the theme and the knob defaults into source, answer the open notes, then call answer_handoff. Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "Path of design-handoff.json"
+                },
+                "udid": {
+                  "type": "string",
+                  "description": "Simulator UDID, with bundleId, when file is not given"
+                },
+                "bundleId": {
+                  "type": "string",
+                  "description": "The app's bundle identifier, with udid"
+                }
+              }
+            },
+            "annotations": {
+              "readOnlyHint": false,
+              "destructiveHint": false,
+              "idempotentHint": true
+            }
+          },
+          {
+            "name": "answer_handoff",
+            "title": "Answer a hand-off",
+            "description": "Answer a hand-off in Tune, written to design-agent.json: a reply and the files you changed. With changedFiles the person sees Shipped and Tune clears its token and knob overrides, so the app shows your source; without them the reply shows alone. Accepts the current hand-off and the one before it, and says when a newer one waits; refuses an older id. Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The hand-off's id, from read_handoff"
+                },
+                "reply": {
+                  "type": "string",
+                  "description": "What you put into source, in a sentence or two"
+                },
+                "changedFiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Paths you changed; Tune then shows Shipped"
+                },
+                "file": {
+                  "type": "string",
+                  "description": "Path of design-handoff.json"
+                },
+                "udid": {
+                  "type": "string",
+                  "description": "Simulator UDID, with bundleId, when file is not given"
+                },
+                "bundleId": {
+                  "type": "string",
+                  "description": "The app's bundle identifier, with udid"
+                }
+              },
+              "required": [
+                "id",
+                "reply"
               ]
             },
             "annotations": {

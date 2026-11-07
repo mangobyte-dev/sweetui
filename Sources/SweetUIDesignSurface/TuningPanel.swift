@@ -186,9 +186,11 @@ struct PresetChips: View {
     }
 }
 
-/// The preset code and the Swift, the two ways the tuned theme leaves the app.
+/// The preset code and the Swift, the two ways the tuned theme leaves the
+/// app. Under Source the app shows its own theme, so no code is shown.
 struct ExportSection: View {
     let tuning: ThemeTuning
+    var isSource = false
     @State private var isShowingSwift = false
 
     var body: some View {
@@ -196,12 +198,18 @@ struct ExportSection: View {
             LabeledContent {
                 CopyButton("Copy Code", text: "--preset \(tuning.presetCode)")
                     .labelStyle(.iconOnly)
+                    .disabled(isSource)
                     .accessibilityIdentifier("tuning.copyCode")
             } label: {
                 Text("Preset code")
-                Text(verbatim: tuning.presetCode)
-                    .font(.footnote.monospaced())
-                    .textSelection(.enabled)
+                if isSource {
+                    Text("Source, the app's own theme")
+                        .font(.footnote)
+                } else {
+                    Text(verbatim: tuning.presetCode)
+                        .font(.footnote.monospaced())
+                        .textSelection(.enabled)
+                }
             }
             CopyButton("Copy Swift", text: tuning.swiftSource)
                 .accessibilityIdentifier("tuning.copySwift")

@@ -219,12 +219,25 @@ Unmodified files update; local edits stay; disjoint edits merge via `git merge-f
 
 Add `"--registry", "/path/to/clone"` to `args` to serve checkout, not pinned snapshot.
 
-Thirteen tools, each CLI counterpart but the six design-surface tools (MCP only), over JSON-RPC on stdin/stdout: `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`, `list_design_notes`, `resolve_design_note`, `get_design_context`, `set_tuning`, `set_knobs`, `read_handoff`.
+Thirteen tools over JSON-RPC on stdin/stdout. Seven have CLI counterparts: `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`. Six drive Tune, the design surface on a running debug build, MCP only: `get_design_context`, `list_design_notes`, `propose_design`, `answer_design_note`, `read_handoff`, `answer_handoff`.
 
 - **DO** rely on hints: read-only tools carry `readOnlyHint`; `install_item` carries `destructiveHint`.
 - **DO** expect metadata reloads every call; clone edits show without restart.
 - **DO NOT** parse log lines; logs go to stderr, stdout stays clean JSON-RPC.
-- **DO** read `list_design_notes` (`file`, or `udid` + `bundleId` for the simulator app container) before tuning a screen a person reviewed: each note names the item, its chain, the tokens it reads, its knobs, frame, and preset code. `get_design_context` gives the screen as the person sees it: every item with its frame and tokens, the preset code, and the screenshots under `notes/` (read one). To give an item a control the host never declared, write `design-knob-specs.json` beside the tokens: `{"<item>": [{"name", "title"?, "kind": "number"|"bool"|"choice", "min"/"max"/"step"? or "options", "shipped"}]}`; the panel draws a slider, switch, or picker at once, and the item reads it after one build through `registryKnob(_:_:default:)` (a number or a Bool) or `registryKnob(_:_:options:default:)` (a word). Act on it: `set_tuning` (a code, or a tuning object merged over the device's theme) and `set_knobs` (an item's knob values) change the running app at once, no rebuild, and the person can undo from the panel; check with `get_design_context`. When the person taps Send to agent, `read_handoff` returns the bundle: write its `presetCode` into source with `apply_preset` (or paste `swift` at the scene root), write each of its `knobs` as the item's new shipped default in source and clear it with `set_knobs` `null`, then act on each open note. Then `resolve_design_note` with its `id`, a `reply` the person reads under the note, and `changedFiles`; the panel moves it to Answered, where the person can reopen it.
+
+### Working with Tune
+
+Tune's files sit in the app's `Documents`. Each design tool takes its file as `file`, or `udid` + `bundleId` for the simulator app container. Each file has one writer: Tune writes the values, the notes, the history, the context, and the hand-off; you write only `design-agent.json`, through these tools.
+
+1. See: `get_design_context` returns the screen, every item with its frame and the tokens it reads, the design's code (empty under Source, the app's own theme), `trying`, and `tunesTheme`; read a screenshot under `notes/`.
+2. Read: `list_design_notes` returns the open notes oldest first, each with its subject, `inReplyTo`, and screenshot, plus every proposal with its state: offered, trying, kept, or discarded, the person's decision. Listing marks each note Read for the person.
+3. Propose: `propose_design` with a `name`, a `reason`, the `note` it answers, and either `tokens`, only the `describe_preset` keys that change (`{"accent": "teal", "cardRadius": 20}`), or a full `code`; `knobs` as `{"button": {"height": 44}}`, `null` for a knob's default. With `apply` (the default) Tune tries it over the current version, card open or closed; check with `get_design_context`. The person keeps or discards it; the next `list_design_notes` says which.
+4. Answer: `answer_design_note` with the note's `id`, a `reply` the person reads under it, and `changedFiles`.
+5. Ship: when the person hands off, `read_handoff` returns its `id`, the design's code, `swift`, `knobs`, and open notes. Write the code into source with `apply_preset` (a Source hand-off has no code: leave the theme), write each knob as the item's shipped default, answer the open notes, then `answer_handoff` with the `id` and `changedFiles`. Tune shows Shipped and clears its overrides so your source shows.
+
+- **DO** propose; **DO NOT** write `registry-tokens.json` or `design-knobs.json`. `propose_design` refuses a bad code, a key outside the decode keys, and code or tokens for a host whose `tunesTheme` is false, writing nothing.
+- **DO** give a new control to an item by writing `design-knob-specs.json` beside the tokens: `{"<item>": [{"name", "title"?, "kind": "number"|"bool"|"choice", "min"/"max"/"step"? or "options", "shipped"}]}`; Tune draws it at once, and the item reads it after one build through `registryKnob(_:_:default:)` (a number or a Bool) or `registryKnob(_:_:options:default:)` (a word).
+- **DO** answer a hand-off by its `id`: the current one and the previous one take an answer, and the reply says when a newer one waits.
 
 ## Working from a clone or snapshot
 

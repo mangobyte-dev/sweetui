@@ -1,0 +1,53 @@
+{
+  "answers": {
+    "041B63FF-70EA-4BBA-83C4-02D25C924F7B": {
+      "changedFiles": [
+        "Sources/App/RegistryTheme+App.swift"
+      ],
+      "date": "2026-11-07T05:54:05Z",
+      "reply": "Wrote Warm into RegistryTheme+App.swift."
+    },
+    "CEBEF0AA-20FE-420E-B251-B3A7FCFF3FC1": {
+      "changedFiles": [
+        "Sources/App/RegistryTheme+App.swift"
+      ],
+      "date": "2026-11-07T05:51:50Z",
+      "reply": "Rounded the cards to 24 pt and warmed the accent; kept on the device as Warm."
+    }
+  },
+  "proposals": [
+    {
+      "apply": true,
+      "date": "2026-11-07T05:50:41Z",
+      "id": "C9818B9F-FD38-42C5-BB40-CC38CEB593A6",
+      "name": "Warm",
+      "reason": "An orange accent with rounder cards.",
+      "tokens": {
+        "accent": "orange",
+        "cardRadius": 24
+      }
+    },
+    {
+      "apply": false,
+      "code": "a74hGF01CVunaG0vzZJG",
+      "date": "2026-11-07T05:52:43Z",
+      "id": "F02A19ED-4434-4DC4-A3BE-253C909384CD",
+      "knobs": {
+        "card": {
+          "elevation": null
+        }
+      },
+      "name": "Mango",
+      "note": "CEBEF0AA-20FE-420E-B251-B3A7FCFF3FC1",
+      "reason": "The MANGO preset, whole, with the default card height."
+    }
+  ],
+  "read": {
+    "handoffs": {
+      "041B63FF-70EA-4BBA-83C4-02D25C924F7B": "2026-11-07T05:53:48Z"
+    },
+    "notes": {
+      "CEBEF0AA-20FE-420E-B251-B3A7FCFF3FC1": "2026-11-07T05:51:50Z"
+    }
+  }
+}
