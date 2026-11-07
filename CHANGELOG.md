@@ -18,6 +18,9 @@
   that was up, an ISO 8601 date, and `resolved: false`. Open notes list newest first; swipe to
   delete. An agent reads the file from the app container and sets `resolved` when the work is done.
   Absent keys mean `nil` (a screen note has no `item` or `frame`).
+- MCP `list_design_notes` and `resolve_design_note` read that file back and mark a note done. Give
+  `file`, or `udid` and `bundleId` for the simulator app container (`xcrun simctl get_app_container`).
+  The `sweetui` skill tells an agent to read the notes before tuning a reviewed screen.
 
 ### Known limitations
 

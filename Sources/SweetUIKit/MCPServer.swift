@@ -75,7 +75,7 @@ public struct MCPServer {
     guard let name,
       [
         "search_items", "describe_item", "plan_install", "diff_item", "install_item",
-        "describe_preset", "apply_preset",
+        "describe_preset", "apply_preset", "list_design_notes", "resolve_design_note",
       ].contains(name)
     else {
       throw InvalidParams(message: "Unknown tool: \(params["name"].string ?? "None")")
@@ -125,7 +125,35 @@ public struct MCPServer {
     }
     return code
   }
+  private func notesFile(_ arguments: JSON) throws -> String {
+    try DesignNotes.locate(
+      file: optional(arguments, "file"), udid: optional(arguments, "udid"),
+      bundleId: optional(arguments, "bundleId"))
+  }
   private func perform(_ tool: String, _ arguments: JSON) throws -> OrderedJSON {
+    if tool == "list_design_notes" {
+      let includeResolved: Bool
+      if arguments.object?["includeResolved"] == nil {
+        includeResolved = false
+      } else if case .bool(let value) = arguments["includeResolved"] {
+        includeResolved = value
+      } else {
+        throw InvalidArgument(message: "includeResolved must be a boolean")
+      }
+      let file = try notesFile(arguments)
+      let notes = try DesignNotes.list(file: file, includeResolved: includeResolved)
+      return [
+        "file": .string(file), "notes": .array(notes.map { OrderedJSON($0) }),
+        "nextSteps": [
+          "A note names the item and the tokens it reads; tune those tokens or the item's source, then call resolve_design_note with its id"
+        ],
+      ]
+    }
+    if tool == "resolve_design_note" {
+      let file = try notesFile(arguments)
+      let note = try DesignNotes.resolve(id: string(arguments, "id"), file: file)
+      return ["file": .string(file), "note": OrderedJSON(note)]
+    }
     if tool == "describe_preset" {
       return try OrderedJSON.read(Data(Preset.description(presetCode(arguments), json: true).utf8))
     }

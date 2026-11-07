@@ -194,6 +194,67 @@ extension MCPServer {
               "destructiveHint": true,
               "idempotentHint": true
             }
+          },
+          {
+            "name": "list_design_notes",
+            "title": "List design notes",
+            "description": "Read the notes a person left in the app's Tune panel (design-notes.json): each names the item and its chain, the screen, the tokens the item reads, its moved knobs, its frame, the preset code that was up, and whether it is resolved. Give the file, or the simulator udid and the app's bundleId to find it in the app container.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "Path of design-notes.json; absolute, ~-relative, or relative to the client's working directory"
+                },
+                "udid": {
+                  "type": "string",
+                  "description": "Simulator UDID, with bundleId, when file is not given"
+                },
+                "bundleId": {
+                  "type": "string",
+                  "description": "The app's bundle identifier, with udid"
+                },
+                "includeResolved": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "idempotentHint": true
+            }
+          },
+          {
+            "name": "resolve_design_note",
+            "title": "Resolve a design note",
+            "description": "Mark a note resolved in design-notes.json once its work is done; the Tune panel then drops it from its list. Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The note's id, from list_design_notes"
+                },
+                "file": {
+                  "type": "string"
+                },
+                "udid": {
+                  "type": "string"
+                },
+                "bundleId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": false,
+              "destructiveHint": false,
+              "idempotentHint": true
+            }
           }
         ]
         """#.utf8))
