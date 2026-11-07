@@ -198,22 +198,38 @@ private struct ItemKnobsSection: View {
         if !specs.isEmpty {
             Section {
                 ForEach(specs) { knob in
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(knob.title)
-                            Spacer()
-                            Text(knobs.value(item, knob), format: .number.precision(.fractionLength(knob.step < 1 ? 2 : 0)))
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
+                    switch knob.kind {
+                    case .bool:
+                        Toggle(knob.title, isOn: Binding(
+                            get: { knobs.value(item, knob) != 0 },
+                            set: { knobs.set(item, knob, to: $0 ? 1 : 0) }))
+                            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
+                    case .choice(let options):
+                        Picker(knob.title, selection: Binding(
+                            get: { knob.option(for: knobs.value(item, knob)) ?? options[0] },
+                            set: { word in knobs.set(item, knob, to: Double(options.firstIndex(of: word) ?? 0)) })
+                        ) {
+                            ForEach(options, id: \.self) { Text(verbatim: $0).tag($0) }
                         }
-                        .font(.subheadline)
-                        Slider(
-                            value: Binding(
-                                get: { knobs.value(item, knob) },
-                                set: { knobs.set(item, knob, to: $0) }),
-                            in: knob.range, step: knob.step
-                        ) { Text(knob.title) }
                         .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
+                    case .number:
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(knob.title)
+                                Spacer()
+                                Text(knobs.value(item, knob), format: .number.precision(.fractionLength(knob.step < 1 ? 2 : 0)))
+                                    .monospacedDigit()
+                                    .foregroundStyle(.secondary)
+                            }
+                            .font(.subheadline)
+                            Slider(
+                                value: Binding(
+                                    get: { knobs.value(item, knob) },
+                                    set: { knobs.set(item, knob, to: $0) }),
+                                in: knob.range, step: knob.step
+                            ) { Text(knob.title) }
+                            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
+                        }
                     }
                 }
                 Button("Reset these knobs") { knobs.reset(item) }

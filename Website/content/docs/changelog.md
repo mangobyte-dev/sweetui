@@ -50,6 +50,14 @@
   has Undo and Redo, a Checkpoint field that names the current state, the named states to restore
   by a tap, and Compare to shipped, which lists each knob that differs from the defaults with its
   from and to values. Two hundred entries are kept; named ones outlive the unnamed.
+- Knobs the agent declares, and two new kinds. `ItemKnob.bool` draws a switch stored as 0 or 1 and
+  `ItemKnob.choice` draws a picker stored as the option's index, so `design-knobs.json`, `set_knobs`,
+  and the history keep their numeric shape; foundations gain `registryKnob(_:_:default: Bool)` and
+  `registryKnob(_:_:options:default:)` to read them. An agent writes `design-knob-specs.json`
+  beside the tokens, `{"<item>": [{"name", "title", "kind": "number" | "bool" | "choice", "min",
+  "max", "step", "options", "shipped"}]}`, and the panel shows the controls under the item at once;
+  a host knob of the same name wins, and a spec the panel cannot draw is dropped with a log line.
+  The item reads a new knob after one build, as before.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
   background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only

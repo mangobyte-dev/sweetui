@@ -132,3 +132,14 @@ struct RegistryThemeTests {
         #expect(shallow.surface(at: .lowest) == .primary.opacity(0))
     }
 }
+
+struct RegistryKnobsTests {
+    @Test func `A switch reads 0 and 1 as a Bool and a choice reads its index as the word`() {
+        let knobs = RegistryKnobs(values: ["button": ["showsIcon": 0, "variant": 1, "odd": 7]])
+        #expect(knobs.value("button", "showsIcon", default: true) == false)
+        #expect(knobs.value("button", "missing", default: true) == true)
+        #expect(knobs.value("button", "variant", options: ["primary", "outline"], default: "primary") == "outline")
+        #expect(knobs.value("button", "odd", options: ["primary", "outline"], default: "primary") == "primary", "An index outside the options is the default.")
+        #expect(knobs.value("button", "missing", options: ["primary"], default: "primary") == "primary")
+    }
+}

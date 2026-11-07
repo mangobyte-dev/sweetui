@@ -9,17 +9,46 @@ import SweetUIFoundations
 /// clamped into it, with a line in the log, so a host's slip never traps the
 /// slider in a build that ships.
 public struct ItemKnob: Identifiable, Sendable, Equatable {
+    /// How the panel draws the knob and how the item reads it: a slider over
+    /// a number, a switch stored as 0 or 1, or a picker stored as the index
+    /// into its options (`registryKnob(_:_:options:default:)`).
+    public enum Kind: Sendable, Equatable {
+        case number, bool, choice([String])
+    }
+
     public let name: String
     public let title: String
     public let range: ClosedRange<Double>
     public let step: Double
     public let shipped: Double
+    public let kind: Kind
     public var id: String { name }
 
     public init(_ name: String, title: String? = nil, in range: ClosedRange<Double>, step: Double = 1, shipped: Double) {
+        self.init(name, title: title, in: range, step: step, shipped: shipped, kind: .number)
+    }
+
+    /// A switch, read with `registryKnob(_:_:default: Bool)`.
+    public static func bool(_ name: String, title: String? = nil, shipped: Bool) -> ItemKnob {
+        ItemKnob(name, title: title, in: 0...1, step: 1, shipped: shipped ? 1 : 0, kind: .bool)
+    }
+
+    /// A choice among words, read with `registryKnob(_:_:options:default:)`;
+    /// a shipped word outside the options falls back to the first.
+    public static func choice(_ name: String, title: String? = nil, options: [String], shipped: String) -> ItemKnob {
+        let options = options.isEmpty ? [shipped] : options
+        let index = options.firstIndex(of: shipped) ?? 0
+        if options.firstIndex(of: shipped) == nil {
+            SurfaceLog.logger.error("Knob \(name, privacy: .public): shipped '\(shipped, privacy: .public)' is not an option; using the first")
+        }
+        return ItemKnob(name, title: title, in: 0...Double(options.count - 1), step: 1, shipped: Double(index), kind: .choice(options))
+    }
+
+    private init(_ name: String, title: String?, in range: ClosedRange<Double>, step: Double, shipped: Double, kind: Kind) {
         self.name = name
         self.title = title ?? name
         self.range = range
+        self.kind = kind
         if step > 0 {
             self.step = step
         } else {
@@ -32,6 +61,86 @@ public struct ItemKnob: Identifiable, Sendable, Equatable {
             SurfaceLog.logger.error("Knob \(name, privacy: .public): shipped \(shipped) is outside \(range.lowerBound)...\(range.upperBound); clamped")
             self.shipped = min(max(range.lowerBound, shipped), range.upperBound)
         }
+    }
+
+    /// The option a stored value names, for a choice knob.
+    func option(for value: Double) -> String? {
+        guard case .choice(let options) = kind else { return nil }
+        let index = Int(value.rounded())
+        return options.indices.contains(index) ? options[index] : nil
+    }
+}
+
+/// A knob as an agent declares it in `design-knob-specs.json`: the file is
+/// `{"<item>": [spec, ...]}`, each spec `{"name", "title"?, "kind": "number" |
+/// "bool" | "choice", "min", "max", "step"? (number), "options" (choice),
+/// "shipped"}` with `shipped` a number, a bool, or a word by kind. The panel
+/// shows the controls after the file lands; the item reads the knob once it
+/// calls `registryKnob` for it, which takes one build.
+public struct ItemKnobSpec: Codable, Equatable, Sendable {
+    public enum Kind: String, Codable, Sendable { case number, bool, choice }
+    public enum Shipped: Codable, Equatable, Sendable {
+        case number(Double), bool(Bool), word(String)
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let flag = try? container.decode(Bool.self) { self = .bool(flag) }
+            else if let number = try? container.decode(Double.self) { self = .number(number) }
+            else { self = .word(try container.decode(String.self)) }
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .number(let number): try container.encode(number)
+            case .bool(let flag): try container.encode(flag)
+            case .word(let word): try container.encode(word)
+            }
+        }
+    }
+
+    public var name: String
+    public var title: String?
+    public var kind: Kind
+    public var min: Double?
+    public var max: Double?
+    public var step: Double?
+    public var options: [String]?
+    public var shipped: Shipped
+
+    /// The knob, or `nil` with a log line for a spec the panel cannot draw.
+    public var knob: ItemKnob? {
+        switch (kind, shipped) {
+        case (.number, .number(let value)):
+            guard let min, let max, min < max else {
+                SurfaceLog.logger.error("Knob spec \(name, privacy: .public): a number needs min < max")
+                return nil
+            }
+            return ItemKnob(name, title: title, in: min...max, step: step ?? 1, shipped: value)
+        case (.bool, .bool(let flag)):
+            return .bool(name, title: title, shipped: flag)
+        case (.choice, .word(let word)):
+            guard let options, !options.isEmpty else {
+                SurfaceLog.logger.error("Knob spec \(name, privacy: .public): a choice needs options")
+                return nil
+            }
+            return .choice(name, title: title, options: options, shipped: word)
+        default:
+            SurfaceLog.logger.error("Knob spec \(name, privacy: .public): shipped does not match kind \(kind.rawValue, privacy: .public)")
+            return nil
+        }
+    }
+}
+
+extension SharedKey where Self == FileStorageKey<[String: [ItemKnobSpec]]>.Default {
+    /// The agent-declared knobs, beside the design tokens.
+    static var designKnobSpecs: Self {
+        Self[
+            .fileStorage(
+                URL.documentsDirectory.appending(component: "design-knob-specs.json"),
+                decoder: nil, encoder: ThemeTuning.fileEncoder),
+            default: [:]
+        ]
     }
 }
 
@@ -53,6 +162,8 @@ extension SharedKey where Self == FileStorageKey<[String: [String: Double]]>.Def
 @MainActor
 final class KnobStore {
     @Shared(.designKnobs) var values
+    @Shared(.designKnobSpecs) var declared
+    /// The host's knobs, registered in code.
     private(set) var specs: [String: [ItemKnob]] = [:]
 
     init() {}
@@ -61,7 +172,13 @@ final class KnobStore {
         specs.merge(knobs) { _, new in new }
     }
 
-    func knobs(for item: String) -> [ItemKnob] { specs[item] ?? [] }
+    /// The host's knobs for the item, then the agent's declared ones whose
+    /// names the host did not take.
+    func knobs(for item: String) -> [ItemKnob] {
+        let host = specs[item] ?? []
+        let taken = Set(host.map(\.name))
+        return host + (declared[item] ?? []).compactMap(\.knob).filter { !taken.contains($0.name) }
+    }
 
     func value(_ item: String, _ knob: ItemKnob) -> Double {
         values[item]?[knob.name] ?? knob.shipped
