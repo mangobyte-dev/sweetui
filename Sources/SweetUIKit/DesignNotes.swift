@@ -117,3 +117,32 @@ public enum DesignContext {
     return context
   }
 }
+
+/// The hand-off the person sends from the Tune panel, `design-handoff.json`
+/// beside the tokens: the theme as a preset code and as Swift, the chosen
+/// variant, the moved knobs, each knob that differs from the shipped theme,
+/// the open notes with their screenshots, and the named checkpoints.
+public enum DesignHandoff {
+  public static let fileName = "design-handoff.json"
+
+  /// The hand-off, with every screenshot path made absolute.
+  public static func read(file: String) throws -> JSON {
+    @Dependency(\.registryFileSystem) var fs
+    guard fs.isFile(file) else { throw RegistryError("no \(fileName) at \(file)") }
+    var handoff = try JSON.read(fs.read(file))
+    guard handoff.object != nil else { throw RegistryError("\(file) is not a hand-off object") }
+    let documents = (file as NSString).deletingLastPathComponent
+    if let shot = handoff["screenshot"].string {
+      handoff["screenshotPath"] = .string(documents + "/" + shot)
+    }
+    if var notes = handoff["openNotes"].array {
+      for index in notes.indices {
+        if let shot = notes[index]["screenshot"].string {
+          notes[index]["screenshotPath"] = .string(documents + "/" + shot)
+        }
+      }
+      handoff["openNotes"] = .array(notes)
+    }
+    return handoff
+  }
+}

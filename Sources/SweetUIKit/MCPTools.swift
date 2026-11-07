@@ -316,6 +316,29 @@ extension MCPServer {
             }
           },
           {
+            "name": "read_handoff",
+            "title": "Read the hand-off from the device",
+            "description": "What the person sent from the Tune panel's Send to agent (design-handoff.json): the theme as a preset code and as Swift, the chosen variant, every moved knob, each knob that differs from the shipped theme, the open notes with their screenshots, and the named checkpoints. Write the theme and the knob defaults into source, then resolve the notes. Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "udid": {
+                  "type": "string"
+                },
+                "bundleId": {
+                  "type": "string"
+                }
+              }
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "idempotentHint": true
+            }
+          },
+          {
             "name": "resolve_design_note",
             "title": "Resolve a design note",
             "description": "Mark a note resolved in design-notes.json once its work is done, with a reply the person reads under the note in the Tune panel and the files you changed; the panel moves it to Answered, where the person can reopen it. Locate the file as list_design_notes does.",

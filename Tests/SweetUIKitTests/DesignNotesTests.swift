@@ -180,4 +180,41 @@ struct DesignNotesTests {
       #expect(response["result"]["structuredContent"]["context"]["presetCode"] == "a13GkaOXWwIF")
     }
   }
+
+  @Test func handoffReadsTheBundleWithAbsoluteScreenshots() throws {
+    let fs = try fixture()
+    try fs.createDirectory("/app")
+    try fs.write(
+      Data(
+        #"""
+        {
+          "sentAt" : "2026-11-07T01:20:00Z", "presetCode" : "a74hGF01CVunaG0vzZJG",
+          "swift" : "let theme = RegistryTheme(...)", "chosenVariant" : "Warm",
+          "knobs" : { "button" : { "height" : 40 } },
+          "differences" : [ { "key" : "accent", "from" : "indigo", "to" : "custom" } ],
+          "openNotes" : [ { "id" : "CEBEF0AA-20FE-420E-B251-B3A7FCFF3FC1", "text" : "Taller", "item" : "button", "screenshot" : "notes/x.png" } ],
+          "checkpoints" : [ { "name" : "Launch", "code" : "a13GkaOXWwIF", "knobs" : {} } ],
+          "screenshot" : "notes/handoff.png"
+        }
+        """#.utf8), to: "/app/design-handoff.json")
+    try withFixture(fs) {
+      let handoff = try DesignHandoff.read(file: "/app/design-handoff.json")
+      #expect(handoff["screenshotPath"] == "/app/notes/handoff.png")
+      #expect(handoff["openNotes"].array?.first?["screenshotPath"] == "/app/notes/x.png")
+      #expect(handoff["knobs"]["button"]["height"] == 40)
+      let server = MCPServer(root: "/registry")
+      let request: JSON = [
+        "jsonrpc": "2.0", "id": 11, "method": "tools/call",
+        "params": ["name": "read_handoff", "arguments": ["file": "/app/design-handoff.json"]],
+      ]
+      let response = try JSON.read(
+        Data(try #require(try server.response(to: Data(request.rendered().utf8))).utf8))
+      #expect(response["result"]["isError"] == false)
+      #expect(response["result"]["structuredContent"]["handoff"]["chosenVariant"] == "Warm")
+      #expect(
+        response["result"]["structuredContent"]["nextSteps"].array?.first?.string?.contains(
+          "a74hGF01CVunaG0vzZJG") == true)
+      #expect(throws: RegistryError.self) { try DesignHandoff.read(file: "/app/none.json") }
+    }
+  }
 }

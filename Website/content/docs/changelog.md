@@ -58,6 +58,12 @@
   "max", "step", "options", "shipped"}]}`, and the panel shows the controls under the item at once;
   a host knob of the same name wins, and a spec the panel cannot draw is dropped with a log line.
   The item reads a new knob after one build, as before.
+- Hand off. Send to agent, under Export, writes `design-handoff.json` beside the tokens and takes a
+  screenshot: the theme as a preset code and as Swift, the chosen variant, every moved knob, each
+  knob that differs from the shipped theme, the open notes with their screenshots, and the named
+  checkpoints. MCP `read_handoff` returns it with absolute screenshot paths and the steps that put
+  it into source: `apply_preset` for the theme, the knobs as new shipped defaults, the notes
+  resolved with replies.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
   background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only

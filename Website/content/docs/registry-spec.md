@@ -183,4 +183,4 @@ Agent steps:
 7. compile consumer at deployment floor
 8. before `--update`, audit owned source (`sweetui install <item> --diff --destination <path>`): needs receipt, exits `0` parity / `1` diffs
 
-Same steps as `MCP` tools (`sweetui mcp`, `stdio`): `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`, `list_design_notes`, `resolve_design_note`, `get_design_context`, `set_tuning`, `set_knobs`. `MCPTests.swift` pins wire shape (inline snapshots); `MCPContractTests.swift` drives registry
+Same steps as `MCP` tools (`sweetui mcp`, `stdio`): `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`, `list_design_notes`, `resolve_design_note`, `get_design_context`, `set_tuning`, `set_knobs`, `read_handoff`. `MCPTests.swift` pins wire shape (inline snapshots); `MCPContractTests.swift` drives registry

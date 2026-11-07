@@ -172,7 +172,7 @@ extension ThemeTuning.RGB {
 
 extension ThemeTuning {
     /// One knob that differs between two tunings, spelled as the file spells it.
-    public struct Difference: Equatable, Sendable {
+    public struct Difference: Codable, Equatable, Sendable {
         public let key: String
         public let from: String
         public let to: String

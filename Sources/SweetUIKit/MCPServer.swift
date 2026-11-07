@@ -76,7 +76,7 @@ public struct MCPServer {
       [
         "search_items", "describe_item", "plan_install", "diff_item", "install_item",
         "describe_preset", "apply_preset", "list_design_notes", "resolve_design_note",
-        "get_design_context", "set_tuning", "set_knobs",
+        "get_design_context", "set_tuning", "set_knobs", "read_handoff",
       ].contains(name)
     else {
       throw InvalidParams(message: "Unknown tool: \(params["name"].string ?? "None")")
@@ -175,6 +175,22 @@ public struct MCPServer {
       let item = try string(arguments, "item")
       let knobs = try DesignWrites.setKnobs(item: item, values: arguments["values"], file: file)
       return ["file": .string(file), "item": .string(item), "knobs": OrderedJSON(knobs)]
+    }
+    if tool == "read_handoff" {
+      let file = try AppContainer.locate(
+        DesignHandoff.fileName, file: optional(arguments, "file"),
+        udid: optional(arguments, "udid"), bundleId: optional(arguments, "bundleId"))
+      let handoff = try DesignHandoff.read(file: file)
+      return [
+        "file": .string(file), "handoff": OrderedJSON(handoff),
+        "nextSteps": [
+          .string(
+            "Write the theme into source: apply_preset with code \(handoff["presetCode"].text) and the app's destination, or paste the swift field at the scene root"
+          ),
+          "Write each knob under knobs as the item's new shipped default in its source, then remove it from design-knobs.json with set_knobs values null",
+          "Act on each open note (read its screenshotPath), then resolve_design_note with a reply",
+        ],
+      ]
     }
     if tool == "get_design_context" {
       let file = try AppContainer.locate(

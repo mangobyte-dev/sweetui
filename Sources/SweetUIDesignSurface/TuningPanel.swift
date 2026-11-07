@@ -97,6 +97,7 @@ public struct TuningPanel<PresetsFooter: View>: View {
                     PresetsSection(tuning: $tuning, footer: presetsFooter)
                     if showsScreen { VariantsSection(tuning: $tuning) }
                     ExportSection(tuning: tuning)
+                    if showsScreen { HandoffSection(tuning: tuning) }
                     ContrastSection(tuning: $tuning)
                     AccentSection(tuning: $tuning)
                     TypographySection(tuning: $tuning)
@@ -713,6 +714,42 @@ private struct AnyButtonStyle: PrimitiveButtonStyle {
     }
 
     func makeBody(configuration: Configuration) -> some View { make(configuration) }
+}
+
+/// The device to code hand-off: one tap writes design-handoff.json with the
+/// theme, the chosen variant, the moved knobs, the open notes, and the
+/// checkpoints, and takes a screenshot; the agent reads it with read_handoff
+/// and writes the theme and the knob defaults into source.
+private struct HandoffSection: View {
+    let tuning: ThemeTuning
+    @Shared(.designVariants) private var variants
+    @Shared(.designNotes) private var notes
+    @Shared(.designHistory) private var history
+    @State private var sentAt: Date?
+    private let state = DesignSurfaceState.shared
+
+    var body: some View {
+        Section {
+            Button("Send to agent", systemImage: "paperplane") {
+                let screenshot = DesignContext.saveScreenshot(named: "handoff", state: state)
+                let handoff = DesignHandoff.capture(
+                    tuning: tuning, knobs: state.knobs.values, variants: variants, notes: notes,
+                    history: history, screenshot: screenshot)
+                if handoff.write() { sentAt = handoff.sentAt }
+            }
+            .accessibilityIdentifier("tuning.handoff")
+            if let sentAt {
+                LabeledContent("Sent") {
+                    Text(sentAt, format: .dateTime.hour().minute().second())
+                }
+                .accessibilityIdentifier("tuning.handoff.sent")
+            }
+        } header: {
+            Text("Hand off")
+        } footer: {
+            Text("Writes design-handoff.json: the theme as a code and as Swift, the chosen variant, the moved knobs, the open notes, and the checkpoints. The agent reads it with read_handoff and writes the theme and the knob defaults into source.")
+        }
+    }
 }
 
 /// The preset code and the Swift, the two ways the tuned theme leaves the app.
