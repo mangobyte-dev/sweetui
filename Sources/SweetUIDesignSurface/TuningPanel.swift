@@ -389,7 +389,7 @@ private struct HistorySection: View {
                     step { $0.restore(entry.id) }
                 } label: {
                     LabeledContent {
-                        if history.current?.id == entry.id {
+                        if history.current == entry.id {
                             Image(systemName: "checkmark").foregroundStyle(.tint).accessibilityHidden(true)
                         }
                     } label: {
@@ -399,7 +399,7 @@ private struct HistorySection: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityAddTraits(history.current?.id == entry.id ? [.isSelected] : [])
+                .accessibilityAddTraits(history.current == entry.id ? [.isSelected] : [])
                 .accessibilityIdentifier("tuning.history.restore")
             }
             DisclosureGroup("Compare to shipped (\(differences.count))") {
@@ -423,15 +423,15 @@ private struct HistorySection: View {
         }
     }
 
-    /// Moves the cursor with `move`, then applies the entry it lands on: the
+    /// Moves Current with `move`, then applies the version it lands on: the
     /// code over the current tuning (the switches stay) and the knobs.
     private func step(_ move: (inout DesignHistory) -> DesignHistory.Entry?) {
         var landed: DesignHistory.Entry?
         $history.withLock { landed = move(&$0) }
         guard let entry = landed else { return }
         withAnimation(ToolChrome.animation) {
-            if let restored = ThemeTuning(presetCode: entry.code, base: tuning) { tuning = restored }
-            state.knobs.replaceAll(entry.knobs)
+            if let restored = ThemeTuning(presetCode: entry.design.code, base: tuning) { tuning = restored }
+            state.knobs.replaceAll(entry.design.knobs)
         }
     }
 }

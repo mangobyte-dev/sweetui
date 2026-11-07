@@ -94,4 +94,21 @@ struct DesignTokensFileTests {
         let decoded = try JSONDecoder().decode(ThemeTuning.self, from: ThemeTuning.fileEncoder.encode(tuning))
         #expect(decoded == tuning)
     }
+
+    @Test func `Compare to shipped lists each moved knob and nothing else`() throws {
+        #expect(ThemeTuning.default.differences(from: .default).isEmpty)
+        var tuning = ThemeTuning.default
+        tuning.accent = .green
+        tuning.cardRadius = 20
+        tuning.fontDesign = .rounded
+        tuning.appearance = .dark
+        let differences = tuning.differences(from: .default)
+        #expect(differences.map(\.key) == ["accent", "cardRadius", "fontDesign"], "Switches are not knobs: \(differences)")
+        #expect(differences[0].from == "indigo" && differences[0].to == "green")
+        #expect(differences[1].from == "16" && differences[1].to == "20")
+        let mango = try #require(ThemeTuning(presetCode: "a74hGF01CVunaG0vzZJG"))
+        let fromDefault = mango.differences(from: .default)
+        #expect(fromDefault.contains { $0.key == "customAccent" && $0.to == "#FFA033" })
+        #expect(fromDefault.contains { $0.key == "customAccentDark" && $0.from == "none" && $0.to == "#FFB84D" })
+    }
 }

@@ -146,22 +146,23 @@ private struct DesignSurfaceOverlayRoot: View {
     @Shared(.agentChange) private var agentChange
     @Shared(.designVariants) private var variants
 
-    /// Appends the settled state to the history, naming who moved it: the
-    /// agent when its last write is this code, a variant when a chip
-    /// matches, the shipped theme when nothing has moved, the person otherwise.
+    /// Records the settled design as a version, naming who moved it: you for
+    /// the first one when nothing has moved, the agent when its last write is
+    /// this code or a variant chip matches, you otherwise.
     private func recordHistory() {
-        let current = DesignHistory.State(code: tuning.presetCode, knobs: state.knobs.values)
-        let source: DesignHistory.Source
-        if history.entries.isEmpty, current.code == ThemeTuning.default.presetCode, current.knobs.isEmpty {
-            source = .shipped
-        } else if agentChange?.code == current.code {
-            source = .agent
-        } else if variants.matching(tuning) != nil {
-            source = .variant
+        let design = DesignHistory.Design(code: tuning.presetCode, knobs: state.knobs.values)
+        let author: DesignHistory.Author
+        let origin: DesignHistory.Origin
+        if history.entries.isEmpty, design.code == ThemeTuning.default.presetCode, design.knobs.isEmpty {
+            (author, origin) = (.you, .first)
+        } else if agentChange?.code == design.code {
+            (author, origin) = (.agent, .edit)
+        } else if let variant = variants.matching(tuning) {
+            (author, origin) = (.agent, .proposal(id: variant.id))
         } else {
-            source = .person
+            (author, origin) = (.you, .edit)
         }
-        $history.withLock { $0.record(current, source: source) }
+        $history.withLock { $0.record(design, author: author, origin: origin) }
     }
 
     /// What a context rewrite waits for; a scroll moves frames, not this.

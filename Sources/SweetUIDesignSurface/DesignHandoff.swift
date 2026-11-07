@@ -45,7 +45,7 @@ public struct DesignHandoff: Codable, Equatable, Sendable {
             openNotes: notes.filter { !$0.resolved }.map {
                 Note(id: $0.id, text: $0.text, item: $0.item, screen: $0.screen, screenshot: $0.screenshot)
             },
-            checkpoints: history.named.map { Checkpoint(name: $0.name ?? "", code: $0.code, knobs: $0.knobs) },
+            checkpoints: history.named.map { Checkpoint(name: $0.name ?? "", code: $0.design.code, knobs: $0.design.knobs) },
             screenshot: screenshot)
     }
 

@@ -18,9 +18,9 @@ struct DesignHandoffTests {
         var open = DesignNote(text: "Taller", item: "button", chain: ["button"], screen: "button", tokens: ["accent"], knobs: [:], frame: nil, presetCode: "a0")
         open.screenshot = "notes/x.png"
         var history = DesignHistory()
-        history.record(DesignHistory.State(code: "a13GkaOXWwIF", knobs: [:]), source: .shipped)
+        history.record(DesignHistory.Design(code: "a13GkaOXWwIF"), author: .you, origin: .first)
         history.name("Launch")
-        history.record(DesignHistory.State(code: tuning.presetCode, knobs: ["button": ["height": 40]]), source: .person)
+        history.record(DesignHistory.Design(code: tuning.presetCode, knobs: ["button": ["height": 40]]), author: .you, origin: .edit)
 
         let handoff = DesignHandoff.capture(
             tuning: tuning, knobs: ["button": ["height": 40]], variants: variants, notes: [done, open],
