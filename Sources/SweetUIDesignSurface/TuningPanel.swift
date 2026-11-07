@@ -89,6 +89,7 @@ public struct TuningPanel<PresetsFooter: View>: View {
                 }
                 if tunesTheme {
                     PresetsSection(tuning: $tuning, footer: presetsFooter)
+                    if showsScreen { VariantsSection(tuning: $tuning) }
                     ExportSection(tuning: tuning)
                     ContrastSection(tuning: $tuning)
                     AccentSection(tuning: $tuning)
@@ -439,6 +440,67 @@ private struct PresetsSection<Footer: View>: View {
             footer
         }
     }
+}
+
+/// The themes an agent staged in `design-variants.json`, one chip each; a
+/// tap applies the code and records the pick as `chosen`. Hidden until the
+/// file names a variant. A chip reads selected while the knobs still match
+/// its code, so a knob moved afterwards clears it without clearing the pick.
+private struct VariantsSection: View {
+    @Binding var tuning: ThemeTuning
+    @Shared(.designVariants) private var variants
+
+    var body: some View {
+        if !variants.variants.isEmpty {
+            Section {
+                ScrollView(.horizontal) {
+                    HStack(spacing: 8) {
+                        ForEach(variants.variants) { variant in
+                            VariantChip(variant: variant, isCurrent: variants.matching(tuning)?.name == variant.name) {
+                                guard let picked = variants.tuning(for: variant, base: tuning) else { return }
+                                withAnimation(ToolChrome.animation) { tuning = picked }
+                                $variants.withLock { $0.chosen = variant.name }
+                            }
+                        }
+                    }
+                }
+                .scrollIndicators(.hidden)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            } header: {
+                Text("Variants from the agent")
+            } footer: {
+                Text(variants.chosen.map { "Chosen: \($0). The pick is written to design-variants.json." }
+                    ?? "Staged in design-variants.json. A tap applies the code and records the pick.")
+            }
+        }
+    }
+}
+
+private struct VariantChip: View {
+    let variant: DesignVariants.Variant
+    let isCurrent: Bool
+    let action: () -> Void
+
+    var body: some View {
+        // A native style, not the registry button item: the panel is a
+        // package product and items are copied source.
+        Button(variant.name, action: action)
+            .buttonStyle(isCurrent ? AnyButtonStyle(.borderedProminent) : AnyButtonStyle(.bordered))
+            .controlSize(.small)
+            .accessibilityAddTraits(isCurrent ? [.isSelected] : [])
+            .accessibilityIdentifier("tuning.variant.\(variant.name)")
+    }
+}
+
+/// A button style chosen at runtime, erased once so the chip's chain stays one expression.
+private struct AnyButtonStyle: PrimitiveButtonStyle {
+    private let make: (Configuration) -> AnyView
+
+    init<Style: PrimitiveButtonStyle>(_ style: Style) {
+        make = { AnyView(style.makeBody(configuration: $0)) }
+    }
+
+    func makeBody(configuration: Configuration) -> some View { make(configuration) }
 }
 
 /// The preset code and the Swift, the two ways the tuned theme leaves the app.

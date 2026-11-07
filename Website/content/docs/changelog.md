@@ -21,6 +21,11 @@
 - MCP `list_design_notes` and `resolve_design_note` read that file back and mark a note done. Give
   `file`, or `udid` and `bundleId` for the simulator app container (`xcrun simctl get_app_container`).
   The `sweetui` skill tells an agent to read the notes before tuning a reviewed screen.
+- Variants from the agent. An agent writes `design-variants.json` beside the tokens, `{"variants":
+  [{"name", "code"}]}`, and the panel shows one chip per variant under the presets. A tap applies
+  the code over the current tuning (the environment switches stay) and writes the pick back as
+  `chosen`. A chip reads selected while the knobs still match its code. No build or capture per
+  variant: a preset code applies at runtime. A code the panel cannot decode applies nothing.
 
 ### Known limitations
 
