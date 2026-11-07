@@ -18,6 +18,7 @@ Contracts:
 | `docs/philosophy.md` | why |
 | `docs/architecture.md` | how |
 | `docs/registry-spec.md` | data and installer contract; "Agent usage" covers a consuming app |
+| `docs/design-surface.md` | Tune, the design surface: glossary, objects, places, files, agent tools, slices |
 | `docs/visual-testing.md` | visual evidence rules |
 | `docs/mango.md` | the design system template |
 | `docs/case-studies.md` | four apps an agent built from the registry and what the friction study found |
