@@ -10,6 +10,7 @@
 // fixtures always render the latest code. Keep it to view construction:
 // seed data, environment objects, fixed dates, no network.
 #if DEBUG && os(iOS)
+import SweetUIDesignSurface
 import SweetUIShowcaseFeature
 import SwiftUI
 
@@ -17,5 +18,21 @@ import SwiftUI
 func simlessFixtures(_ r: SimlessRegistry) {
     r.add("Catalog") { ContentView() }
     r.add("ContributionsActivity") { ContributionsActivity() }
+    r.add("TunePanel") { TunePanelFixture(tuning: .default) }
+    r.add("TunePanelEmerald") {
+        var tuning = ThemeTuning.default
+        tuning.accent = .green
+        return TunePanelFixture(tuning: tuning)
+    }
+}
+
+/// The embedded panel over a fixed tuning, as the Showcase previews host it.
+private struct TunePanelFixture: View {
+    @State var tuning: ThemeTuning
+
+    var body: some View {
+        TuningPanel(tuning: $tuning)
+            .registryTheme(tuning.theme)
+    }
 }
 #endif

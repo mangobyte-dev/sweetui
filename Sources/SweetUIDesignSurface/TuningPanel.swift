@@ -86,6 +86,7 @@ public struct TuningPanel<PresetsFooter: View>: View {
                 if tunesTheme {
                     PresetsSection(tuning: $tuning, footer: presetsFooter)
                     ExportSection(tuning: tuning)
+                    ContrastSection(tuning: $tuning)
                     AccentSection(tuning: $tuning)
                     TypographySection(tuning: $tuning)
                     if shows(PanelScope.surface) { SurfaceSection(tuning: $tuning) }
@@ -367,6 +368,77 @@ private struct ExportSection: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+/// The tuned theme's text pairs against the HIG's contrast minimum, beside
+/// the export so a theme is checked before it leaves; a label on the accent
+/// that the other label would fix is one tap away.
+private struct ContrastSection: View {
+    @Binding var tuning: ThemeTuning
+
+    var body: some View {
+        let audit = ContrastAudit(tuning)
+        Section {
+            ForEach(audit.pairs) { pair in
+                ContrastRow(pair: pair)
+            }
+            if let dark = ContrastAudit.betterLabel(for: tuning) {
+                Button(dark ? LocalizedStringKey("Use a dark label") : "Use a white label") {
+                    withAnimation(ToolChrome.animation) { tuning.darkLabelOnAccent = dark }
+                }
+                .accessibilityIdentifier("tuning.contrast.fixLabel")
+            }
+        } header: {
+            Text("Contrast")
+        } footer: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Text needs 4.5:1 in light and dark (WCAG AA, as Apple's guidelines apply it). A system color may reach it with Increase Contrast; a custom color has no such variant.")
+                if audit.secondaryIsDerived {
+                    Text("Secondary text follows the foreground; give it its own color to measure it.")
+                }
+            }
+        }
+    }
+}
+
+/// One pair: its name, the ratios that decide it, and the verdict in words
+/// beside its symbol, so the result never rests on color alone.
+private struct ContrastRow: View {
+    let pair: ContrastAudit.Pair
+
+    private var verdict: (text: String, symbol: String, color: Color) {
+        switch pair.verdict {
+        case .passes: ("Passes", "checkmark.circle.fill", .green)
+        case .passesWithIncreaseContrast: ("Passes with Increase Contrast", "circle.lefthalf.filled", .secondary)
+        case .fails: ("Fails", "exclamationmark.triangle.fill", .orange)
+        }
+    }
+
+    private var ratios: String {
+        let base = "\(Self.format(pair.light)) light, \(Self.format(pair.dark)) dark"
+        guard pair.verdict == .passesWithIncreaseContrast else { return base }
+        return base + ", \(Self.format(min(pair.lightIncreased, pair.darkIncreased))) increased"
+    }
+
+    /// Two decimals, as contrast checkers print them: one decimal would round
+    /// a failing 4.47 up to a passing-looking 4.5.
+    private static func format(_ ratio: Double) -> String {
+        ratio.formatted(.number.precision(.fractionLength(2))) + ":1"
+    }
+
+    var body: some View {
+        LabeledContent {
+            Image(systemName: verdict.symbol)
+                .foregroundStyle(verdict.color)
+                .accessibilityHidden(true)
+        } label: {
+            Text(pair.title)
+            Text("\(verdict.text): \(ratios)")
+                .monospacedDigit()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("tuning.contrast.\(pair.kind.rawValue)")
     }
 }
 

@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- The Tune panel audits contrast. A Contrast section beside Export measures the label on the accent
+  and the accent as text, plus the text pairs once the theme sets a foreground or background, as
+  WCAG 2.2 ratios in light and dark and again under Increase Contrast. A row reads Passes, Passes
+  with Increase Contrast, or Fails against the 4.5:1 the Human Interface Guidelines apply to text up
+  to 17 points, with the ratios beside it. When the other label (white or black) would pass, a button
+  applies it. Ratios agree with WebAIM's checker to two decimals (`ContrastAuditTests`).
+- Two simless fixtures, `TunePanel` and `TunePanelEmerald`, render the embedded panel headless.
+
+### Known limitations
+
+- The shipped default (SwiftUI's indigo under a white label) fails in dark at 3.51:1, and Increase
+  Contrast lowers it to 2.13:1, because the accessible indigo is lighter. `systemRed` under the white
+  destructive label is 3.57:1 light and 3.43:1 dark, so the button style's "always dark enough for a
+  white label" comment is not true at 15 points; the panel does not measure the negative color, which
+  is not a knob.
+- The new UI test `testContrastAuditNamesTheFailingPairAndOffersTheLabelThatFixesIt` follows the
+  import test's steps but has not run on the pinned iPhone 17: the only runtime on the release machine
+  is iOS 27.1 with the iPhone Duo, whose cover display puts the tab bar in a side strip, so the
+  existing panel UI tests fail there too ("The Components tab must exist").
+
 ## 0.6.0 (2026-10-10)
 
 A minor release that adds iPhone Duo support. Foundations do not change, so every item keeps the

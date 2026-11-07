@@ -774,6 +774,46 @@ final class SweetUIShowcaseUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["No preset code or RegistryTheme( initializer found in the pasted text."].waitForExistence(timeout: 2))
     }
 
+    /// The panel's contrast audit closes the loop on the device: a theme whose
+    /// label fails the HIG's 4.5:1 says so in words, offers the other label
+    /// when that one would pass, and the row reads Passes once it is taken.
+    /// Emerald is the fixture: white on green fails in both appearances, a
+    /// black label passes both. The negative case is the shipped Indigo, where
+    /// a black label fails light, so a failing row must offer no fix.
+    @MainActor
+    func testContrastAuditNamesTheFailingPairAndOffersTheLabelThatFixesIt() {
+        let app = launchCatalog()
+        openTuning(app)
+
+        // Import before any scroll: the toolbar is always there, and a Form
+        // drops rows above the fold from the tree.
+        app.buttons["Import"].tap()
+        let editor = app.textViews["Preset code or Swift"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 5), "The import sheet must offer a labeled editor.")
+        editor.tap()
+        editor.typeText("RegistryTheme(accent: .emerald)")
+        app.buttons["Apply"].tap()
+
+        let label = app.descendants(matching: .any).matching(identifier: "tuning.contrast.labelOnAccent").firstMatch
+        let fix = app.buttons["tuning.contrast.fixLabel"]
+        revealInPanel(app, fix)
+        XCTAssertTrue(fix.waitForExistence(timeout: 3), "Emerald under a white label must offer the dark one.")
+        XCTAssertEqual(fix.label, "Use a dark label")
+        XCTAssertTrue(label.label.contains("Fails"), "White on emerald fails: \(label.label)")
+        XCTAssertTrue(label.label.contains(":1"), "The row must show the ratios, not only a verdict: \(label.label)")
+        fix.tap()
+        XCTAssertTrue(
+            label.waitForExistence(timeout: 3) && label.label.contains("Passes:"),
+            "Taking the fix must turn the row green: \(label.label)"
+        )
+        XCTAssertFalse(fix.exists, "A passing pair offers nothing.")
+
+        app.buttons["Reset"].tap()
+        XCTAssertTrue(label.waitForExistence(timeout: 3))
+        XCTAssertTrue(label.label.contains("Fails"), "The shipped indigo fails in dark: \(label.label)")
+        XCTAssertFalse(fix.exists, "A black label fails indigo in light; no fix may be offered.")
+    }
+
     /// The design surface's Select mode: arming it and tapping a registry item
     /// on the screen behind the panel scopes the panel to that item's tokens
     /// (`RegistryItemTokens`, generated from the sources), so a designer tunes
