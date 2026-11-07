@@ -236,7 +236,7 @@ extension TuneModelTests {
             let edit = try #require(model.current)
             #expect(model.label(edit) == "Edit")
             #expect(model.changesFromParent(edit)?.map(\.words) == ["Card radius: 16 to 20 pt"])
-            #expect(model.changesFromDefault.contains { $0.words == "Card radius: 16 to 20 pt" })
+            #expect(model.changesFromDefault?.contains { $0.words == "Card radius: 16 to 20 pt" } == true)
             #expect(model.checksLine != ContrastAudit.unmeasuredUnderSource, "A set theme is measured.")
 
             model.versionName = "  Warm "
@@ -261,6 +261,65 @@ extension TuneModelTests {
 
             stage.tunesTheme = false
             #expect(model.checksLine == nil, "A host that does not tune the theme has no Checks.")
+        }
+
+        @Test func `A version under Source lists only its knobs, since Tune does not know the app's own values`() async throws {
+            let model = TuneModel(stage: Self.stage())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            let source = "Tokens: source, the app's own theme."
+            #expect(model.sourceLine == source)
+            #expect(model.changesFromDefault == nil, "Under Source, From default must not read as equal to Default.")
+
+            model.presetChipTapped("Mango")
+            model.knobChanged("button", Self.knob, to: 44)
+            #expect(model.sourceLine == nil, "A set theme is not Source.")
+            model.handOffButtonTapped()
+            let handOff = try #require(model.handOff)
+            agentWrites {
+                $0.answers[handOff.id.uuidString] = .init(
+                    reply: "Put MANGO into source.", changedFiles: ["RegistryTheme+App.swift"], date: Self.now)
+            }
+            await Task.megaYield()
+            let shipped = try #require(model.current)
+            #expect(model.label(shipped) == "Shipped")
+            #expect(model.sourceLine == source)
+            let changes = try #require(model.changesFromParent(shipped))
+            #expect(
+                changes.map(\.key) == ["height"] && changes.allSatisfy { $0.item == "button" },
+                "Shipped clears the knob, and lists no token going to Default: the device shows the app's own theme.")
+            #expect(model.changesFromDefault == nil)
+
+            model.presetChipTapped("Rose")
+            #expect(model.changesFromParent(try #require(model.current))?.isEmpty == false, "From Source, a preset compares against Default.")
+            model.sourceButtonTapped()
+            #expect(
+                model.changesFromParent(try #require(model.current)) == nil,
+                "Source with no knob moved has no count, so its history row names no Default values.")
+        }
+
+        @Test func `A name being typed stays when Current moves, and Return names the version then current`() async throws {
+            let model = TuneModel(stage: Self.stage())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            let first = try #require(model.current)
+            model.presetChipTapped("Rose")
+            model.currentChanged()
+            model.versionName = "Rose"
+            model.nameSubmitted()
+
+            model.restore(first.id)
+            model.currentChanged()
+            #expect(model.versionName == "", "With no draft, the field shows the new Current's name.")
+
+            model.versionName = "Launch"
+            agentWrites { $0.proposals = [Proposal(id: "P", date: Self.now, name: "Teal", tokens: ["accent": .string("teal")])] }
+            await Task.megaYield()
+            #expect(model.trying?.id == "P")
+            model.currentChanged()
+            #expect(model.versionName == "Launch", "A proposal tried while typing must not take the draft.")
+            model.nameSubmitted()
+            #expect(model.label(try #require(model.current)) == "Launch")
         }
 
         @Test func `The open notes line goes to Notes at the oldest open note`() async throws {

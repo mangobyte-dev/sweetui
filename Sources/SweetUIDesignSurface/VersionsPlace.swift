@@ -19,16 +19,14 @@ struct VersionsPlace: View {
         }
         .accessibilityIdentifier("tuning.form")
         .onAppear { model.versionsSeen() }
-        // The field shows Current's name, so Return keeps it and a cleared field clears it.
-        .onChange(of: model.history.current, initial: true) {
-            model.versionName = model.current?.name ?? ""
-        }
+        .onChange(of: model.history.current, initial: true) { model.currentChanged() }
     }
 }
 
 /// The version on the device: its label, author, and time, the proposal
-/// trying, its changes in words, the Checks and the open notes as links,
-/// the Name field, and Copy code, Copy Swift, and the Swift to read.
+/// trying, its changes in words (Source as a state), the Checks and the
+/// open notes as links, the Name field, and Copy code, Copy Swift, and the
+/// Swift to read.
 private struct CurrentSection: View {
     @Bindable var model: TuneModel
     let current: DesignHistory.Entry
@@ -48,10 +46,17 @@ private struct CurrentSection: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("tuning.version.current")
+            if let source = model.sourceLine {
+                Text(verbatim: source)
+                    .foregroundStyle(.secondary)
+                    .frame(minHeight: 44)
+            }
             if let changes = model.changesFromParent(current) {
                 ChangesRow(title: "From the version before", changes: changes)
             }
-            ChangesRow(title: "From default", changes: model.changesFromDefault)
+            if let changes = model.changesFromDefault {
+                ChangesRow(title: "From default", changes: changes)
+            }
             if let checks = model.checksLine {
                 LinkRow(text: checks, hint: "Shows the Checks in Tokens.") {
                     withAnimation(ToolChrome.animation) { model.checksLineTapped() }
@@ -188,7 +193,8 @@ private struct VersionRow: View {
     let label: String
     let author: DesignHistory.Author
     let time: String
-    /// Changes from the version it came from; `nil` for a root.
+    /// Changes from the version it came from; `nil` for a root, and for
+    /// Source with no knob moved.
     let changeCount: Int?
     let branch: String?
     let isCurrent: Bool

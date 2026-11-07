@@ -528,7 +528,7 @@ private struct TuneCardPreview: View {
                     agent.withLock {
                         $0.answers[Self.handOffID.uuidString] = .init(
                             reply: "Put MANGO into source.", changedFiles: ["RegistryTheme+App.swift"],
-                            date: Self.handOffDate.addingTimeInterval(9 * 60))
+                            date: Self.shippedDate)
                     }
                 }
             }
@@ -563,11 +563,17 @@ private struct TuneCardPreview: View {
                 previous: nil)
             model.shipAnswered()
         }
-        // Each version a minute apart on the sample's day, so times read the same on every render.
+        // Each version a minute apart before the hand-off, so times read the
+        // same on every render; Shipped lands when the agent answered.
         model.$history.withLock { history in
-            for index in history.entries.indices {
-                let minutes = Double(index - history.entries.count)
+            let shipped = sample == .shipped ? history.current : nil
+            let before = history.entries.indices.filter { history.entries[$0].id != shipped }
+            for (offset, index) in before.enumerated() {
+                let minutes = Double(offset - before.count)
                 history.entries[index].date = Self.handOffDate.addingTimeInterval(minutes * 60)
+            }
+            if let index = history.entries.firstIndex(where: { $0.id == shipped }) {
+                history.entries[index].date = Self.shippedDate
             }
         }
         model.place = place
@@ -580,6 +586,8 @@ private struct TuneCardPreview: View {
     static let handOffID = UUID(uuidString: "6F1C2A10-0000-4000-8000-0000000000C1")!
     /// When the sample hands off, 42 minutes after its first note's hour.
     static let handOffDate = Date(timeIntervalSince1970: 1_794_038_400 + 42 * 60)
+    /// When the agent answers it with changed files, 9 minutes later.
+    static let shippedDate = handOffDate.addingTimeInterval(9 * 60)
 
     /// Three notes and two proposals, at fixed times on 7 November 2026.
     private static let conversation: (notes: [DesignNote], agent: AgentRecord) = {

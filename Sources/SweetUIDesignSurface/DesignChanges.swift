@@ -3,8 +3,10 @@ import Foundation
 
 /// The token and knob differences between two designs, in words: "Card
 /// radius: 16 to 20 pt", "Label on accent: white to black", "Button height:
-/// 36 to 44". Titles and units come from `TokenCatalog`. Source reads as
-/// Default, the only baseline whose token values Tune knows.
+/// 36 to 44". Titles and units come from `TokenCatalog`. Tune does not know
+/// the values of Source, the app's own theme: a design that comes from Source
+/// compares against Default, the only baseline Tune knows, and a design that
+/// goes to Source lists only its knobs, since Source is a state, not a diff.
 enum DesignChanges {
     struct Change: Equatable, Identifiable, Sendable {
         var key: String
@@ -26,7 +28,7 @@ enum DesignChanges {
     ) -> [Change] {
         let from = a.code.isEmpty ? ThemeTuning.default : ThemeTuning(presetCode: a.code) ?? .default
         let to = b.code.isEmpty ? ThemeTuning.default : ThemeTuning(presetCode: b.code) ?? .default
-        var changes = to.differences(from: from).map { difference in
+        var changes: [Change] = b.code.isEmpty ? [] : to.differences(from: from).map { difference in
             let token = TokenCatalog.token(owning: difference.key)
             var (before, after) = (difference.from, difference.to)
             // A choice reads as the word its picker shows, not its stored value.

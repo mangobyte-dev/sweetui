@@ -74,13 +74,32 @@ extension TuneModel {
     }
 
     /// What a version changed from the one it came from; `nil` for a root.
+    /// Under Source only its knobs, and `nil` without one: Source is a
+    /// state the label and `sourceLine` name, not a count of Default values.
     func changesFromParent(_ entry: DesignHistory.Entry) -> [DesignChanges.Change]? {
-        history.entry(entry.parent).map { changes(from: $0.design, to: entry.design) }
+        history.entry(entry.parent).flatMap { orSourceState(entry, changes(from: $0.design, to: entry.design)) }
     }
 
-    /// What Current changes from Default; under Source only its knobs.
-    var changesFromDefault: [DesignChanges.Change] {
-        current.map { changes(from: Design(), to: $0.design) } ?? []
+    /// What Current changes from Default; under Source only its knobs, and
+    /// `nil` without one.
+    var changesFromDefault: [DesignChanges.Change]? {
+        current.flatMap { orSourceState($0, changes(from: Design(), to: $0.design)) }
+    }
+
+    /// "Tokens: source, the app's own theme." while Current sets no token,
+    /// since Tune does not know the values the app shows; `nil` otherwise.
+    var sourceLine: String? {
+        current.map(isSource) == true ? "Tokens: source, the app's own theme." : nil
+    }
+
+    /// Whether a version sets no token, so the app's own theme shows. A host
+    /// that does not tune the theme has knob versions only, never Source.
+    private func isSource(_ entry: DesignHistory.Entry) -> Bool {
+        stage.tunesTheme && entry.design.code.isEmpty
+    }
+
+    private func orSourceState(_ entry: DesignHistory.Entry, _ changes: [DesignChanges.Change]) -> [DesignChanges.Change]? {
+        isSource(entry) && changes.isEmpty ? nil : changes
     }
 
     /// The Checks in one line: under Source they cannot measure, since the
@@ -127,7 +146,20 @@ extension TuneModel {
     /// Names Current with the Name field's text; a blank one clears the name.
     func nameSubmitted() {
         $history.withLock { $0.name(versionName) }
+        showCurrentName()
+    }
+
+    /// Current moved, or Versions appeared: the Name field shows Current's
+    /// name, so Return keeps it and a cleared field clears it. A name being
+    /// typed stays, so a proposal tried meanwhile does not take the draft.
+    func currentChanged() {
+        guard versionName == (history.entry(nameFieldVersion)?.name ?? "") else { return }
+        showCurrentName()
+    }
+
+    private func showCurrentName() {
         versionName = current?.name ?? ""
+        nameFieldVersion = history.current
     }
 
     // MARK: History

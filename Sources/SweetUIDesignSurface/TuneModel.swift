@@ -40,6 +40,9 @@ final class TuneModel {
     var scrollTarget: String?
     /// The name typed for Current.
     var versionName = ""
+    /// The version whose name the Name field last showed; a field that no
+    /// longer reads that name holds a draft.
+    @ObservationIgnored var nameFieldVersion: UUID?
     /// The last hand-off written, read back at launch for its status.
     var handOff: DesignHandoff?
     var handOffError: String?

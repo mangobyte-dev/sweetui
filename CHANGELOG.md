@@ -24,10 +24,12 @@
   its history. On launch the value files are the truth, so a change lost to a kill is recorded once.
   While Tune sets no token the app shows its own theme (Source); Source and Default are versions.
   Versions shows Current (its label, author, and time, "Trying Warm" while trying, what it changed
-  from the version before and from Default in words, a line for the Checks that opens Tokens with
-  Color open, a line for the open notes that opens Notes, the Name field, Copy code, Copy Swift, and
-  the Swift to read), then Hand off, then the history newest first: each row has its author's mark,
-  label, time, change count, a check on Current, and "from Mango at 10:40" where it branched. A tap
+  from the version before and from Default in words (under Source only its knobs, beside "Tokens:
+  source, the app's own theme.", since Tune does not know those values), a line for the Checks
+  that opens Tokens with Color open, a line for the open notes that opens Notes, the Name field,
+  Copy code, Copy Swift, and the Swift to read), then Hand off, then the history newest first: each
+  row has its author's mark, label, time, change count (none for Source with no knob moved), a
+  check on Current, and "from Mango at 10:40" where it branched. A tap
   restores a version. Undo right after Restore onto a proposal's version that is not kept returns to
   the version Restore left and records the proposal discarded. A host that does not tune the theme
   keeps Versions without the Checks, Copy code, and Copy Swift.
