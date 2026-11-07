@@ -4,8 +4,8 @@ import Sharing
 import SweetUIFoundations
 
 /// One tunable number an item exposes: its name in the item's source, the
-/// title Tune shows, its range and step, and the shipped default. A step
-/// that is not positive becomes 1 and a shipped value outside the range is
+/// title Tune shows, its range and step, and its default. A step
+/// that is not positive becomes 1 and a default outside the range is
 /// clamped into it, with a line in the log, so a host's slip never traps the
 /// slider in a build that ships.
 public struct ItemKnob: Identifiable, Sendable, Equatable {
@@ -34,7 +34,7 @@ public struct ItemKnob: Identifiable, Sendable, Equatable {
     }
 
     /// A choice among words, read with `registryKnob(_:_:options:default:)`;
-    /// a shipped word outside the options falls back to the first.
+    /// a default outside the options falls back to the first.
     public static func choice(_ name: String, title: String? = nil, options: [String], shipped: String) -> ItemKnob {
         let options = options.isEmpty ? [shipped] : options
         let index = options.firstIndex(of: shipped) ?? 0
@@ -146,7 +146,7 @@ extension SharedKey where Self == FileStorageKey<[String: [ItemKnobSpec]]>.Defau
 
 extension SharedKey where Self == FileStorageKey<[String: [String: Double]]>.Default {
     /// The tuned knob values by item and knob name, in `design-knobs.json`
-    /// beside the design tokens file. A value equal to its shipped default
+    /// beside the design tokens file. A value equal to its default
     /// is never stored, so the file lists only what moved.
     static var designKnobs: Self {
         Self[
@@ -189,7 +189,7 @@ final class KnobStore {
         values[item]?[knob.name] ?? knob.shipped
     }
 
-    /// Writes a value; writing the shipped default deletes the override.
+    /// Writes a value; writing the default deletes the override.
     func set(_ item: String, _ knob: ItemKnob, to value: Double) {
         $values.withLock { values in
             if value == knob.shipped {

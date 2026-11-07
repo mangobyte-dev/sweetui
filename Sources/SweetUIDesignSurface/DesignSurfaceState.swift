@@ -71,10 +71,14 @@ final class DesignSurfaceState {
     var screen: String? { screens.last }
 
     /// The items on screen, top to bottom, one row per instance: a reported
-    /// frame that is empty or lies outside the stage is not on screen.
+    /// frame that is empty or lies outside the stage is not on screen. An
+    /// item under the keyboard is on screen: while the keyboard is up the
+    /// measured stage ends at its top (measured 2026-11-07 on the iPhone Duo),
+    /// so the keyboard's frame counts as stage.
     var visibleItems: [RegistryItemReport] {
-        frames.values
-            .filter { !$0.frame.isEmpty && (stage.isEmpty || $0.frame.intersects(stage)) }
+        let area = keyboardFrame.isEmpty ? stage : stage.union(keyboardFrame)
+        return frames.values
+            .filter { !$0.frame.isEmpty && (stage.isEmpty || $0.frame.intersects(area)) }
             // Top to bottom, then leading to trailing; a container that starts
             // where its child starts lists before the child.
             .sorted {

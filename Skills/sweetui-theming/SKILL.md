@@ -98,7 +98,7 @@ MANGO is the template for `docs/mango.md`'s Layers order.
 Create studio, Tune in the Showcase: the theme creators; a slider move updates the open demo.
 
 1. Create page at the code's URL: CSS token board, capture (six presets); `?preset=<code>` on website.
-2. Showcase: tap Tune in accent strip; slide, Copy Swift (initializer), Copy Code (preset code), or Import.
+2. Showcase: tap Tune in accent strip; slide a token in Tokens, or Apply a preset chip or a pasted code under Start from; Versions: Copy code (preset code), Copy Swift (initializer).
 3. Export tab: `RegistryTheme+App.swift`, `THEME.md`; copy buttons, no downloads.
 
 - **DO NOT** expect Create to render SwiftUI.
@@ -119,9 +119,9 @@ The agent's pass MUST see tuning, not Showcase. `SweetUIDesignSurface` puts pane
    ```
 
    Debug: floating Tune button; release: unchanged.
-3. Copy Code/Swift: preset code/initializer; `registry-tokens.json` in Documents holds both; simulator: `cat "$(xcrun simctl get_app_container booted <bundle id> data)/Documents/registry-tokens.json"`.
+3. Versions: Copy code, Copy Swift: preset code/initializer; `registry-tokens.json` in Documents holds both; simulator: `cat "$(xcrun simctl get_app_container booted <bundle id> data)/Documents/registry-tokens.json"`.
 4. Select, tap an item: Tokens shows the Item section, its knobs, and only the tokens that reach it (`RegistryItemTokens`); Clear selection in the item menu shows every token again.
-5. Agent push: write `{"code": "a74hGF01CVunaG0vzZJG"}`; surface loads it.
+5. Agent: MCP `propose_design` with `code` or `tokens`; Tune tries it, the person keeps or discards it. The agent never writes `registry-tokens.json`.
 6. Own tokens: conform to `TokenDocument` (value, file name, `.number`/`.choice`/`.color` knobs, `apply()`). `designSurface(tokens: MyTokens.self, knobs: ["button": [ItemKnob("padding", in: 0...32, shipped: 12)]])`; panel gains App tokens, item knobs. Read via `environment.registryKnob("button", "padding", default: 12)`.
 
 - **DO** feed `code` to `preset apply` or MCP `apply_preset`.

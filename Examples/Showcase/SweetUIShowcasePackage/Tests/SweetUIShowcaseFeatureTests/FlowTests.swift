@@ -206,5 +206,31 @@ extension TuneModelTests {
             #expect(model.liveDesign == DesignHistory.Design(), "Tune clears its overrides, so the source shows.")
             #expect(model.label(try #require(model.current)) == "Shipped")
         }
+
+        @Test func `The agent writes with the card closed: the app changes, the button badges, and Keep decides it in 1 tap`() async throws {
+            let stage = Self.stage()
+            let model = TuneModel(stage: stage)
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            #expect(!stage.isPresented)
+
+            agentWrites {
+                $0.proposals = [
+                    Proposal(id: "warm", date: Self.now, name: "Warm", tokens: ["cardRadius": .number(20)], apply: true),
+                ]
+            }
+            await Task.megaYield()
+            #expect(model.tuning.cardRadius == 20, "The app changes with the card closed.")
+            #expect(model.unseen == 1, "The button badges.")
+
+            // The count starts once the card is open, with the strip's Keep and Discard in reach.
+            stage.isPresented = true
+            #expect(model.showsStrip && model.trying?.id == "warm")
+            let taps = Taps()
+            taps.tap { model.keepButtonTapped() }
+            #expect(taps.count == 1)
+            #expect(model.proposal("warm")?.state(in: model.history) == .kept)
+            #expect(model.tuning.cardRadius == 20)
+        }
     }
 }

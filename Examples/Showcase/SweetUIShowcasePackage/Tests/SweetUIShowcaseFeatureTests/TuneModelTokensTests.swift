@@ -159,6 +159,29 @@ extension TuneModelTests {
             #expect(model.selectedItem == nil)
         }
 
+        @Test func `An item the keyboard covers stays the note's subject, and one below the window does not`() throws {
+            let stage = TuneModelTests.screen()
+            stage.report(RegistryItemReport(id: UUID(), name: "footer", frame: CGRect(x: 0, y: 900, width: 393, height: 60)))
+            let model = TuneModelTests.launched(stage)
+            model.noteButtonTapped()
+            model.selectingTapped(ItemSelection.chain(reports: Array(stage.frames.values), at: CGPoint(x: 40, y: 620)))
+            #expect(model.composerFocused)
+
+            // The focused composer raises the keyboard over the button, and
+            // the measured stage then ends at the keyboard's top.
+            stage.keyboardFrame = CGRect(x: 0, y: 516, width: 393, height: 336)
+            stage.stage = CGRect(x: 0, y: 0, width: 393, height: 516)
+            #expect(model.itemMenuTitle == "button")
+            #expect(model.composerSubject == "button")
+            #expect(!model.isOnScreen("footer"), "An item below the window is off screen with the keyboard up too.")
+
+            model.noteDraft = "The button looks cramped."
+            model.sendButtonTapped()
+            let note = try #require(model.notes.last)
+            #expect(note.item == "button", "The note is about the item the person tapped, not the screen.")
+            #expect(note.frame != nil, "Its screenshot outlines the item.")
+        }
+
         @Test func `A held token outlines only the items it reaches and counts them`() throws {
             let model = TuneModelTests.launched(TuneModelTests.screen())
             let radius = try TuneModelTests.token("cardRadius")

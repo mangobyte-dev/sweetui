@@ -286,6 +286,7 @@ private struct AccentControl: View {
                 }
             }
             .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("tuning.token.accent")
             ModeColumns {
                 ColorPicker(selection: $color.customAccentColor, supportsOpacity: false) {
                     Text("Custom").accessibilityLabel("Custom accent, Light")

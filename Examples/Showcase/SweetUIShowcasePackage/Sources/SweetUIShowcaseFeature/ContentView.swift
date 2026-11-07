@@ -4,8 +4,8 @@ import SweetUIFoundations
 
 /// The Showcase root. Three launch modes:
 ///
-/// - default: the browsable catalog (Components, Blocks, Recipes) with the
-///   tuning panel beside it; `-preset <code>` starts from that theme
+/// - default: the browsable catalog (Components, Blocks, Recipes) with
+///   Tune beside it; `-preset <code>` starts from that theme
 /// - `-item <name>`: one item's demo alone, for screenshot capture; honors
 ///   `-appearance dark`, `-preset <code>` or `-theme <preset name>`, and
 ///   `-capture-info <path>`

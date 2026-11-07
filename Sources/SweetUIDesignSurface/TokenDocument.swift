@@ -11,7 +11,7 @@ import SwiftUI
 /// seeFood's `ThemeTokens` is the first host document (Stage 9, D3); the
 /// registry's own `ThemeTuning` has Tune's theme groups and is not one.
 public protocol TokenDocument: Codable, Equatable, Sendable {
-    /// The shipped values, and what Reset app tokens returns to.
+    /// The default values, and what Reset app tokens returns to.
     static var shipped: Self { get }
     /// The file the surface keeps the tuned document in, inside Documents.
     static var fileName: String { get }
@@ -124,13 +124,13 @@ final class TokenStore<Document: TokenDocument>: AnyTokenStore {
 
     /// The store over the document's file in Documents, or over `url` (a test's
     /// temporary file). A file that fails to decode (written by a newer
-    /// version, or by hand) leaves the shipped document in place, is reported
+    /// version, or by hand) leaves the default document in place, is reported
     /// once in the log, and is not rewritten until a token moves.
     init(url: URL? = nil) {
         let url = url ?? URL.documentsDirectory.appending(component: Document.fileName)
         _document = Shared(wrappedValue: Document.shipped, .fileStorage(url, decoder: nil, encoder: ThemeTuning.fileEncoder))
         if let error = $document.loadError {
-            SurfaceLog.logger.error("\(Document.fileName, privacy: .public) did not decode, the shipped tokens apply: \(error)")
+            SurfaceLog.logger.error("\(Document.fileName, privacy: .public) did not decode, the default tokens apply: \(error)")
         }
         document.apply()
     }

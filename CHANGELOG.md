@@ -107,7 +107,8 @@
   groups alone. Changes read the catalog's titles and units ("Card
   radius: 16 to 20 pt", "Label on accent: white to black", "Background, Dark: none to #1A1A1A"). Paste
   a code takes a code typed on iOS, where smart punctuation turns `--preset` into a dash, and Return
-  on an empty field does nothing. Each accent swatch carries `tuning.token.accent.<accent>`.
+  on an empty field does nothing. The swatch grid carries `tuning.token.accent` and each swatch
+  `tuning.token.accent.<accent>`.
 - Knobs the agent declares, and two new kinds. `ItemKnob.bool` draws a switch stored as 0 or 1 and
   `ItemKnob.choice` draws a picker stored as the option's index, so `design-knobs.json`, proposals,
   and versions keep their numeric shape; foundations gain `registryKnob(_:_:default: Bool)` and
@@ -157,6 +158,12 @@
   `tuning.chain.<item>`), while Clear selection keeps `tuning.scope.all`. A title initializer in
   place of the label closure did not change it; the cause is not isolated. The UI suite finds a row
   by its label.
+- On iOS 27.1 the accessibility tree lists the parts of Tune's menu labels inside each menu's
+  button: the item menu's chevron ("Go Down"), Preview's eye ("Show") and its override text, and the
+  place menu's chevrons and place name. The images are `accessibilityHidden(true)` in source, which a
+  `Menu` label does not honor there. Each group header is listed twice with `tuning.group.<group>`:
+  as the disclosure row's heading and as its title text. VoiceOver did not run, so whether it stops
+  on these is unchecked (argent describe on the iPhone Duo, 2026-11-07).
 
 - The shipped default (SwiftUI's indigo under a white label) fails in dark at 3.51:1, and Increase
   Contrast lowers it to 2.13:1, because the accessible indigo is lighter. `systemRed` under the white

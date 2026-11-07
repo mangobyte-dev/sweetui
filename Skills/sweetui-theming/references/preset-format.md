@@ -7,7 +7,7 @@ Quoted from `docs/registry-spec.md`, "Preset codes".
 Preset code: `RegistryTheme` as shadcn's `--preset` counterpart. `a13GkaOXWwIF` = `Indigo` preset
 
 - ref: `Preset.swift` (`SweetUIKit`), `sweetui preset`
-- reproduced by `Website/lib/preset.ts` (`Create`) + Showcase `ThemePreset.swift` (`Copy Code`, `Import`, `-preset <code>`)
+- reproduced by `Website/lib/preset.ts` (`Create`) + `SweetUIDesignSurface` `ThemePreset.swift` (Tune's Copy code and Paste a code; the Showcase's `-preset <code>`)
 - `Registry/preset_vectors.json` pins codes; all three MUST match byte-for-byte
 - checked by `PresetTests.swift`/`PresetContractTests.swift` (`SweetUIKit` + `Node`/`TypeScript`); Showcase's `ThemePresetTests`
 
