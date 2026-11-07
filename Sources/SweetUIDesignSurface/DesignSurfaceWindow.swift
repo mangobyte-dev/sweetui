@@ -148,7 +148,7 @@ private struct DesignSurfaceOverlayRoot: View {
 
     /// Records the settled design as a version, naming who moved it: you for
     /// the first one when nothing has moved, the agent when its last write is
-    /// this code or a variant chip matches, you otherwise.
+    /// this code or a proposal chip matches, you otherwise.
     private func recordHistory() {
         let design = DesignHistory.Design(code: tuning.presetCode, knobs: state.knobs.values)
         let author: DesignHistory.Author

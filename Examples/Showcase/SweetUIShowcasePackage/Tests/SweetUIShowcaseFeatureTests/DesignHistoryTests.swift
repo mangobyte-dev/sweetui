@@ -20,15 +20,19 @@ struct DesignHistoryTests {
 
     /// A name is the person's bookmark. Exploring from an earlier version
     /// must branch beside it and never delete it, through a relaunch too.
+    /// Stray spaces are not part of a name, and a blank one clears it.
     @Test func `A named version survives an edit after Undo`() throws {
         var history = DesignHistory()
         history.record(Self.indigo, author: .you, origin: .first)
         let a = try #require(history.current)
         history.record(Self.mango, author: .you, origin: .edit)
         let b = try #require(history.current)
-        history.name("Warm")
+        history.name("  Warm \n")
         #expect(history.undo()?.id == a)
         history.record(Self.tall, author: .you, origin: .edit)
+        history.name("Draft")
+        history.name("  ")
+        #expect(history.entry(history.current)?.name == nil, "A blank name clears the one there.")
 
         let reopened = try Self.relaunched(history)
         #expect(reopened.entry(b)?.name == "Warm", "The edit after Undo deleted the named version.")
@@ -97,7 +101,9 @@ struct DesignHistoryTests {
 
     /// Trimming keeps the file small without losing what the person or the
     /// loop depends on: a named version, the one on the device, the base a
-    /// trial returns to, and the design that shipped. The tree stays whole.
+    /// trial returns to, and the one Shipped version. The tree stays whole.
+    /// Going back to the shipped design later makes ordinary versions, or
+    /// the file would grow past its cap.
     @Test func `Trimming never drops named, current, base, or Shipped versions`() throws {
         var history = DesignHistory()
         history.record(Self.indigo, author: .you, origin: .first)
@@ -135,12 +141,29 @@ struct DesignHistoryTests {
         full.record(Self.tall, author: .you, origin: .edit)
         #expect(full.entries.count == DesignHistory.capacity + 1, "With every older version named, the history runs over.")
         #expect(full.entry(full.current)?.design == Self.tall, "Trimming dropped the version on the device.")
+
+        var toggled = DesignHistory()
+        toggled.record(Self.indigo, author: .you, origin: .first)
+        toggled.record(Self.mango, author: .you, origin: .edit)
+        let handedOff = try #require(toggled.current)
+        toggled.ship(handoff: UUID(), design: Self.mango, files: ["RegistryTheme+App.swift"])
+        for _ in 0..<DesignHistory.capacity {
+            toggled.record(Self.tall, author: .you, origin: .edit)
+            toggled.record(Self.mango, author: .you, origin: .edit)
+        }
+        #expect(toggled.entries.count == DesignHistory.capacity, "Returning to the shipped design grew the history past its cap.")
+        #expect(toggled.entry(handedOff) != nil, "The Shipped version was dropped.")
     }
 
     /// Trying proposals one after another must never stack them: each is a
     /// child of the same base, Discard puts the base back exactly, and the
-    /// decisions tell the agent which one the person turned down.
+    /// decisions tell the agent which one the person turned down. With no
+    /// version yet there is no base to put back, so nothing is tried.
     @Test func `Try, Try, Discard restores the base exactly`() throws {
+        var empty = DesignHistory()
+        #expect(empty.tryProposal("P0", design: Self.mango) == nil, "A trial needs a base to return to.")
+        #expect(empty.trial == nil && empty.entries.isEmpty && !empty.canUndo)
+
         var history = DesignHistory()
         history.record(Self.indigo, author: .you, origin: .first)
         let base = try #require(history.current)
@@ -209,7 +232,8 @@ struct DesignHistoryTests {
 
     /// On launch the value files are the truth: a save the history lost to a
     /// kill comes back as one edit, and a launch that changed nothing adds
-    /// nothing, so relaunching never floods Versions.
+    /// nothing, so relaunching never floods Versions. A trial whose save was
+    /// lost shows the base, so the agent must read it discarded, not kept.
     @Test func `Reconcile records one edit when the values moved and nothing when equal`() throws {
         var history = DesignHistory()
         history.reconcile(values: Self.indigo)
@@ -225,5 +249,12 @@ struct DesignHistoryTests {
         #expect(edit.design == Self.tall)
         #expect(edit.origin == .edit)
         #expect(edit.parent == a)
+
+        history.tryProposal("P1", design: Self.mango)
+        history.reconcile(values: Self.tall)
+        #expect(history.current == edit.id, "The values show the base, so the base is current.")
+        #expect(history.decisions["P1"]?.state == .discarded, "A lost save is not the person keeping the proposal.")
+        #expect(history.trial == nil)
+        #expect(history.entries.count == 3, "A lost save records no version.")
     }
 }

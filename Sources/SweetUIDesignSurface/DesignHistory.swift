@@ -57,7 +57,7 @@ public struct DesignHistory: Codable, Equatable, Sendable {
     public struct Trial: Codable, Equatable, Sendable {
         public var proposal: String
         public var version: UUID
-        public var base: UUID?
+        public var base: UUID
     }
 
     public struct Decision: Codable, Equatable, Sendable {
@@ -168,13 +168,16 @@ public struct DesignHistory: Codable, Equatable, Sendable {
 
     /// Puts a proposal on the device as a version by the agent, a child of
     /// the base: the base of the trial already open, or Current. The proposal
-    /// reads tried.
-    public mutating func tryProposal(_ id: String, design: Design) {
-        let base = trial?.base ?? current
+    /// reads tried. Returns the version, or `nil` with no Current to return
+    /// to; reconcile the live values first.
+    @discardableResult
+    public mutating func tryProposal(_ id: String, design: Design) -> Entry? {
+        guard let base = trial?.base ?? current else { return nil }
         let version = Entry(design: design, author: .agent, origin: .proposal(id: id), parent: base)
         trial = Trial(proposal: id, version: version.id, base: base)
         decisions[id] = Decision(state: .tried, date: .now)
         append(version)
+        return version
     }
 
     /// Keeps the proposal on trial, whose version stays current, and
@@ -205,9 +208,16 @@ public struct DesignHistory: Codable, Equatable, Sendable {
 
     /// Records the live values as an edit when they differ from Current: the
     /// value files are the truth, and a save lost to a kill leaves the
-    /// history behind them. With no versions yet, they are the first.
+    /// history behind them. With no versions yet, they are the first. Values
+    /// equal to an open trial's base mean the trial's save was lost, so the
+    /// proposal is discarded, not kept.
     public mutating func reconcile(values: Design) {
-        record(values, author: .you, origin: entries.isEmpty ? .first : .edit)
+        guard values != entry(current)?.design else { return }
+        if let trial, values == entry(trial.base)?.design {
+            discard()
+        } else {
+            record(values, author: .you, origin: entries.isEmpty ? .first : .edit)
+        }
     }
 
     private mutating func append(_ entry: Entry) {
@@ -218,10 +228,15 @@ public struct DesignHistory: Codable, Equatable, Sendable {
     }
 
     /// Drops the oldest version that is unnamed, not Current, not the trial's
-    /// base, and not the design that shipped, until the history fits or
-    /// nothing may drop. The dropped version's children take its parent.
+    /// base, and not Shipped, until the history fits or nothing may drop.
+    /// Shipped is the first version with the design that shipped; a later
+    /// return to that design may drop. The dropped version's children take
+    /// its parent.
     private mutating func trim() {
-        while entries.count > Self.capacity, let index = entries.firstIndex(where: mayDrop) {
+        let shippedVersion = entries.first { $0.design == shipped?.design }?.id
+        while entries.count > Self.capacity,
+            let index = entries.firstIndex(where: { mayDrop($0, shipped: shippedVersion) })
+        {
             let dropped = entries.remove(at: index)
             for child in entries.indices where entries[child].parent == dropped.id {
                 entries[child].parent = dropped.parent
@@ -229,8 +244,8 @@ public struct DesignHistory: Codable, Equatable, Sendable {
         }
     }
 
-    private func mayDrop(_ entry: Entry) -> Bool {
-        entry.name == nil && entry.id != current && entry.id != trial?.base && entry.design != shipped?.design
+    private func mayDrop(_ entry: Entry, shipped shippedVersion: UUID?) -> Bool {
+        entry.name == nil && entry.id != current && entry.id != trial?.base && entry.id != shippedVersion
     }
 
     private enum CodingKeys: String, CodingKey {
