@@ -180,6 +180,11 @@ final class KnobStore {
         return host + (declared[item] ?? []).compactMap(\.knob).filter { !taken.contains($0.name) }
     }
 
+    /// The names of the item's knobs the agent declared and the host did not take.
+    func declaredNames(for item: String) -> Set<String> {
+        Set((declared[item] ?? []).map(\.name)).subtracting((specs[item] ?? []).map(\.name))
+    }
+
     func value(_ item: String, _ knob: ItemKnob) -> Double {
         values[item]?[knob.name] ?? knob.shipped
     }

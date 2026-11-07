@@ -43,6 +43,28 @@ struct ContrastAudit: Equatable {
             case .secondaryText: "Secondary text"
             }
         }
+
+        var verdictWord: String {
+            switch verdict {
+            case .passes: "Passes"
+            case .passesWithIncreaseContrast: "Passes with Increase Contrast"
+            case .fails: "Fails"
+            }
+        }
+
+        /// "3.20:1 light, 2.90:1 dark", and the lower ratio under Increase
+        /// Contrast when that is what passes.
+        var ratios: String {
+            let base = "\(Self.format(light)) light, \(Self.format(dark)) dark"
+            guard verdict == .passesWithIncreaseContrast else { return base }
+            return base + ", \(Self.format(min(lightIncreased, darkIncreased))) increased"
+        }
+
+        /// Two decimals, as contrast checkers print them: one decimal would round
+        /// a failing 4.47 up to a passing-looking 4.5.
+        private static func format(_ ratio: Double) -> String {
+            ratio.formatted(.number.precision(.fractionLength(2))) + ":1"
+        }
     }
 
     /// Worst first, so a fix is offered only when it ranks higher.

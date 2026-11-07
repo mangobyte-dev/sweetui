@@ -120,7 +120,7 @@ The agent's pass MUST see tuning, not Showcase. `SweetUIDesignSurface` puts pane
 
    Debug: floating Tune button; release: unchanged.
 3. Copy Code/Swift: preset code/initializer; `registry-tokens.json` in Documents holds both; simulator: `cat "$(xcrun simctl get_app_container booted <bundle id> data)/Documents/registry-tokens.json"`.
-4. Select, tap an item: panel scopes to its tokens (`RegistryItemTokens`); All tokens restores full theme.
+4. Select, tap an item: Tokens shows the Item section, its knobs, and only the tokens that reach it (`RegistryItemTokens`); Clear selection in the item menu shows every token again.
 5. Agent push: write `{"code": "a74hGF01CVunaG0vzZJG"}`; surface loads it.
 6. Own tokens: conform to `TokenDocument` (value, file name, `.number`/`.choice`/`.color` knobs, `apply()`). `designSurface(tokens: MyTokens.self, knobs: ["button": [ItemKnob("padding", in: 0...32, shipped: 12)]])`; panel gains App tokens, item knobs. Read via `environment.registryKnob("button", "padding", default: 12)`.
 

@@ -158,11 +158,12 @@ private struct DesignSurfaceOverlayRoot: View {
             if !state.guides.isEmpty {
                 GuideOverlay(guides: state.guides)
             }
-            if state.isPresented && (state.showsOutlines || state.selection.isSelecting) {
+            if state.isPresented && (state.showsOutlines || state.selection.isSelecting || state.reachOutlines != nil) {
                 OutlineOverlay()
             }
             if state.selection.isSelecting {
-                SelectCapture()
+                SelectCapture(model: model)
+                SelectingPill(model: model)
             }
             // While Select is armed the card steps aside so every item on
             // the screen is tappable; it returns with the scope once picked.
@@ -222,39 +223,70 @@ private struct DesignSurfaceOverlayRoot: View {
 /// While Select is armed the whole window takes the next tap and resolves it
 /// to the innermost reported frame, so items never compete for a gesture and
 /// a root inside a sheet is as selectable as one in the main tree. A tap on
-/// nothing clears the selection and disarms Select.
+/// nothing keeps the selection. VoiceOver selects through the item menu.
 private struct SelectCapture: View {
-    private let state = DesignSurfaceState.shared
+    let model: TuneModel
 
     var body: some View {
         Color.clear
             .contentShape(Rectangle())
             .onTapGesture(coordinateSpace: .global) { point in
-                let chain = ItemSelection.chain(reports: Array(state.frames.values), at: point)
-                withAnimation(ToolChrome.animation) {
-                    state.selection.item = chain.first
-                    state.selection.chain = chain
-                    state.selection.isSelecting = false
-                }
+                let chain = ItemSelection.chain(reports: Array(model.stage.frames.values), at: point)
+                withAnimation(ToolChrome.animation) { model.selectingTapped(chain) }
             }
-            .accessibilityLabel("Tap a registry item to select it")
+            .accessibilityLabel("Tap an item to select it")
+            .accessibilityHint("With VoiceOver, cancel, then choose the item from Select in Tune.")
             .accessibilityAddTraits(.isButton)
             .designSurfaceHitRegion("select")
             .ignoresSafeArea()
     }
 }
 
+/// What Selecting asks for, with Cancel, at the bottom in thumb reach.
+private struct SelectingPill: View {
+    let model: TuneModel
+
+    var body: some View {
+        HStack(spacing: ToolChrome.compactSpacing) {
+            Text(model.stage.visibleItemNames.isEmpty ? "No registry item is on this screen." : "Tap an item to select it.")
+                .font(.subheadline.weight(.semibold))
+            Button {
+                withAnimation(ToolChrome.animation) { model.cancelSelectingTapped() }
+            } label: {
+                Text("Cancel")
+                    .font(.subheadline)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.borderless)
+            .accessibilityIdentifier("tuning.selecting.cancel")
+        }
+        .padding(.leading, ToolChrome.spacing)
+        .padding(.trailing, ToolChrome.compactSpacing)
+        .background(.regularMaterial, in: Capsule())
+        .shadow(radius: 8, y: 4)
+        .designSurfaceHitRegion("selecting")
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, ToolChrome.spacing)
+    }
+}
+
 /// Every reported frame as a labeled rectangle over the app, the selected
-/// one in the accent; a tap on an outline selects its item.
+/// one in the accent; while a token is held, only the items it reaches.
 private struct OutlineOverlay: View {
     private let state = DesignSurfaceState.shared
+
+    private var items: [RegistryItemReport] {
+        guard let reach = state.reachOutlines else { return state.visibleItems }
+        return state.visibleItems.filter { reach.contains($0.name) }
+    }
 
     var body: some View {
         let accent = ToolChrome.accent
         ZStack(alignment: .topLeading) {
-            ForEach(state.visibleItems, id: \.id) { item in
+            ForEach(items, id: \.id) { item in
                 let isSelected = state.selection.item == item.name
-                // Outside the piece by 2 points, the name above it: the outline never covers
+                // Outside the item by 2 points, the name above it: the outline never covers
                 // what is being tuned.
                 Rectangle()
                     .stroke(isSelected ? accent : accent.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: isSelected ? [4, 3] : []))

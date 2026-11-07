@@ -49,6 +49,14 @@ final class TuneModel {
     var noteSaveError: String?
     /// The answers and proposals the person saw on Notes, by key.
     var seen: Set<String> = []
+    /// The Tokens groups open for this launch.
+    var openGroups: Set<TokenCatalog.Token.Group> = [.color]
+    /// The innermost item in the selection's chain the host has a page for,
+    /// and that page while it waits for the card to push it.
+    var hostPageItem: String?
+    var hostPageToPush: String?
+    /// Note armed Selecting: the pick returns to the focused composer.
+    @ObservationIgnored var composesAfterSelecting = false
 
     @ObservationIgnored @Shared(.designTokens) var tuning
     @ObservationIgnored @Shared(.designHistory) var history
@@ -132,10 +140,13 @@ final class TuneModel {
         }
     }
 
-    /// A slider's or a stepper's touch went down or came up.
+    /// A slider's or a stepper's touch went down or came up; a release
+    /// takes a held token's outlines away.
     func sliderEditingChanged(_ editing: Bool) {
         isHoldingSlider = editing
-        if !editing { settle() }
+        guard !editing else { return }
+        stage.reachOutlines = nil
+        settle()
     }
 
     /// Records the live design as one version by you when it moved, then
@@ -155,6 +166,7 @@ final class TuneModel {
     /// takes the person away from the control.
     func flush() {
         isHoldingSlider = false
+        stage.reachOutlines = nil
         settle()
     }
 

@@ -2,7 +2,7 @@
 import SwiftUI
 import UIKit
 
-/// Puts text on the pasteboard and says so for a moment. The label style at
+/// Puts text on the pasteboard and reads "Copied" for 2 s. The label style at
 /// the call site decides whether the title shows; assistive technology
 /// always has it.
 public struct CopyButton: View {
@@ -21,7 +21,7 @@ public struct CopyButton: View {
             .task(id: didCopy) {
                 guard didCopy else { return }
                 do {
-                    try await Task.sleep(for: .seconds(1.5))
+                    try await Task.sleep(for: .seconds(2))
                 } catch {
                     return
                 }

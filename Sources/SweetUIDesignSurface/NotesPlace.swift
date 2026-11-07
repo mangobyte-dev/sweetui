@@ -161,6 +161,7 @@ private struct AnswerRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("The agent answered: \(answer.reply)")
+        .accessibilityValue(answer.changedFiles.isEmpty ? "" : "Changed \(answer.changedFiles.joined(separator: ", ")).")
     }
 }
 
@@ -197,6 +198,7 @@ private struct ProposalRow: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Proposal from the agent: \(proposal.name). \(stateWord).")
+            .accessibilityValue([proposal.reason, unreadable].compactMap { $0 }.joined(separator: " "))
             .accessibilityIdentifier("tuning.proposal.\(proposal.id)")
             if !changes.isEmpty {
                 DisclosureGroup {
@@ -215,6 +217,7 @@ private struct ProposalRow: View {
                 case .offered:
                     action("Try", "try", `try`)
                         .disabled(unreadable != nil)
+                        .accessibilityHint(unreadable ?? "")
                     action("Discard", "discard", discard)
                 case .trying:
                     Text("Trying").foregroundStyle(.secondary)
@@ -226,6 +229,7 @@ private struct ProposalRow: View {
                     Text("Discarded").foregroundStyle(.secondary)
                     action("Try again", "try", `try`)
                         .disabled(unreadable != nil)
+                        .accessibilityHint(unreadable ?? "")
                 }
                 Spacer(minLength: 0)
                 Button(action: reply) {
@@ -292,6 +296,13 @@ struct NotesComposer: View {
                 TextField("Say what is wrong", text: $model.noteDraft, axis: .vertical)
                     .lineLimit(1...4)
                     .focused($fieldFocused)
+                    // The field's row is a 44 pt target: a tap beside the text focuses it.
+                    .frame(minHeight: 44)
+                    .background {
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture { fieldFocused = true }
+                    }
                     .accessibilityLabel(model.replyTarget == nil ? "Note" : "Reply")
                     .accessibilityHint("About \(model.composerSubject).")
                     .accessibilityIdentifier("tuning.composer.field")

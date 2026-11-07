@@ -22,8 +22,8 @@ final class DesignSurfaceState {
     /// The host's own panel sections, given the selected item's name; they
     /// follow the screen and the selection in the panel's form.
     var hostSections: (([String]) -> AnyView)?
-    /// The host's title for an item name, for the On this screen rows and
-    /// the outlines; `nil` keeps the name.
+    /// The host's title for an item name, for the item menu and the
+    /// outlines; `nil` keeps the name.
     var itemTitle: ((String) -> String?)?
     /// The host's page for an item name, pushed on the panel's own stack when
     /// a pick lands on an item the host has a page for; `nil` for none.
@@ -63,6 +63,8 @@ final class DesignSurfaceState {
     var screens: [String] = []
     /// Draws every reported frame with its name over the app.
     var showsOutlines = false
+    /// The items a held token reaches, outlined alone while it is held.
+    var reachOutlines: Set<String>?
     var guides: Guides = []
 
     /// The screen the panel is looking at: the innermost named one.

@@ -2,14 +2,15 @@
 import Dependencies
 import Sharing
 import SwiftUI
+import SweetUIFoundations
 
 /// Tune's card under the drag bar: the toolbar with Select and the item
 /// menu, the place picker, the place, the Trying strip while a proposal is
 /// trying, and the bottom bar with Undo, Redo, Preview, and Note. At an
 /// accessibility text size, or when the card is too short to keep 120 pt for
 /// the place under the picker, the picker moves into the toolbar as a menu;
-/// in a card that short one row sits at the bottom: Notes' composer, else the
-/// strip while it shows, else the bottom bar. The toolbar is the card's own 44 pt
+/// in a card that short the bottom bar gives way to Notes' composer, which
+/// drops its subject line, and to the strip while it shows. The toolbar is the card's own 44 pt
 /// row under an empty inline navigation bar, which takes no height on the
 /// place and carries Back on a pushed host page (measured 2026-11-07 at
 /// 300 × 260: toolbar items in the navigation bar left the place 114 pt,
@@ -74,11 +75,12 @@ struct TuneCard: View {
             self.height = height
         }
         // A pick lands on the innermost item the host has a page for; an
-        // item without one leaves the card on its place.
-        .onChange(of: model.stage.selection.chain) { _, chain in
-            guard let hostPage = model.stage.hostPage,
-                  let name = chain.first(where: { hostPage($0) != nil }) else { return }
+        // item without one leaves the card on its place. The card is gone
+        // while Selecting, so the page waits on the model until it is back.
+        .onChange(of: model.hostPageToPush, initial: true) { _, name in
+            guard let name else { return }
             path = [name]
+            model.hostPageToPush = nil
         }
         // Clearing the selection also leaves a pushed host page, which was
         // about the selected item.
@@ -95,9 +97,7 @@ struct TuneCard: View {
             if composes {
                 NotesComposer(model: model, compact: isShort)
             }
-            if !(isShort && composes) {
-                TryingStrip(model: model)
-            }
+            TryingStrip(model: model)
             if !(isShort && (composes || model.showsStrip)) {
                 BottomBar(model: model)
             }
@@ -115,20 +115,34 @@ struct TuneCard: View {
 }
 
 /// Select, the item menu, and, when the picker does not fit, the place menu.
+/// With VoiceOver running, Select opens the item menu: a tap on the app
+/// cannot be aimed by ear.
 private struct Toolbar: View {
     let model: TuneModel
     let placeIsMenu: Bool
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
 
     var body: some View {
         HStack(spacing: 0) {
-            // Arms the next tap on the app to select the item under it.
-            Button {
-                withAnimation(ToolChrome.animation) { model.selectButtonTapped() }
-            } label: {
-                Label("Select", systemImage: "scope").barTarget()
+            Group {
+                if voiceOver {
+                    Menu {
+                        ItemMenuItems(model: model)
+                    } label: {
+                        Label("Select", systemImage: "scope").barTarget()
+                    }
+                    .accessibilityHint("Lists the items on this screen, to select one.")
+                } else {
+                    // Arms the next tap on the app to select the item under it.
+                    Button {
+                        withAnimation(ToolChrome.animation) { model.selectButtonTapped() }
+                    } label: {
+                        Label("Select", systemImage: "scope").barTarget()
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityAddTraits(model.stage.selection.isSelecting ? [.isSelected] : [])
+                }
             }
-            .buttonStyle(.borderless)
-            .accessibilityAddTraits(model.stage.selection.isSelecting ? [.isSelected] : [])
             .accessibilityIdentifier("tuning.select")
             ItemMenu(model: model)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -192,15 +206,60 @@ private struct PlaceMenu: View {
     }
 }
 
-/// The items on this screen, one entry per item, and Clear selection; its
-/// label says the selection and its container, or the screen and its count.
+/// The selection's chain and the items on this screen, and Clear selection;
+/// its label says the selection and its container, the screen and its count,
+/// or that the selection is not on this screen.
 private struct ItemMenu: View {
+    let model: TuneModel
+
+    var body: some View {
+        Menu {
+            ItemMenuItems(model: model)
+        } label: {
+            HStack(spacing: 4) {
+                Text(verbatim: model.itemMenuTitle)
+                    .lineLimit(1)
+                Image(systemName: "chevron.down")
+                    .imageScale(.small)
+                    .accessibilityHidden(true)
+            }
+            .font(.subheadline.weight(.semibold))
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .accessibilityLabel(model.itemMenuTitle)
+        .accessibilityHint("Lists the items on this screen, to select one.")
+        .accessibilityIdentifier("tuning.screen")
+    }
+}
+
+/// The item menu's entries: the selection and each item around it, then
+/// every item on this screen by its first instance, then Clear selection.
+private struct ItemMenuItems: View {
     let model: TuneModel
 
     var body: some View {
         let stage = model.stage
         let items = stage.visibleItemNames
-        Menu {
+        let chain = stage.selection.chain
+        if chain.count > 1 {
+            Section {
+                ForEach(Array(chain.enumerated()), id: \.offset) { index, name in
+                    let title = index == 0 ? stage.title(name) : "Inside: \(stage.title(name))"
+                    Button {
+                        withAnimation(ToolChrome.animation) { model.itemMenuSelected(name) }
+                    } label: {
+                        if index == 0 {
+                            Label(title, systemImage: "checkmark")
+                        } else {
+                            Text(verbatim: title)
+                        }
+                    }
+                    .accessibilityIdentifier("tuning.chain.\(name)")
+                }
+            }
+        }
+        Section {
             if items.isEmpty {
                 Text("No registry item is on this screen. An item shows here once its view applies registryItem(_:).")
             }
@@ -217,27 +276,13 @@ private struct ItemMenu: View {
                 }
                 .accessibilityIdentifier("tuning.screen.\(item.name)")
             }
-            if stage.selection.item != nil {
-                Divider()
-                Button("Clear selection", systemImage: "xmark.circle") {
-                    withAnimation(ToolChrome.animation) { model.clearSelectionTapped() }
-                }
-            }
-        } label: {
-            HStack(spacing: 4) {
-                Text(verbatim: model.itemMenuTitle)
-                    .lineLimit(1)
-                Image(systemName: "chevron.down")
-                    .imageScale(.small)
-                    .accessibilityHidden(true)
-            }
-            .font(.subheadline.weight(.semibold))
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
         }
-        .accessibilityLabel(model.itemMenuTitle)
-        .accessibilityHint("Lists the items on this screen, to select one.")
-        .accessibilityIdentifier("tuning.screen")
+        if stage.selection.item != nil {
+            Button("Clear selection", systemImage: "xmark.circle") {
+                withAnimation(ToolChrome.animation) { model.clearSelectionTapped() }
+            }
+            .accessibilityIdentifier("tuning.scope.all")
+        }
     }
 }
 
@@ -446,10 +491,11 @@ extension View {
 
 extension DesignSurface {
     /// What a card preview holds: nothing yet, a conversation with the
-    /// agent (notes it read and answered, its proposals, a reply), or that
-    /// conversation with a proposal trying.
+    /// agent (notes it read and answered, its proposals, a reply), that
+    /// conversation with a proposal trying, or that conversation with the
+    /// card it is about selected inside a dashboard on the Components screen.
     public enum CardSample: Sendable {
-        case firstOpen, conversation, trying
+        case firstOpen, conversation, trying, selection
     }
 
     /// Tune's card open at a place, drawn as the surface draws it, over a
@@ -479,6 +525,16 @@ private struct TuneCardPreview: View {
             }
             let stage = DesignSurfaceState()
             stage.tunesTheme = tunesTheme
+            if sample == .selection {
+                stage.stage = CGRect(x: 0, y: 0, width: 393, height: 852)
+                stage.screenAppeared("Components")
+                stage.report(RegistryItemReport(
+                    id: UUID(uuidString: "6F1C2A10-0000-4000-8000-0000000000B1")!, name: "dashboard",
+                    frame: CGRect(x: 0, y: 96, width: 393, height: 420)))
+                stage.report(RegistryItemReport(
+                    id: UUID(uuidString: "6F1C2A10-0000-4000-8000-0000000000B2")!, name: "card",
+                    frame: CGRect(x: 16, y: 120, width: 361, height: 132), ancestors: ["dashboard"]))
+            }
             return TuneModel(stage: stage)
         }
         // A first open: the files are the first version.
@@ -490,6 +546,9 @@ private struct TuneCardPreview: View {
             model.tryButtonTapped(Self.conversation.agent.proposals[0].id)
         }
         model.place = place
+        if sample == .selection {
+            model.select(["card", "dashboard"])
+        }
         _model = State(initialValue: model)
     }
 

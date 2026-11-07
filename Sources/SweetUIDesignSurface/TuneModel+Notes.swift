@@ -35,10 +35,17 @@ extension TuneModel {
 
     // MARK: The composer
 
-    /// Goes to Notes with the composer focused on the selection or the screen.
+    /// Goes to Notes with the composer focused on the selection. With
+    /// nothing selected it arms Selecting first; the tap, on an item or on
+    /// nothing, returns to the focused composer.
     func noteButtonTapped() {
         place = .notes
-        composerFocused = true
+        guard stage.selection.item == nil else {
+            composerFocused = true
+            return
+        }
+        stage.selection.isSelecting = true
+        composesAfterSelecting = true
     }
 
     /// The selection the composer's note is about: the selected item while
@@ -124,7 +131,7 @@ extension TuneModel {
     /// Selects a note's item, which Tune outlines on the app.
     func subjectTapped(_ note: DesignNote) {
         guard let item = note.item else { return }
-        stage.selection = ItemSelection(item: item, chain: note.chain.isEmpty ? [item] : note.chain)
+        select(note.chain.isEmpty ? [item] : note.chain)
     }
 
     // MARK: The threads
@@ -199,7 +206,7 @@ extension TuneModel {
     /// Why the agent's file did not decode; the notes still show.
     var agentFileError: String? {
         $agent.loadError.map { _ in
-            "The agent's last write did not decode, so its answers and proposals are not shown. It writes the file again on its next call."
+            "The agent's last write did not decode, so its answers and proposals are not shown. Ask the agent to replace or remove design-agent.json."
         }
     }
 

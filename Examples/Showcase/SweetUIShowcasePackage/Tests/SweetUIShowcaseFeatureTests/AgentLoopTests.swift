@@ -381,8 +381,23 @@ extension TuneModelTests {
             model.showsGuides = true
             model.selectButtonTapped()
             model.selectButtonTapped()
+            model.selectButtonTapped()
+            model.selectingTapped(["button"])
+            model.selectButtonTapped()
+            model.cancelSelectingTapped()
             model.itemMenuSelected("button")
+            model.containerTapped()
+            model.notesAboutTapped()
             model.clearSelectionTapped()
+            let radius = try #require(TokenCatalog.theme.first { $0.key == "cardRadius" })
+            let background = try #require(TokenCatalog.theme.first { $0.key == "background" })
+            model.tokenHeld(radius, true)
+            model.tuningEdit.cardRadius = 18
+            model.tokenHeld(radius, false)
+            model.resetTokenTapped(radius)
+            model.useLightValueTapped(background)
+            model.fixLabelTapped()
+            model.askAgentTapped(try #require(ContrastAudit(model.tuning).pairs.first))
             model.place = .versions
             model.place = .tokens
             model.screenChanged()

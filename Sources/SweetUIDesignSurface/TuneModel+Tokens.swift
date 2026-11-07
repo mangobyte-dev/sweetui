@@ -2,7 +2,7 @@
 import Foundation
 import SwiftUI
 
-/// Tokens: Start from, item knobs, the selection, and Preview.
+/// Tokens: Start from, the tokens, item knobs, the selection, and Preview.
 extension TuneModel {
     // MARK: Start from
 
@@ -67,36 +67,177 @@ extension TuneModel {
         settle()
     }
 
+    // MARK: Tokens
+
+    /// The tokens Tokens shows: every one, or those that reach the selection.
+    var scopedTokens: [TokenCatalog.Token] {
+        stage.selection.item.map(TokenCatalog.reaching) ?? TokenCatalog.theme
+    }
+
+    /// How many items on this screen the token reaches.
+    func reach(_ token: TokenCatalog.Token) -> Int {
+        stage.visibleItemNames.filter { TokenCatalog.reaches(token, $0.name) }.count
+    }
+
+    /// A token's slider went down or came up; while it is held the items it
+    /// reaches are outlined, and its steps wait for the release.
+    func tokenHeld(_ token: TokenCatalog.Token, _ editing: Bool) {
+        sliderEditingChanged(editing)
+        if editing {
+            stage.reachOutlines = Set(stage.visibleItemNames.map(\.name).filter { TokenCatalog.reaches(token, $0) })
+        }
+    }
+
+    /// Puts a token back to Default as one version.
+    func resetTokenTapped(_ token: TokenCatalog.Token) {
+        flush()
+        var tuned = tuning
+        token.reset(&tuned)
+        tuningEdit = tuned
+    }
+
+    /// Clears a color's Dark value, so dark shows the Light one, as one version.
+    func useLightValueTapped(_ token: TokenCatalog.Token) {
+        flush()
+        var tuned = tuning
+        token.useLightValue(&tuned)
+        tuningEdit = tuned
+    }
+
+    /// Switches the label on the accent to the one that measures better.
+    func fixLabelTapped() {
+        flush()
+        guard let dark = ContrastAudit.betterLabel(for: tuning) else { return }
+        tuningEdit.darkLabelOnAccent = dark
+    }
+
+    /// Goes to Notes with the check's pair and ratios drafted for the agent.
+    func askAgentTapped(_ pair: ContrastAudit.Pair) {
+        noteDraft = "\(pair.title) \(pair.verdictWord.lowercased()): \(pair.ratios). "
+            + "Text needs \(ContrastAudit.minimum.formatted()):1 in light and dark. Find colors that pass."
+        replyTarget = nil
+        place = .notes
+        composerFocused = true
+    }
+
+    /// What Tokens' rows do: each records one version.
+    var tokenActions: TokenActions {
+        TokenActions(
+            hold: tokenHeld, reset: resetTokenTapped, useLightValue: useLightValueTapped, fixLabel: fixLabelTapped,
+            ask: askAgentTapped, reach: reach, isSource: liveDesign.code.isEmpty)
+    }
+
     // MARK: Selection
 
     /// Arms the next tap on the app to select the item under it, or disarms it.
     func selectButtonTapped() {
         flush()
         stage.selection.isSelecting.toggle()
+        if !stage.selection.isSelecting { composesAfterSelecting = false }
     }
 
-    /// An item from the item menu: selected, and Tokens shows it unless the
-    /// card is on Notes, where it becomes the composer's subject.
-    func itemMenuSelected(_ name: String) {
-        stage.selection = ItemSelection(item: name, chain: [name])
+    /// The tap while Selecting: the innermost item under it and its chain.
+    /// A tap on nothing keeps the selection.
+    func selectingTapped(_ chain: [String]) {
+        if !chain.isEmpty { select(chain) }
+        endSelecting()
+    }
+
+    /// Back to the place the card left, the selection unchanged.
+    func cancelSelectingTapped() {
+        endSelecting()
+    }
+
+    /// Ends Selecting; when Note armed it, the composer takes the focus.
+    private func endSelecting() {
+        stage.selection.isSelecting = false
+        guard composesAfterSelecting else { return }
+        composesAfterSelecting = false
+        place = .notes
+        composerFocused = true
+    }
+
+    /// Selects an item and the items around it, innermost first. Tokens shows
+    /// it, unless the card is on Notes, where it is the composer's subject.
+    func select(_ chain: [String]) {
+        stage.selection.item = chain.first
+        stage.selection.chain = chain
+        hostPageItem = stage.hostPage.flatMap { page in chain.first { page($0) != nil } }
+        hostPageToPush = hostPageItem
         if place != .notes { place = .tokens }
+    }
+
+    /// An item from the item menu: a container in the selection's chain, or
+    /// an item on this screen with the items around its first instance.
+    func itemMenuSelected(_ name: String) {
+        if let index = stage.selection.chain.firstIndex(of: name) {
+            select(Array(stage.selection.chain[index...]))
+            return
+        }
+        var chain = [name]
+        for ancestor in stage.visibleItems.first(where: { $0.name == name })?.ancestors.reversed() ?? []
+        where !chain.contains(ancestor) {
+            chain.append(ancestor)
+        }
+        select(chain)
     }
 
     func clearSelectionTapped() {
         stage.selection = ItemSelection()
+        hostPageItem = nil
+        hostPageToPush = nil
     }
 
-    /// The item menu's label: the selection and its container, or the screen
-    /// and how many items are on it.
+    /// Inside: the container around the selection, selected.
+    func containerTapped() {
+        guard stage.selection.chain.count > 1 else { return }
+        select(Array(stage.selection.chain.dropFirst()))
+    }
+
+    /// Notes, scrolled to the newest note about the selection.
+    func notesAboutTapped() {
+        guard let item = stage.selection.item, let note = notes.last(where: { $0.item == item }) else { return }
+        place = .notes
+        scrollTarget = Row.note(note).id
+    }
+
+    /// The item menu's label: the selection and its container, the screen and
+    /// how many items are on it, or a selection that is not on this screen.
     var itemMenuTitle: String {
         if let item = stage.selection.item {
             let title = stage.title(item)
+            guard isOnScreen(item) else { return "\(title) is not on this screen" }
             guard stage.selection.chain.count > 1 else { return title }
             return "\(title) in \(stage.title(stage.selection.chain[1]))"
         }
         let count = stage.visibleItemNames.count
         let screen = stage.screen ?? "This screen"
         return count == 0 ? "\(screen) · no items" : "\(screen) · \(count) \(count == 1 ? "item" : "items")"
+    }
+
+    func isOnScreen(_ item: String) -> Bool {
+        stage.visibleItemNames.contains { $0.name == item }
+    }
+
+    /// The Item section: what the selection is, where it sits, and what is
+    /// said about it.
+    struct ItemDetails: Equatable {
+        var name: String
+        var title: String
+        /// The first instance's frame on screen; `nil` when it is not on it.
+        var frame: CGRect?
+        var instances: Int
+        /// The item around it, by name.
+        var container: String?
+        var notes: Int
+    }
+
+    var selectedItem: ItemDetails? {
+        guard let name = stage.selection.item else { return nil }
+        let instances = stage.visibleItems.filter { $0.name == name }
+        return ItemDetails(
+            name: name, title: stage.title(name), frame: instances.first?.frame, instances: instances.count,
+            container: stage.selection.chain.dropFirst().first, notes: notes.filter { $0.item == name }.count)
     }
 
     // MARK: Preview

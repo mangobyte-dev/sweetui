@@ -5,8 +5,9 @@
 ### Added
 
 - Tune, the card `designSurface()` puts over a running debug build, with three places: Tokens (Start
-  from, the theme groups with Contrast, the selected item's knobs, the host's sections), Notes (the
-  conversation with the agent), and Versions (the history, the code and the Swift, Hand off). The
+  from, the theme's tokens in groups with the Checks, the selected item, its knobs, the host's
+  sections), Notes (the conversation with the agent), and Versions (the history, the code and the
+  Swift, Hand off). The
   toolbar holds Select and the item menu; the bottom bar holds Undo, Redo, Preview, and Note. Preview
   is one menu of appearance, text size, direction (System, Left to right, Right to left), outlines,
   and guides, applied beside the theme and never part of a version, also for a host that paints the
@@ -67,12 +68,28 @@
   takes the current or the previous hand-off and says when a newer one waits. Give `file`, or `udid`
   and `bundleId` for the simulator app container (`xcrun simctl get_app_container`). The `sweetui`
   skill walks the loop: see, read, propose, answer, ship.
-- Contrast, in Tokens' Color group. It measures the label on the accent and the accent as text, plus
-  the text pairs once the theme sets a foreground or background, as WCAG 2.2 ratios in light and dark
-  and again under Increase Contrast. A row reads Passes, Passes with Increase Contrast, or Fails
-  against the 4.5:1 the Human Interface Guidelines apply to text up to 17 points, with the ratios
-  beside it. When the other label (white or black) would pass, a button applies it. Ratios agree with
-  WebAIM's checker to two decimals (`ContrastAuditTests`).
+- Checks, at the top of Tokens' Color group. They measure the label on the accent and the accent as
+  text, plus the text pairs once the theme sets a foreground or background, as WCAG 2.2 ratios in
+  light and dark and again under Increase Contrast. A row reads Passes, Passes with Increase Contrast,
+  or Fails against the 4.5:1 the Human Interface Guidelines apply to text up to 17 points, with the
+  ratios beside it, and the Color header counts the failures ("Color · 1 fails"). When the other label
+  (white or black) would pass, Fix label applies it; Ask the agent on a failing check goes to Notes
+  with the pair and its ratios drafted. Ratios agree with WebAIM's checker to two decimals
+  (`ContrastAuditTests`).
+- Tokens and Selecting. With nothing selected, Tokens shows Start from, then the theme's tokens in
+  seven groups: Color open, and Type, Space, Shape, Surface, Chart, and Disabled collapsed, each header
+  counting what changed ("Space · 2 changed"). A token row shows its title, value ("source" while Tune
+  sets no token), key, how many items on screen it reaches, and, while it is changed, a dot and Reset
+  token. A color token has Light and Dark pickers and Use the Light value. While a token's slider is
+  held, only the items it reaches are outlined. Select, then a tap on an item, shows the Item section
+  (title, name, size and origin, instances, the item around it, the notes about it, Copy name), its
+  knobs (the agent's marked "From the agent"), only the tokens that reach it, and what it reads that
+  no token moves ("Also reads negative. No token moves it."). A pick from Notes stays on Notes as the
+  composer's subject. A tap on nothing, or Cancel on the Selecting pill, keeps the selection. Note
+  with nothing selected arms Selecting and returns to the focused composer. The item menu lists the
+  selection's chain and the items on this screen, and says when the selection is not on this screen;
+  with VoiceOver running, Select opens it. `TokenCatalog` gives every key a code encodes one token
+  (`TokenCatalogTests`), and `TuningPanel(tuning:)` draws the same groups.
 - Knobs the agent declares, and two new kinds. `ItemKnob.bool` draws a switch stored as 0 or 1 and
   `ItemKnob.choice` draws a picker stored as the option's index, so `design-knobs.json`, proposals,
   and versions keep their numeric shape; foundations gain `registryKnob(_:_:default: Bool)` and
@@ -93,8 +110,12 @@
 - Changes name a token by its key in words ("Card radius") with points for the metrics, until the
   token catalog gives titles and units.
 - In a card too short to keep 120 pt for Notes, the composer drops its subject line (the field's hint
-  still names it) and stands in for the strip and the bottom bar; Keep and Discard stay on the
-  proposal's row.
+  still names it) and the bottom bar; the Trying strip stays while a proposal is trying.
+- The composer field's own accessibility frame stays one line tall (about 22 pt on the iPhone Duo):
+  SwiftUI's frame and padding do not resize the text view's element. Its row is a 44 pt target, and a
+  tap beside the text focuses it. A color picker's frame is the system well's, 24 pt.
+- A token's slider begins its hold, and its reach outlines, once the thumb moves a step; a touch
+  that rests without moving shows none (iPhone Duo, iOS 27.1).
 - `design-variants.json` and `design-agent-change.json` from earlier builds are ignored, not deleted.
 - On the iPhone Duo cover display (iOS 27.1 simulator) Tune's Preview menu opens upward and runs past
   the top edge: Outlines and Guides sit off screen when it opens, so they take more than 2 taps.

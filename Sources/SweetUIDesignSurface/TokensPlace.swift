@@ -2,41 +2,137 @@
 import SwiftUI
 import SweetUIFoundations
 
-/// Tokens: the selected item and its knobs, the host's tokens and sections,
-/// Start from, and the theme's groups. A host that paints the items from its
-/// own tokens has no Start from and no theme groups.
+/// Tokens. With nothing selected: Start from, the theme's groups (Color open,
+/// the rest collapsed), the app's tokens, and the host's sections. With an
+/// item selected: the Item section, its knobs, only the tokens that reach
+/// it, what it reads that no token moves, the host's sections, and the
+/// host's page. A host that paints the items from its own tokens has no
+/// Start from and no theme groups.
 struct TokensPlace: View {
     @Bindable var model: TuneModel
 
     var body: some View {
         let stage = model.stage
-        let scope = ThemeSections.scope(for: stage.selection.item)
         Form {
-            if let item = stage.selection.item {
-                // A host with its own tokens shows its own selection rows.
+            if let item = model.selectedItem {
+                ItemSection(model: model, item: item)
+                KnobsSection(model: model, item: item.name)
                 if stage.tunesTheme {
-                    ScopeSection(item: item, tokenCount: scope?.count ?? 0) {
-                        withAnimation(ToolChrome.animation) { model.clearSelectionTapped() }
+                    TokenGroups(
+                        tuning: $model.tuningEdit, color: $model.colorEdit, tokens: model.scopedTokens,
+                        showsChecks: false, actions: model.tokenActions)
+                    FixedFieldsSection(item: item)
+                }
+                if let host = stage.hostSections {
+                    host(stage.selection.chain)
+                }
+                if let page = model.hostPageItem {
+                    Section {
+                        NavigationLink(value: page) {
+                            Text(verbatim: "The app's page for \(stage.title(page))")
+                        }
                     }
                 }
-                ItemKnobsSection(model: model, item: item)
-            }
-            if let host = stage.hostTokens {
-                HostTokensSection(store: host)
-            }
-            if let host = stage.hostSections {
-                host(stage.selection.chain)
-            }
-            if model.showsStartFrom {
-                StartFromSection(model: model)
-            }
-            if stage.tunesTheme {
-                ThemeSections(
-                    tuning: $model.tuningEdit, color: $model.colorEdit, hold: model.sliderEditingChanged,
-                    scope: scope)
+            } else {
+                if model.showsStartFrom {
+                    StartFromSection(model: model)
+                }
+                if stage.tunesTheme {
+                    TokenGroups(
+                        tuning: $model.tuningEdit, color: $model.colorEdit, tokens: model.scopedTokens,
+                        open: $model.openGroups, actions: model.tokenActions)
+                }
+                if let host = stage.hostTokens {
+                    HostTokensSection(store: host)
+                }
+                if let host = stage.hostSections {
+                    host(stage.selection.chain)
+                }
             }
         }
         .accessibilityIdentifier("tuning.form")
+    }
+}
+
+/// What the selection is: its title and name, where its first instance sits,
+/// how many are on screen, the item around it, the notes about it, and Copy
+/// name.
+private struct ItemSection: View {
+    let model: TuneModel
+    let item: TuneModel.ItemDetails
+
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: item.title)
+                    .font(.headline)
+                    .accessibilityIdentifier("tuning.item")
+                Text(verbatim: item.name)
+                    .font(.footnote.monospaced())
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Name, \(item.name)")
+                    .accessibilityIdentifier("tuning.scope.item")
+            }
+            LabeledContent("Size") {
+                Text(verbatim: size)
+                    .monospacedDigit()
+            }
+            LabeledContent("Instances") {
+                Text(verbatim: item.frame == nil ? "None on this screen" : "\(item.instances) on screen")
+            }
+            if let container = item.container {
+                Button {
+                    withAnimation(ToolChrome.animation) { model.containerTapped() }
+                } label: {
+                    Text(verbatim: "Inside: \(model.stage.title(container))")
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityHint("Selects it.")
+            }
+            if item.notes > 0 {
+                Button {
+                    model.notesAboutTapped()
+                } label: {
+                    Text(verbatim: "\(item.notes) \(item.notes == 1 ? "note" : "notes") about \(item.title)")
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityHint("Shows them in Notes.")
+            }
+            CopyButton("Copy name", text: item.name)
+                .accessibilityIdentifier("tuning.item.copyName")
+        }
+    }
+
+    /// "320 × 88 pt at 16, 120", from the first instance on screen.
+    private var size: String {
+        guard let frame = item.frame else { return "Not on this screen" }
+        func points(_ value: CGFloat) -> String { "\(Int(value.rounded()))" }
+        return "\(points(frame.width)) × \(points(frame.height)) pt at \(points(frame.minX)), \(points(frame.minY))"
+    }
+}
+
+/// What the item reads that no token moves, and an item that reads no
+/// theme token at all.
+private struct FixedFieldsSection: View {
+    let item: TuneModel.ItemDetails
+
+    var body: some View {
+        let fixed = TokenCatalog.fixedFields(of: item.name)
+        let readsNone = RegistryItemTokens.tokens(for: item.name)?.isEmpty == true
+        if readsNone || !fixed.isEmpty {
+            Section {
+                if readsNone {
+                    Text(verbatim: "\(item.title) reads no theme tokens. Accent, type, and the colors still reach it.")
+                }
+                if !fixed.isEmpty {
+                    Text(verbatim: "Also reads \(fixed.formatted(.list(type: .and))). No token moves \(fixed.count == 1 ? "it" : "them").")
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+        }
     }
 }
 
@@ -89,62 +185,87 @@ private struct StartFromSection: View {
     }
 }
 
-/// The selected item's own knobs, registered by the host or declared by the
-/// agent; a value at its shipped default leaves the file.
-private struct ItemKnobsSection: View {
+/// The selected item's knobs, registered by the host or declared by the
+/// agent ("From the agent"); a value at its default leaves the file.
+private struct KnobsSection: View {
     let model: TuneModel
     let item: String
 
     var body: some View {
         let specs = model.stage.knobs.knobs(for: item)
+        let declared = model.stage.knobs.declaredNames(for: item)
         if !specs.isEmpty {
             Section {
                 ForEach(specs) { knob in
-                    switch knob.kind {
-                    case .bool:
-                        Toggle(knob.title, isOn: Binding(
-                            get: { model.knobValue(item, knob) != 0 },
-                            set: { model.knobChanged(item, knob, to: $0 ? 1 : 0) }))
-                            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
-                    case .choice(let options):
-                        Picker(knob.title, selection: Binding(
-                            get: { knob.option(for: model.knobValue(item, knob)) ?? options[0] },
-                            set: { word in model.knobChanged(item, knob, to: Double(options.firstIndex(of: word) ?? 0)) })
-                        ) {
-                            ForEach(options, id: \.self) { Text(verbatim: $0).tag($0) }
-                        }
-                        .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
-                    case .number:
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(knob.title)
-                                Spacer()
-                                Text(
-                                    model.knobValue(item, knob),
-                                    format: .number.precision(.fractionLength(knob.step < 1 ? 2 : 0))
-                                )
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
-                            }
-                            .font(.subheadline)
-                            Slider(
-                                value: Binding(
-                                    get: { model.knobValue(item, knob) },
-                                    set: { model.knobChanged(item, knob, to: $0) }),
-                                in: knob.range, step: knob.step
-                            ) {
-                                Text(knob.title)
-                            } onEditingChanged: {
-                                model.sliderEditingChanged($0)
-                            }
-                            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
-                        }
-                    }
+                    KnobRow(model: model, item: item, knob: knob, isDeclared: declared.contains(knob.name))
                 }
-                Button("Reset these knobs") { model.resetKnobsButtonTapped(item) }
+                Button("Reset knobs") { model.resetKnobsButtonTapped(item) }
                     .accessibilityIdentifier("tuning.knob.reset")
             } header: {
-                Text("\(item) knobs")
+                Text("Knobs")
+            }
+        }
+    }
+}
+
+/// One knob by kind: a switch, a choice, or a slider with its value.
+private struct KnobRow: View {
+    let model: TuneModel
+    let item: String
+    let knob: ItemKnob
+    let isDeclared: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            control
+            if isDeclared {
+                Label("From the agent", systemImage: "sparkles")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var control: some View {
+        switch knob.kind {
+        case .bool:
+            Toggle(knob.title, isOn: Binding(
+                get: { model.knobValue(item, knob) != 0 },
+                set: { model.knobChanged(item, knob, to: $0 ? 1 : 0) }))
+                .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
+        case .choice(let options):
+            Picker(knob.title, selection: Binding(
+                get: { knob.option(for: model.knobValue(item, knob)) ?? options[0] },
+                set: { word in model.knobChanged(item, knob, to: Double(options.firstIndex(of: word) ?? 0)) })
+            ) {
+                ForEach(options, id: \.self) { Text(verbatim: $0).tag($0) }
+            }
+            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
+        case .number:
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(knob.title)
+                    Spacer()
+                    Text(
+                        model.knobValue(item, knob),
+                        format: .number.precision(.fractionLength(knob.step < 1 ? 2 : 0))
+                    )
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                }
+                .font(.subheadline)
+                Slider(
+                    value: Binding(
+                        get: { model.knobValue(item, knob) },
+                        set: { model.knobChanged(item, knob, to: $0) }),
+                    in: knob.range, step: knob.step
+                ) {
+                    Text(knob.title)
+                } onEditingChanged: {
+                    model.sliderEditingChanged($0)
+                }
+                .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
             }
         }
     }
@@ -156,7 +277,7 @@ private struct HostTokensSection: View {
     let store: any AnyTokenStore
 
     var body: some View {
-        Section("App tokens") {
+        Section("App tokens, outside versions") {
             ForEach(Array(store.pageTitles.enumerated()), id: \.offset) { index, title in
                 NavigationLink(title) {
                     Form { store.page(index) }

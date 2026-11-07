@@ -264,15 +264,6 @@ public struct ThemeTuning: Equatable, Sendable {
         }
     }
 
-    /// Whether dark appearance uses its own custom accent.
-    var hasSeparateDarkAccent: Bool {
-        get { customAccentDark != nil }
-        set {
-            customAccentDark = newValue ? customAccent : nil
-            if newValue { accent = .custom }
-        }
-    }
-
     /// The dark custom accent as a color; setting it also selects the custom accent.
     var customAccentDarkColor: Color {
         get { (customAccentDark ?? customAccent).color }
@@ -282,74 +273,13 @@ public struct ThemeTuning: Equatable, Sendable {
         }
     }
 
-    // MARK: Color pair projections for the panel's controls
+    // MARK: Color seeds
 
-    /// The seed a pair takes when its switch is turned on, before the picker
-    /// touches it: the system background for the surface, the label for the
-    /// text, a lighter step for the secondary text.
-    private static let backgroundSeed = RGB(red: 1, green: 1, blue: 1)
-    private static let foregroundSeed = RGB(red: 0, green: 0, blue: 0)
-    private static let secondaryForegroundSeed = RGB(red: 0.24, green: 0.24, blue: 0.26)
-
-    var hasBackground: Bool {
-        get { background != nil }
-        set {
-            background = newValue ? (background ?? Self.backgroundSeed) : nil
-            if !newValue { backgroundDark = nil }
-        }
-    }
-    var backgroundColor: Color {
-        get { (background ?? Self.backgroundSeed).color }
-        set { background = RGB(newValue) }
-    }
-    var hasBackgroundDark: Bool {
-        get { backgroundDark != nil }
-        set { backgroundDark = newValue ? (backgroundDark ?? background ?? Self.backgroundSeed) : nil }
-    }
-    var backgroundDarkColor: Color {
-        get { (backgroundDark ?? background ?? Self.backgroundSeed).color }
-        set { backgroundDark = RGB(newValue) }
-    }
-
-    var hasForeground: Bool {
-        get { foreground != nil }
-        set {
-            foreground = newValue ? (foreground ?? Self.foregroundSeed) : nil
-            if !newValue { foregroundDark = nil }
-        }
-    }
-    var foregroundColor: Color {
-        get { (foreground ?? Self.foregroundSeed).color }
-        set { foreground = RGB(newValue) }
-    }
-    var hasForegroundDark: Bool {
-        get { foregroundDark != nil }
-        set { foregroundDark = newValue ? (foregroundDark ?? foreground ?? Self.foregroundSeed) : nil }
-    }
-    var foregroundDarkColor: Color {
-        get { (foregroundDark ?? foreground ?? Self.foregroundSeed).color }
-        set { foregroundDark = RGB(newValue) }
-    }
-
-    var hasSecondaryForeground: Bool {
-        get { secondaryForeground != nil }
-        set {
-            secondaryForeground = newValue ? (secondaryForeground ?? Self.secondaryForegroundSeed) : nil
-            if !newValue { secondaryForegroundDark = nil }
-        }
-    }
-    var secondaryForegroundColor: Color {
-        get { (secondaryForeground ?? Self.secondaryForegroundSeed).color }
-        set { secondaryForeground = RGB(newValue) }
-    }
-    var hasSecondaryForegroundDark: Bool {
-        get { secondaryForegroundDark != nil }
-        set { secondaryForegroundDark = newValue ? (secondaryForegroundDark ?? secondaryForeground ?? Self.secondaryForegroundSeed) : nil }
-    }
-    var secondaryForegroundDarkColor: Color {
-        get { (secondaryForegroundDark ?? secondaryForeground ?? Self.secondaryForegroundSeed).color }
-        set { secondaryForegroundDark = RGB(newValue) }
-    }
+    /// What a color token's picker shows before it is set: the system
+    /// background, the label, and a lighter step for the secondary text.
+    static let backgroundSeed = RGB(red: 1, green: 1, blue: 1)
+    static let foregroundSeed = RGB(red: 0, green: 0, blue: 0)
+    static let secondaryForegroundSeed = RGB(red: 0.24, green: 0.24, blue: 0.26)
 
     // MARK: Derived
 
