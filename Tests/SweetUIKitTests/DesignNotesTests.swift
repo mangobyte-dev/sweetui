@@ -148,6 +148,46 @@ struct DesignNotesTests {
     }
   }
 
+  /// A code carries each number as a step of its grid, so Tune rounds an
+  /// off-grid value and the device would show what the agent's file does
+  /// not say. The refusal names the grid, so the agent can pick a value on
+  /// it; every value a code can carry still passes, ends of the grid too.
+  @Test func refusesANumberOffItsPresetGridAndNamesTheGrid() throws {
+    try withDocuments { fs in
+      for (tokens, grid): (JSON, String) in [
+        (["cardRadius": 20.5], "0 to 32 in steps of 1"),
+        (["cardRadius": 33], "0 to 32 in steps of 1"),
+        (["cardRadius": -1], "0 to 32 in steps of 1"),
+        (["borderWidth": 0.75], "0.5 to 3 in steps of 0.5"),
+        (["surfaceOpacity": 0.0525], "0 to 0.2 in steps of 0.005"),
+        (["compactSpacing": 2], "4 to 16 in steps of 1"),
+        (["surfaceStep": 0.015], "0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07"),
+      ] {
+        let result = try call(
+          "propose_design", ["name": "Off", "tokens": tokens, "file": "/app/design-agent.json"])
+        #expect(result["isError"] == true, "Accepted \(tokens)")
+        let text = result["content"].array?.first?["text"].text ?? ""
+        #expect(text.contains(grid), "\(tokens) was refused without its grid: \(text)")
+        #expect(try fs.read("/app/design-agent.json").isEmpty, "Refused \(tokens) but wrote.")
+      }
+      let onGrid = try call(
+        "propose_design",
+        [
+          "name": "On",
+          "tokens": [
+            "cardRadius": 32, "compactRadius": 0, "borderWidth": 2.5, "surfaceOpacity": 0.065,
+            "disabledOpacity": 0.8, "surfaceStep": 0.07, "sectionSpacing": 48,
+          ],
+          "file": "/app/design-agent.json",
+        ])
+      #expect(onGrid["isError"] == false, "\(onGrid)")
+      let decoded = try #require(Preset.decode(try Preset.encode(Preset.defaultTuning)))
+      for field in Preset.fields {
+        try DesignProposals.onGrid(field.key, decoded[field.key].number ?? .nan)
+      }
+    }
+  }
+
   /// A host that paints the items from its own tokens never shows a theme,
   /// so a theme proposal could only mislead; its knobs still apply.
   @Test func refusesCodeAndTokensWhenTheHostDoesNotTuneTheTheme() throws {

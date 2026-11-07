@@ -6,8 +6,8 @@
 
 - Tune, the card `designSurface()` puts over a running debug build, with three places: Tokens (Start
   from, the theme's tokens in groups with the Checks, the selected item, its knobs, the host's
-  sections), Notes (the conversation with the agent), and Versions (the history, the code and the
-  Swift, Hand off). The
+  sections), Notes (the conversation with the agent), and Versions (Current, Hand off, and the
+  history). The
   toolbar holds Select and the item menu; the bottom bar holds Undo, Redo, Preview, and Note. Preview
   is one menu of appearance, text size, direction (System, Left to right, Right to left), outlines,
   and guides, applied beside the theme and never part of a version, also for a host that paints the
@@ -23,6 +23,14 @@
   drops, never Current, a trial's base, or Shipped. A device with the older list-shaped file keeps
   its history. On launch the value files are the truth, so a change lost to a kill is recorded once.
   While Tune sets no token the app shows its own theme (Source); Source and Default are versions.
+  Versions shows Current (its label, author, and time, "Trying Warm" while trying, what it changed
+  from the version before and from Default in words, a line for the Checks that opens Tokens with
+  Color open, a line for the open notes that opens Notes, the Name field, Copy code, Copy Swift, and
+  the Swift to read), then Hand off, then the history newest first: each row has its author's mark,
+  label, time, change count, a check on Current, and "from Mango at 10:40" where it branched. A tap
+  restores a version. Undo right after Restore onto a proposal's version that is not kept returns to
+  the version Restore left and records the proposal discarded. A host that does not tune the theme
+  keeps Versions without the Checks, Copy code, and Copy Swift.
 - Notes. A note is about the selected item, or the screen when the item is not on it, and goes to
   `design-notes.json` with a screenshot under `notes/`, the item and its chain, the tokens it reads,
   its moved knobs, its frame, and the design's code (empty under Source). Threads list oldest first:
@@ -35,7 +43,8 @@
   asks to be applied is tried as soon as it arrives, card open or closed, merged over the current
   version; one that arrives while a slider is held is tried on release, on top of it. The Trying
   strip ("Trying Warm. Accent, Card radius.") offers Keep and Discard. Discard puts the base back
-  exactly, Keep turns down the other proposals that answer the same note, and an edit keeps it ("Kept
+  exactly, Keep turns down the other proposals that answer the same note (one that answers no note
+  turns down none), and an edit keeps it ("Kept
   Warm. Your change is on top."). Undo, Restore, or Apply while trying discards it; Redo or Restore
   onto a proposal's version tries it again; Undo past a kept one records it discarded. A proposal row
   shows its reason and its Changes in words, with Try, Keep, Discard, or Try again for its state.
@@ -51,18 +60,20 @@
   item with its frame, tokens, and moved knobs, the selection, the design's code, the code its last
   screenshot shows, the proposal trying, Preview's overrides, and `tunesTheme`. It saves
   `notes/context.png` once the app has drawn, never while Selecting.
-- Hand off, in Versions, keeps a proposal that is trying, then writes `design-handoff.json` and
+- Hand off, the one prominent control in Versions, keeps a proposal that is trying, then writes `design-handoff.json` and
   `notes/handoff.png`: an id, the design's code (empty under Source) and its Swift, the moved knobs,
   the changes from Default, the notes the agent has not answered, and the previous hand-off. Its
   status reads "Handed off at 10:42. Not read yet.", "Read by the agent at 10:43.", "Shipped at
   10:51. Changed RegistryTheme+App.swift.", or the agent's answer. An answer with changed files is
-  Shipped: Tune clears its token and knob overrides so the source shows. Where a code is shown under
-  Source, Tune says Source.
+  Shipped: Tune clears its token and knob overrides so the source shows. Under Source, Copy code and
+  Copy Swift say there is no code, and the Checks line says Tune sets no token. An answer to the
+  hand-off counts as new on Notes and the Tune button until Versions is shown.
 - Six MCP design tools beside the seven released: `get_design_context`;
   `list_design_notes(includeAnswered)`, which joins answers, proposals with their state (offered,
   trying, kept, discarded), and the person's decisions, and stamps a read date per note returned;
   `propose_design(name, reason?, note?, code? or tokens?, knobs?, apply = true)`, which validates the
-  code, the token keys and values, and the knobs (`null` is a knob's default), refuses code and
+  code, the token keys and values (a number off its preset grid is refused with the allowed range),
+  and the knobs (`null` is a knob's default), refuses code and
   tokens when `tunesTheme` is false, and never writes the value files; `answer_design_note`, which
   refuses an unknown id; `read_handoff`, which stamps the hand-off read; and `answer_handoff`, which
   takes the current or the previous hand-off and says when a newer one waits. Give `file`, or `udid`
@@ -91,7 +102,10 @@
   composer. The item menu lists the selection's chain and the items on this screen, and says when the
   selection is not on this screen; with VoiceOver running, Select opens it. `TokenCatalog` gives
   every key a code encodes one token (`TokenCatalogTests`), and `TuningPanel(tuning:)` draws the same
-  groups.
+  groups with Copy code, Copy Swift, and the Swift. Changes read the catalog's titles and units ("Card
+  radius: 16 to 20 pt", "Label on accent: white to black", "Background, Dark: none to #1A1A1A"). Paste
+  a code takes a code typed on iOS, where smart punctuation turns `--preset` into a dash, and Return
+  on an empty field does nothing. Each accent swatch carries `tuning.token.accent.<accent>`.
 - Knobs the agent declares, and two new kinds. `ItemKnob.bool` draws a switch stored as 0 or 1 and
   `ItemKnob.choice` draws a picker stored as the option's index, so `design-knobs.json`, proposals,
   and versions keep their numeric shape; foundations gain `registryKnob(_:_:default: Bool)` and
@@ -109,8 +123,6 @@
 
 ### Known limitations
 
-- Changes name a token by its key in words ("Card radius") with points for the metrics; they do not
-  read the token catalog's titles and units yet.
 - In a card too short to keep 120 pt for Notes, the composer drops its subject line (the field's hint
   still names it) and the bottom bar; the Trying strip stays while a proposal is trying.
 - The composer field's own accessibility frame stays one line tall (about 22 pt on the iPhone Duo):

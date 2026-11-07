@@ -212,24 +212,44 @@ extension TuneModel {
 
     // MARK: New from the agent
 
-    /// Answers to notes and proposals the person has not seen on Notes.
+    /// What the person has not seen yet: answers to notes and proposals
+    /// until Notes shows, and an answer to a hand-off until Versions shows.
     var unseen: Int {
-        unseenKeys.subtracting(seen).count
+        noteActivity.union(handOffActivity).subtracting(seen).count
     }
 
-    private var unseenKeys: Set<String> {
+    private var noteActivity: Set<String> {
         let noteIDs = Set(notes.map(\.id.uuidString))
         let answers = agent.answers.filter { noteIDs.contains($0.key) }
             .map { "answer.\($0.key).\($0.value.date.timeIntervalSince1970)" }
         return Set(answers + agent.proposals.map { "proposal.\($0.id)" })
     }
 
-    /// The person saw Notes: everything there now is no longer new.
+    /// The answers to the current hand-off and the one before it.
+    private var handOffActivity: Set<String> {
+        let ids = [handOff?.id, handOff?.previous?.id].compactMap { $0?.uuidString }
+        return Set(ids.compactMap { id in
+            agent.answers[id].map { "handoff.\(id).\($0.date.timeIntervalSince1970)" }
+        })
+    }
+
+    /// The person saw Notes: its answers and proposals are no longer new.
     func notesSeen() {
-        let keys = unseenKeys
-        guard keys != seen else { return }
-        seen = keys
-        defaults.set(Array(keys).sorted(), forKey: Self.seenStorageKey)
+        markSeen(noteActivity, keeping: handOffActivity)
+    }
+
+    /// The person saw Versions: the hand-off's answer is no longer new.
+    func versionsSeen() {
+        markSeen(handOffActivity, keeping: noteActivity)
+    }
+
+    /// Marks `keys` seen and keeps what was seen of `other`, so a key that
+    /// is gone from the files drops out of the stored set.
+    private func markSeen(_ keys: Set<String>, keeping other: Set<String>) {
+        let next = keys.union(seen.intersection(other))
+        guard next != seen else { return }
+        seen = next
+        defaults.set(Array(next).sorted(), forKey: Self.seenStorageKey)
     }
 
     // MARK: Proposals
@@ -264,9 +284,7 @@ extension TuneModel {
         } else {
             return []
         }
-        return DesignChanges.between(from, to, title: stage.title) { [stage] item, knob in
-            stage.knobs.knobs(for: item).first { $0.name == knob }?.title ?? knob
-        }
+        return changes(from: from, to: to)
     }
 
     /// Why Tune cannot try it, or `nil` when it can.
@@ -286,12 +304,13 @@ extension TuneModel {
     }
 
     /// Keeps the proposal trying and discards its Offered siblings, the
-    /// other proposals that answer the same note.
+    /// other proposals that answer the same note. A proposal that answers no
+    /// note has no siblings, so Keep turns down no other proposal.
     func keepButtonTapped() {
         guard let trial = history.trial else { return }
         let note = proposal(trial.proposal)?.note
         let siblings = agent.proposals.filter {
-            $0.id != trial.proposal && $0.note == note && $0.state(in: history) == .offered
+            $0.id != trial.proposal && note != nil && $0.note == note && $0.state(in: history) == .offered
         }
         changeHistory { $0.keep(discarding: siblings.map(\.id)) }
         refreshContext()

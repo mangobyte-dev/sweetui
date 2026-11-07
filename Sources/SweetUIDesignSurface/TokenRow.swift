@@ -101,7 +101,7 @@ struct TokenGroups: View {
         if group == .color, measures {
             ChecksRows(audit: audit, tuning: tuning, actions: actions)
         } else if group == .color, showsChecks {
-            Text("Tune sets no token, so the Checks cannot measure the app's own colors. Apply Default or a preset to measure one.")
+            Text(verbatim: ContrastAudit.unmeasuredUnderSource + " Apply Default or a preset to measure one.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -282,6 +282,7 @@ private struct AccentControl: View {
                     ) {
                         withAnimation(ToolChrome.animation) { tuning.accent = accent }
                     }
+                    .accessibilityIdentifier("tuning.token.accent.\(accent.rawValue)")
                 }
             }
             .accessibilityElement(children: .contain)

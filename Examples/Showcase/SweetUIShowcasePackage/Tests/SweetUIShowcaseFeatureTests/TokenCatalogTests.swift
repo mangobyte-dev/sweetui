@@ -107,4 +107,37 @@ struct TokenCatalogTests {
         #expect(background.value(tuning) == "System")
         #expect(tuning.cardRadius == 24, "A reset touches its own token only.")
     }
+
+    /// Changes are the words the person reads in Notes and Versions, so a
+    /// change must carry the title its row shows, its unit, and a choice's
+    /// word, never a file key or a stored flag.
+    @Test func `Changes read the catalog's titles and units, and a choice reads as its word`() throws {
+        var tuning = ThemeTuning.default
+        tuning.cardRadius = 20
+        tuning.borderWidth = 1.5
+        tuning.surfaceStep = 0.03
+        tuning.darkLabelOnAccent = true
+        tuning.fontDesign = .monospaced
+        tuning.background = .init(red: 1, green: 0.9, blue: 0.8)
+        tuning.backgroundDark = .init(red: 0.1, green: 0.1, blue: 0.1)
+        let changes = DesignChanges.between(DesignHistory.Design(), DesignHistory.Design(code: tuning.presetCode))
+        let words = Set(changes.map(\.words))
+        #expect(words.isSuperset(of: [
+            "Card radius: 16 to 20 pt", "Border width: 1 to 1.5 pt", "Surface step: 0.02 to 0.03",
+            "Label on accent: white to black", "Font design: default to mono",
+            "Background: none to #FFE6CC", "Background, Dark: none to #1A1A1A",
+        ]), "\(words.sorted())")
+        #expect(changes.count == 7)
+        for change in changes {
+            #expect(TokenCatalog.title(ofKey: change.key) == change.title)
+            #expect(change.title != change.key, "\(change.key) reads as its file key.")
+        }
+
+        tuning.accent = .custom
+        tuning.customAccent = .init(red: 1, green: 0, blue: 0)
+        tuning.customAccentDark = .init(red: 0, green: 0, blue: 1)
+        let accent = DesignChanges.between(DesignHistory.Design(), DesignHistory.Design(code: tuning.presetCode)).map(\.title)
+        #expect(accent.contains("Custom accent"))
+        #expect(accent.contains("Custom accent, Dark"))
+    }
 }

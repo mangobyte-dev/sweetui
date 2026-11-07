@@ -118,14 +118,17 @@ public struct DesignHistory: Codable, Equatable, Sendable {
         append(Entry(design: design, author: author, origin: origin, parent: current))
     }
 
-    /// Moves Current back and returns the version it lands on: the base while
-    /// a proposal is on trial, which discards it; the version the last Restore
-    /// left, right after it; otherwise the parent, which discards a kept
+    /// Moves Current back and returns the version it lands on: the version
+    /// the last Restore left, right after it, which discards a proposal that
+    /// Restore put back on trial; the base while a proposal is on trial,
+    /// which discards it; otherwise the parent, which discards a kept
     /// proposal whose version it leaves. `nil` at a root.
     @discardableResult
     public mutating func undo() -> Entry? {
         if trial != nil {
+            let left = returnTo
             discard()
+            if let left { current = left }
             return entry(current)
         }
         if let returnTo {

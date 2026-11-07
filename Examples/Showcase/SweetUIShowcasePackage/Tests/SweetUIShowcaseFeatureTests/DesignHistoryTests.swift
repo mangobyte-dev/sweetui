@@ -282,6 +282,30 @@ struct DesignHistoryTests {
         #expect(history.restore(UUID()) == nil)
     }
 
+    /// Restore onto a proposal's version that is not kept puts it on trial,
+    /// but the person jumped there from somewhere else: Undo must take them
+    /// back to that version, not to the proposal's base, and the agent must
+    /// read the proposal turned down.
+    @Test func `Undo right after Restore onto a trial version returns to the version left and discards it`() throws {
+        var history = DesignHistory()
+        history.record(Self.indigo, author: .you, origin: .first)
+        let base = try #require(history.current)
+        history.tryProposal("P1", design: Self.mango)
+        let p1 = try #require(history.current)
+        history.discard()
+        history.record(Self.tall, author: .you, origin: .edit)
+        let left = try #require(history.current)
+
+        history.restore(p1)
+        #expect(history.trial?.proposal == "P1", "Restore onto a proposal's version that is not kept is Trying.")
+        #expect(history.undo()?.id == left, "Undo returns to the version Restore left, not to the proposal's base.")
+        #expect(history.current == left)
+        #expect(history.decisions["P1"]?.state == .discarded, "Leaving a trial is a Discard the agent must read.")
+        #expect(history.trial == nil)
+        #expect(history.undo()?.id == base, "After that, Undo walks parents again.")
+        #expect(history.entries.count == 3, "Restore and Undo create nothing.")
+    }
+
     /// On launch the value files are the truth: a save the history lost to a
     /// kill comes back as one edit, and a launch that changed nothing adds
     /// nothing, so relaunching never floods Versions. A trial whose save was

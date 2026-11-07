@@ -235,7 +235,7 @@ Tune's files sit in the app's `Documents`. Each design tool takes its file as `f
 4. Answer: `answer_design_note` with the note's `id`, a `reply` the person reads under it, and `changedFiles`.
 5. Ship: when the person hands off, `read_handoff` returns its `id`, the design's code, `swift`, `knobs`, and open notes. Write the code into source with `apply_preset` (a Source hand-off has no code: leave the theme), write each knob as the item's shipped default, answer the open notes, then `answer_handoff` with the `id` and `changedFiles`. Tune shows Shipped and clears its overrides so your source shows.
 
-- **DO** propose; **DO NOT** write `registry-tokens.json` or `design-knobs.json`. `propose_design` refuses a bad code, a key outside the decode keys, and code or tokens for a host whose `tunesTheme` is false, writing nothing.
+- **DO** propose; **DO NOT** write `registry-tokens.json` or `design-knobs.json`. `propose_design` refuses a bad code, a key outside the decode keys, a number off its preset grid (`cardRadius` 20, not 20.5), and code or tokens for a host whose `tunesTheme` is false, writing nothing.
 - **DO** give a new control to an item by writing `design-knob-specs.json` beside the tokens: `{"<item>": [{"name", "title"?, "kind": "number"|"bool"|"choice", "min"/"max"/"step"? or "options", "shipped"}]}`; Tune draws it at once, and the item reads it after one build through `registryKnob(_:_:default:)` (a number or a Bool) or `registryKnob(_:_:options:default:)` (a word).
 - **DO** answer a hand-off by its `id`: the current one and the previous one take an answer, and the reply says when a newer one waits.
 

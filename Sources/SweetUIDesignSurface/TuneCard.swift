@@ -349,7 +349,7 @@ private struct BottomBar: View {
                 Label("Undo", systemImage: "arrow.uturn.backward").barTarget()
             }
             .disabled(!model.history.canUndo)
-            .accessibilityHint(model.undoTarget.map { "Makes \(model.label($0)) current." } ?? "")
+            .accessibilityHint(model.undoTarget.map(model.hint) ?? "")
             .accessibilityIdentifier("tuning.undo")
             Button {
                 withAnimation(ToolChrome.animation) { model.redoButtonTapped() }
@@ -357,7 +357,7 @@ private struct BottomBar: View {
                 Label("Redo", systemImage: "arrow.uturn.forward").barTarget()
             }
             .disabled(!model.history.canRedo)
-            .accessibilityHint(model.redoTarget.map { "Makes \(model.label($0)) current." } ?? "")
+            .accessibilityHint(model.redoTarget.map(model.hint) ?? "")
             .accessibilityIdentifier("tuning.redo")
             Spacer(minLength: ToolChrome.compactSpacing)
             PreviewMenu(model: model)
@@ -492,10 +492,11 @@ extension View {
 extension DesignSurface {
     /// What a card preview holds: nothing yet, a conversation with the
     /// agent (notes it read and answered, its proposals, a reply), that
-    /// conversation with a proposal trying, or that conversation with the
-    /// card it is about selected inside a dashboard on the Components screen.
+    /// conversation with a proposal trying, that conversation with the card
+    /// it is about selected inside a dashboard on the Components screen, or
+    /// MANGO handed off, not read yet or Shipped by the agent's answer.
     public enum CardSample: Sendable {
-        case firstOpen, conversation, trying, selection
+        case firstOpen, conversation, trying, selection, handedOff, shipped
     }
 
     /// Tune's card open at a place, drawn as the surface draws it, over a
@@ -516,12 +517,20 @@ private struct TuneCardPreview: View {
             $0.defaultFileStorage = .inMemory
             $0.defaultAppStorage = .inMemory
             $0.designOutbox = .inert
+            $0.date.now = Self.handOffDate
         } operation: {
             if sample != .firstOpen {
                 let agent = Shared(
                     wrappedValue: AgentRecord(),
                     .fileStorage(AgentRecord.fileURL, decode: AgentRecord.decode, encode: AgentRecord.encode))
                 agent.withLock { $0 = Self.conversation.agent }
+                if sample == .shipped {
+                    agent.withLock {
+                        $0.answers[Self.handOffID.uuidString] = .init(
+                            reply: "Put MANGO into source.", changedFiles: ["RegistryTheme+App.swift"],
+                            date: Self.handOffDate.addingTimeInterval(9 * 60))
+                    }
+                }
             }
             let stage = DesignSurfaceState()
             stage.tunesTheme = tunesTheme
@@ -545,12 +554,32 @@ private struct TuneCardPreview: View {
         if sample == .trying {
             model.tryButtonTapped(Self.conversation.agent.proposals[0].id)
         }
+        if sample == .handedOff || sample == .shipped {
+            // The preview writes no hand-off file, so the one sent is set in place.
+            model.presetChipTapped("Mango")
+            model.handOff = DesignHandoff.capture(
+                id: Self.handOffID, sentAt: Self.handOffDate, design: model.liveDesign, tuning: model.tuning,
+                version: model.history.current, notes: model.notes, answers: model.agent.answers, screenshot: nil,
+                previous: nil)
+            model.shipAnswered()
+        }
+        // Each version a minute apart on the sample's day, so times read the same on every render.
+        model.$history.withLock { history in
+            for index in history.entries.indices {
+                let minutes = Double(index - history.entries.count)
+                history.entries[index].date = Self.handOffDate.addingTimeInterval(minutes * 60)
+            }
+        }
         model.place = place
         if sample == .selection {
             model.select(["card", "dashboard"])
         }
         _model = State(initialValue: model)
     }
+
+    static let handOffID = UUID(uuidString: "6F1C2A10-0000-4000-8000-0000000000C1")!
+    /// When the sample hands off, 42 minutes after its first note's hour.
+    static let handOffDate = Date(timeIntervalSince1970: 1_794_038_400 + 42 * 60)
 
     /// Three notes and two proposals, at fixed times on 7 November 2026.
     private static let conversation: (notes: [DesignNote], agent: AgentRecord) = {

@@ -91,7 +91,9 @@ extension ThemeTuning {
     /// The code inside pasted text: bare, or behind a `--preset` flag.
     static func presetCode(in text: String) -> String? {
         var candidate = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let range = candidate.range(of: #"^--preset\s+"#, options: .regularExpression) {
+        // iOS smart punctuation types "--" as an em dash, and an en dash
+        // comes from some pasteboards; either still names the flag.
+        if let range = candidate.range(of: #"^(--|—|–)preset\s+"#, options: .regularExpression) {
             candidate = String(candidate[range.upperBound...])
         }
         return isPresetCode(candidate) ? candidate : nil

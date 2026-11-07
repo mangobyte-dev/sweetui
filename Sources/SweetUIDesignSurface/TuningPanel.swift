@@ -40,7 +40,9 @@ public struct TuningPanel<PresetsFooter: View>: View {
         NavigationStack {
             Form {
                 PresetsSection(tuning: $tuning, footer: presetsFooter)
-                ExportSection(tuning: tuning)
+                Section("Code") {
+                    CodeRows(tuning: tuning)
+                }
                 TokenGroups(
                     tuning: $tuning, color: $tuning, tokens: tokens, open: $openGroups,
                     actions: .editing($tuning))
@@ -117,35 +119,29 @@ struct PresetChips: View {
     }
 }
 
-/// The preset code and the Swift, the two ways the tuned theme leaves the
-/// app. Under Source the app shows its own theme, so no code is shown.
-struct ExportSection: View {
+/// Copy code, Copy Swift, and the Swift to read: the two ways a tuned theme
+/// leaves the app. Under Source the app shows its own theme, so there is no
+/// code to copy.
+struct CodeRows: View {
     let tuning: ThemeTuning
     var isSource = false
-    @State private var isShowingSwift = false
 
     var body: some View {
-        Section("Export") {
-            LabeledContent {
-                CopyButton("Copy Code", text: "--preset \(tuning.presetCode)")
-                    .labelStyle(.iconOnly)
-                    .disabled(isSource)
-                    .accessibilityIdentifier("tuning.copyCode")
-            } label: {
-                Text("Preset code")
-                if isSource {
-                    Text("Source, the app's own theme")
-                        .font(.footnote)
-                } else {
-                    Text(verbatim: tuning.presetCode)
-                        .font(.footnote.monospaced())
-                        .textSelection(.enabled)
-                }
-            }
-            CopyButton("Copy Swift", text: tuning.swiftSource)
-                .accessibilityIdentifier("tuning.copySwift")
-            DisclosureGroup("Swift", isExpanded: $isShowingSwift) {
-                CodeBlock(tuning.swiftSource)
+        CopyButton("Copy code", text: "--preset \(tuning.presetCode)")
+            .disabled(isSource)
+            .accessibilityIdentifier("tuning.copyCode")
+        CopyButton("Copy Swift", text: tuning.swiftSource)
+            .disabled(isSource)
+            .accessibilityIdentifier("tuning.copySwift")
+        if isSource {
+            Text("Tune sets no token, so there is no code to copy. The app shows its own theme.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        } else {
+            DisclosureGroup("Swift") {
+                Text(verbatim: tuning.swiftSource)
+                    .font(.footnote.monospaced())
+                    .textSelection(.enabled)
                 Text("Paste this once at your scene root. Every registry item you install inherits it.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)

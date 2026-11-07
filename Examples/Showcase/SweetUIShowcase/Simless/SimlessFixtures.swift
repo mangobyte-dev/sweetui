@@ -34,6 +34,9 @@ func simlessFixtures(_ r: SimlessRegistry) {
     r.add("TuneCardNotesTrying") { TuneCardFixture(place: .notes, sample: .trying, tall: true) }
     r.add("TuneCardTrying") { TuneCardFixture(place: .notes, sample: .trying) }
     r.add("TuneCardVersions") { TuneCardFixture(place: .versions) }
+    r.add("TuneCardVersionsTrying") { TuneCardFixture(place: .versions, sample: .trying, full: true) }
+    r.add("TuneCardVersionsHandedOff") { TuneCardFixture(place: .versions, sample: .handedOff, full: true) }
+    r.add("TuneCardVersionsShipped") { TuneCardFixture(place: .versions, sample: .shipped, full: true) }
     r.add("TuneCardTokensAX") { TuneCardFixture(place: .tokens, accessibility: true) }
     r.add("TuneCardTokensItemAX") { TuneCardFixture(place: .tokens, sample: .selection, accessibility: true) }
     r.add("TuneCardNotesAX") { TuneCardFixture(place: .notes, accessibility: true) }

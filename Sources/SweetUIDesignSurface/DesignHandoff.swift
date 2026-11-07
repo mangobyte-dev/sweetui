@@ -54,13 +54,18 @@ public struct DesignHandoff: Codable, Equatable, Sendable {
             id: id, sentAt: sentAt, version: version, presetCode: design.code,
             swift: isSource ? "" : tuning.swiftSource, knobs: design.knobs,
             differences: isSource ? [] : tuning.differences(from: .default),
-            openNotes: notes.filter { answers[$0.id.uuidString] == nil }.map {
+            openNotes: openNotes(notes, answers: answers).map {
                 Note(id: $0.id, text: $0.text, item: $0.item, screen: $0.screen, screenshot: $0.screenshot)
             },
             screenshot: screenshot,
             previous: previous.map {
                 Previous(id: $0.id, sentAt: $0.sentAt, presetCode: $0.presetCode, knobs: $0.knobs)
             })
+    }
+
+    /// The notes that go with the next hand-off: those the agent has not answered.
+    static func openNotes(_ notes: [DesignNote], answers: [String: AgentRecord.Answer]) -> [DesignNote] {
+        notes.filter { answers[$0.id.uuidString] == nil }
     }
 }
 #endif

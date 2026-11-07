@@ -30,8 +30,9 @@ extension TuneModel {
     }
 
     /// Applies a pasted code or `RegistryTheme(...)` initializer; a text Tune
-    /// cannot read changes nothing and says so.
+    /// cannot read changes nothing and says so, and a blank one does nothing.
     func applyCodeButtonTapped() {
+        guard !codeDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard let parsed = ThemeTuning.parse(codeDraft, into: tuning) else {
             codeError = Self.codeError
             return

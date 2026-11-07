@@ -2,8 +2,9 @@
 import Foundation
 
 /// The token and knob differences between two designs, in words: "Card
-/// radius: 16 to 20 pt", "Button height: 36 to 44". Source reads as Default,
-/// the only baseline whose token values Tune knows.
+/// radius: 16 to 20 pt", "Label on accent: white to black", "Button height:
+/// 36 to 44". Titles and units come from `TokenCatalog`. Source reads as
+/// Default, the only baseline whose token values Tune knows.
 enum DesignChanges {
     struct Change: Equatable, Identifiable, Sendable {
         var key: String
@@ -26,10 +27,15 @@ enum DesignChanges {
         let from = a.code.isEmpty ? ThemeTuning.default : ThemeTuning(presetCode: a.code) ?? .default
         let to = b.code.isEmpty ? ThemeTuning.default : ThemeTuning(presetCode: b.code) ?? .default
         var changes = to.differences(from: from).map { difference in
-            let unit = Self.isPoints(difference.key) ? " pt" : ""
+            let token = TokenCatalog.token(owning: difference.key)
+            var (before, after) = (difference.from, difference.to)
+            // A choice reads as the word its picker shows, not its stored value.
+            if let token, case .choice = token.kind {
+                (before, after) = (token.value(from).lowercased(), token.value(to).lowercased())
+            }
             return Change(
-                key: difference.key, title: Self.words(difference.key), item: nil,
-                from: difference.from, to: difference.to + unit)
+                key: difference.key, title: TokenCatalog.title(ofKey: difference.key), item: nil,
+                from: before, to: after + (token?.unit.map { " " + $0 } ?? ""))
         }
         for item in Set(a.knobs.keys).union(b.knobs.keys).sorted() {
             let before = a.knobs[item] ?? [:]
@@ -42,21 +48,6 @@ enum DesignChanges {
             }
         }
         return changes
-    }
-
-    /// A key in sentence case: `cardRadius` reads "Card radius".
-    static func words(_ key: String) -> String {
-        var text = ""
-        for character in key {
-            if character.isUppercase, !text.isEmpty { text.append(" ") }
-            text.append(text.isEmpty ? Character(character.uppercased()) : Character(character.lowercased()))
-        }
-        return text
-    }
-
-    /// Metrics in points: radii, spacing, padding, and border widths.
-    private static func isPoints(_ key: String) -> Bool {
-        ["Radius", "Spacing", "Padding", "Width"].contains { key.hasSuffix($0) }
     }
 }
 #endif

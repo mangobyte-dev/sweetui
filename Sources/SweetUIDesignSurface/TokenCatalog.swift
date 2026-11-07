@@ -47,6 +47,12 @@ enum TokenCatalog {
             }
         }
 
+        /// A number's unit, such as "pt"; `nil` for a plain number or another kind.
+        var unit: String? {
+            guard case .number(_, _, _, _, let unit) = kind, !unit.isEmpty else { return nil }
+            return unit
+        }
+
         /// Whether the tuning moves it off Default.
         func isChanged(_ tuning: ThemeTuning) -> Bool {
             !Set(tuning.differences(from: .default).map(\.key)).isDisjoint(with: codeKeys)
@@ -176,6 +182,23 @@ enum TokenCatalog {
             key: "disabledOpacity", title: "Disabled opacity", group: .disabled,
             kind: .number(\.disabledOpacity, range: 0.2...0.8, step: 0.05, fraction: 2), drives: ["disabledOpacity"]),
     ]
+
+    /// The token that owns a file key.
+    static func token(owning key: String) -> Token? {
+        theme.first { $0.codeKeys.contains(key) }
+    }
+
+    /// A file key's title: its token's, "Background, Dark" for a Dark value,
+    /// "Custom accent" for the accent's custom pair; the key for one no token owns.
+    static func title(ofKey key: String) -> String {
+        guard let token = token(owning: key) else { return key }
+        switch key {
+        case token.key: return token.title
+        case "customAccent": return "Custom accent"
+        case "customAccentDark": return "Custom accent, Dark"
+        default: return "\(token.title), Dark"
+        }
+    }
 
     /// Fields items read that no token moves.
     static let fixed: Set<String> = ["negative", "positive"]

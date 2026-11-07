@@ -34,6 +34,7 @@ public struct AccentSwatch: View {
                     Image(systemName: "iphone")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.white)
+                        .accessibilityHidden(true)
                 }
                 if isSelected {
                     Circle()

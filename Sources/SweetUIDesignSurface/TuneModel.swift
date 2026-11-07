@@ -102,6 +102,7 @@ final class TuneModel {
             shownPlace = newValue
             defaults.set(newValue.rawValue, forKey: Self.placeStorageKey)
             if newValue == .notes { notesSeen() }
+            if newValue == .versions { versionsSeen() }
         }
     }
 
@@ -267,6 +268,7 @@ final class TuneModel {
     func agentChanged() {
         announceAnswers()
         if stage.isPresented && place == .notes { notesSeen() }
+        if stage.isPresented && place == .versions { versionsSeen() }
         if isHoldingSlider || colorSettle != nil {
             agentWaits = true
         } else {

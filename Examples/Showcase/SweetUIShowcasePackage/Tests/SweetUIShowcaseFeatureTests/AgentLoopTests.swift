@@ -151,6 +151,28 @@ extension TuneModelTests {
             #expect(model.tuning.accent == .teal, "Discard on an offered row leaves the device as it is.")
         }
 
+        /// Keep answers one note: a proposal that answers none has no
+        /// siblings, so keeping it must leave every other proposal to the
+        /// person, loose ones and a note's alike.
+        @Test func `Keep on a proposal that answers no note turns down no other proposal`() async throws {
+            let model = TuneModel(stage: Self.stage())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            agentWrites {
+                $0.proposals = [
+                    Self.proposal("A", "Teal", tokens: ["accent": .string("teal")]),
+                    Self.proposal("B", "Mint", minute: 1, tokens: ["accent": .string("mint")]),
+                    Self.proposal("C", "Round", minute: 2, note: "N1", tokens: ["cardRadius": .number(30)]),
+                ]
+            }
+            await Task.megaYield()
+            model.tryButtonTapped("A")
+            model.keepButtonTapped()
+            #expect(model.proposal("A")?.state(in: model.history) == .kept)
+            #expect(model.proposal("B")?.state(in: model.history) == .offered, "A loose proposal is no sibling of another.")
+            #expect(model.proposal("C")?.state(in: model.history) == .offered)
+        }
+
         @Test func `A proposal arriving during a held slider is tried after release on top of the new version`() async throws {
             let model = TuneModel(stage: Self.stage())
             let listener = await TuneModelTests.listening(model)
@@ -316,6 +338,37 @@ extension TuneModelTests {
             #expect(TuneModel(stage: DesignSurfaceState()).unseen == 0, "What the person saw stays seen after a relaunch.")
         }
 
+        /// An answer to a hand-off is news from the agent like an answer to a
+        /// note, but it shows in Versions: it counts on the button and Notes
+        /// until Versions is shown, and Notes alone does not clear it.
+        @Test func `A hand-off answer counts as new until Versions is shown`() async throws {
+            let model = TuneModel(stage: Self.stage())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            model.place = .tokens
+            model.presetChipTapped("Mango")
+            model.handOffButtonTapped()
+            let handOff = try #require(model.handOff)
+            #expect(model.unseen == 0)
+
+            agentWrites {
+                $0.answers[handOff.id.uuidString] = .init(
+                    reply: "Put MANGO into source.", changedFiles: ["RegistryTheme+App.swift"], date: Self.now)
+            }
+            await Task.megaYield()
+            #expect(model.unseen == 1)
+            #expect(model.title(.notes) == "Notes (1)")
+            model.place = .notes
+            #expect(model.unseen == 1, "Notes does not show the hand-off's answer, so it stays new.")
+            model.place = .versions
+            #expect(model.unseen == 0)
+            #expect(model.title(.notes) == "Notes")
+
+            let relaunched = TuneModel(stage: DesignSurfaceState())
+            relaunched.handOff = handOff
+            #expect(relaunched.unseen == 0, "What the person saw stays seen after a relaunch.")
+        }
+
         /// The panel never saves the agent's file: Sharing would throttle and
         /// coalesce its own saves over the agent's, and the agent's write
         /// would be lost. A run of every model action must leave its bytes.
@@ -358,7 +411,10 @@ extension TuneModelTests {
             model.redoButtonTapped()
             model.restore(try #require(model.history.entries.first?.id))
             model.versionName = "Launch"
-            model.nameButtonTapped()
+            model.nameSubmitted()
+            model.checksLineTapped()
+            model.openNotesLineTapped()
+            model.versionsSeen()
             model.handOffButtonTapped()
             model.presetChipTapped("Mango")
             model.defaultButtonTapped()

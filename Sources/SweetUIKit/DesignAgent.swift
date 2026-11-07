@@ -206,10 +206,41 @@ public enum DesignProposals {
         guard let number = value.number, number.isFinite else {
           throw RegistryError("\(key) must be a number")
         }
+        try onGrid(key, number)
       default:
         throw RegistryError(
           "\(key) is not a token; give describe_preset keys: \(tokenKeys.joined(separator: ", "))")
       }
+    }
+  }
+
+  /// A number a code can carry exactly: a step of its field's grid, or one of
+  /// the surface steps. A code rounds any other value, so the device would
+  /// show a value the agent's file does not hold.
+  static func onGrid(_ key: String, _ number: Double) throws {
+    func text(_ value: Double, _ decimals: Int) -> String {
+      var text = String(format: "%.\(decimals)f", value)
+      while text.contains("."), text.hasSuffix("0") || text.hasSuffix(".") { text.removeLast() }
+      return text
+    }
+    if key == "surfaceStep" {
+      guard Preset.surfaceSteps.contains(where: { abs($0 - number) < 1e-9 }) else {
+        let steps = Preset.surfaceSteps.sorted().map { text($0, 2) }
+        throw RegistryError(
+          "surfaceStep must be one of \(steps.joined(separator: ", ")), not \(text(number, 4))")
+      }
+      return
+    }
+    guard let field = Preset.fields.first(where: { $0.key == key }) else { return }
+    let index = (number - field.minimum) / field.step
+    let maximum = field.minimum + Double(field.count - 1) * field.step
+    guard abs(index - index.rounded()) < 1e-6, index.rounded() >= 0,
+      index.rounded() < Double(field.count)
+    else {
+      throw RegistryError(
+        "\(key) must be on its grid, \(text(field.minimum, field.decimals)) to \(text(maximum, field.decimals)) "
+          + "in steps of \(text(field.step, field.decimals)), not \(text(number, field.decimals + 2))"
+      )
     }
   }
 

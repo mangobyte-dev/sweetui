@@ -17,6 +17,8 @@ struct ContrastAudit: Equatable {
     /// The HIG's minimum for text up to 17 points. The registry button and
     /// link labels are subheadline, 15 points.
     nonisolated static let minimum = 4.5
+    /// Under Source the app shows its own colors, which Tune cannot read.
+    nonisolated static let unmeasuredUnderSource = "Tune sets no token, so the Checks cannot measure the app's own colors."
 
     struct Pair: Identifiable, Equatable {
         enum Kind: String, CaseIterable {
