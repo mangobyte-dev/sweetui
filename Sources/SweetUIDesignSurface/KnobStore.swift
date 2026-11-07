@@ -83,6 +83,11 @@ final class KnobStore {
         $values.withLock { $0[item] = nil }
     }
 
+    /// Puts an item's stored values back as they were; empty clears them.
+    func restore(_ item: String, _ stored: [String: Double]) {
+        $values.withLock { $0[item] = stored.isEmpty ? nil : stored }
+    }
+
     /// What the items read from the environment.
     var environmentValue: RegistryKnobs { RegistryKnobs(values: values) }
 }

@@ -64,6 +64,9 @@ public struct TuningPanel<PresetsFooter: View>: View {
     private var stack: some View {
         NavigationStack(path: $path) {
             Form {
+                if showsScreen {
+                    AgentChangeSection(tuning: $tuning)
+                }
                 if showsScreen, let selection {
                     OnThisScreenSection(selection: selection)
                 }
@@ -317,6 +320,46 @@ private struct ScopeSection: View {
                     .font(.body.monospaced())
                     .accessibilityIdentifier("tuning.scope.item")
                 Text("\(tokenCount) tokens reach it")
+            }
+        }
+    }
+}
+
+/// What the agent last wrote to the device, read from the record MCP
+/// `set_tuning` and `set_knobs` leave beside the files; the panel already
+/// shows the change itself through its file watch. Undo restores the
+/// previous values; Dismiss keeps them. Both clear the record.
+private struct AgentChangeSection: View {
+    @Binding var tuning: ThemeTuning
+    @Shared(.agentChange) private var change
+    private let state = DesignSurfaceState.shared
+
+    var body: some View {
+        if let change {
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(change.summary)
+                    Text(change.changedAt, format: .dateTime.hour().minute().second())
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("tuning.agentChange")
+                HStack {
+                    Button("Undo", systemImage: "arrow.uturn.backward") {
+                        withAnimation(ToolChrome.animation) { change.undo(tuning: &tuning, knobs: state.knobs) }
+                        $change.withLock { $0 = nil }
+                    }
+                    .accessibilityIdentifier("tuning.agentChange.undo")
+                    Spacer()
+                    Button("Keep", systemImage: "checkmark") {
+                        $change.withLock { $0 = nil }
+                    }
+                    .accessibilityIdentifier("tuning.agentChange.keep")
+                }
+                .buttonStyle(.borderless)
+            } header: {
+                Text("From the agent")
             }
         }
     }

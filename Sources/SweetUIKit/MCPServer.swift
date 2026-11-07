@@ -76,7 +76,7 @@ public struct MCPServer {
       [
         "search_items", "describe_item", "plan_install", "diff_item", "install_item",
         "describe_preset", "apply_preset", "list_design_notes", "resolve_design_note",
-        "get_design_context",
+        "get_design_context", "set_tuning", "set_knobs",
       ].contains(name)
     else {
       throw InvalidParams(message: "Unknown tool: \(params["name"].string ?? "None")")
@@ -149,6 +149,32 @@ public struct MCPServer {
           "A note names the item and the tokens it reads; tune those tokens or the item's source, then call resolve_design_note with its id"
         ],
       ]
+    }
+    if tool == "set_tuning" {
+      let file = try AppContainer.locate(
+        DesignWrites.tokensFileName, file: optional(arguments, "file"),
+        udid: optional(arguments, "udid"), bundleId: optional(arguments, "bundleId"))
+      let tuning = arguments["tuning"]
+      if tuning != .null, tuning.object == nil {
+        throw InvalidArgument(message: "tuning must be an object")
+      }
+      let code = try DesignWrites.setTuning(
+        code: optional(arguments, "code"), tuning: tuning == .null ? nil : tuning, file: file)
+      return [
+        "file": .string(file), "code": .string(code), "url": .string(Preset.url(code)),
+        "nextSteps": [
+          "The panel applies the file at once; call get_design_context and read its screenshot to check the result",
+          "The person can undo this from the panel; a later write replaces the undo",
+        ],
+      ]
+    }
+    if tool == "set_knobs" {
+      let file = try AppContainer.locate(
+        DesignWrites.knobsFileName, file: optional(arguments, "file"),
+        udid: optional(arguments, "udid"), bundleId: optional(arguments, "bundleId"))
+      let item = try string(arguments, "item")
+      let knobs = try DesignWrites.setKnobs(item: item, values: arguments["values"], file: file)
+      return ["file": .string(file), "item": .string(item), "knobs": OrderedJSON(knobs)]
     }
     if tool == "get_design_context" {
       let file = try AppContainer.locate(

@@ -250,6 +250,72 @@ extension MCPServer {
             }
           },
           {
+            "name": "set_tuning",
+            "title": "Set the theme on the device",
+            "description": "Write a theme into the app's registry-tokens.json; the Tune panel and every registry item follow at once, no rebuild. Give a preset code, or a tuning object (any subset of the describe_preset keys) merged over the theme the device has now. The previous theme is recorded so the person can undo. Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "A preset code, with or without --preset"
+                },
+                "tuning": {
+                  "type": "object",
+                  "description": "Knobs to change, by describe_preset key, such as {\"accent\": \"green\", \"cardRadius\": 20}"
+                },
+                "file": {
+                  "type": "string"
+                },
+                "udid": {
+                  "type": "string"
+                },
+                "bundleId": {
+                  "type": "string"
+                }
+              }
+            },
+            "annotations": {
+              "readOnlyHint": false,
+              "destructiveHint": false,
+              "idempotentHint": true
+            }
+          },
+          {
+            "name": "set_knobs",
+            "title": "Set an item's knobs on the device",
+            "description": "Write per-item knob values into the app's design-knobs.json; the item follows at once. values maps a knob name to a number, or null to return it to its shipped default. The previous values are recorded so the person can undo. Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "item": {
+                  "type": "string"
+                },
+                "values": {
+                  "type": "object"
+                },
+                "file": {
+                  "type": "string"
+                },
+                "udid": {
+                  "type": "string"
+                },
+                "bundleId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "item",
+                "values"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": false,
+              "destructiveHint": false,
+              "idempotentHint": true
+            }
+          },
+          {
             "name": "resolve_design_note",
             "title": "Resolve a design note",
             "description": "Mark a note resolved in design-notes.json once its work is done; the Tune panel then drops it from its list. Locate the file as list_design_notes does.",

@@ -34,6 +34,13 @@
   tool's own window, outlines the selected item, and saves `notes/<id>.png`; a note carries its
   `screenshot` path. MCP `get_design_context` returns the file with absolute screenshot paths, so
   an agent reads what the person saw, as Figma's `get_screenshot` lets its agent do.
+- The agent's hand. MCP `set_tuning` writes a theme into the device's `registry-tokens.json` as a
+  preset code (a code, or a tuning object merged over the device's theme; the environment switches
+  stay) and `set_knobs` merges an item's knob values into `design-knobs.json` (`null` returns a knob
+  to its shipped default). The panel and every registry item follow through the file watch, no
+  rebuild. Each write records the previous values in `design-agent-change.json`; the panel shows
+  "From the agent" with Undo and Keep. Verified on the iPhone Duo: a `set_tuning` over the real MCP
+  server turned the running app pink and the banner's Undo put indigo back. Undo is one step deep.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
   background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only
