@@ -44,6 +44,9 @@ struct TokenGroups: View {
     var showsChecks = true
     let actions: TokenActions
 
+    /// Under Source the app shows its own colors, which Tune cannot read.
+    private var measures: Bool { showsChecks && !actions.isSource }
+
     var body: some View {
         let audit = ContrastAudit(tuning)
         ForEach(TokenCatalog.Token.Group.allCases) { group in
@@ -83,7 +86,7 @@ struct TokenGroups: View {
     /// "Space · 2 changed", "Color · 1 fails".
     private func header(_ group: TokenCatalog.Token.Group, _ rows: [TokenCatalog.Token], audit: ContrastAudit) -> some View {
         var words = [group.title]
-        if group == .color, showsChecks, audit.failures > 0 {
+        if group == .color, measures, audit.failures > 0 {
             words.append(audit.failures == 1 ? "1 fails" : "\(audit.failures) fail")
         }
         let changed = rows.filter { $0.isChanged(tuning) }.count
@@ -95,8 +98,12 @@ struct TokenGroups: View {
 
     @ViewBuilder
     private func content(_ group: TokenCatalog.Token.Group, _ rows: [TokenCatalog.Token], audit: ContrastAudit) -> some View {
-        if group == .color, showsChecks {
+        if group == .color, measures {
             ChecksRows(audit: audit, tuning: tuning, actions: actions)
+        } else if group == .color, showsChecks {
+            Text("Tune sets no token, so the Checks cannot measure the app's own colors. Apply Default or a preset to measure one.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         if group == .space {
             DensityRow(tuning: $tuning)
@@ -220,15 +227,17 @@ struct TokenRow: View {
             .accessibilityIdentifier("tuning.token.\(token.key)")
         case .color(let light, let dark, let seed):
             ModeColumns {
-                ColorPicker(selection: lightColor(light, seed: seed), supportsOpacity: false) { Text("Light") }
-                    .frame(minHeight: 44)
-                    .accessibilityLabel("\(token.title), Light")
-                    .accessibilityIdentifier("tuning.token.\(token.key)")
+                ColorPicker(selection: lightColor(light, seed: seed), supportsOpacity: false) {
+                    Text("Light").accessibilityLabel("\(token.title), Light")
+                }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("tuning.token.\(token.key)")
             } dark: {
-                ColorPicker(selection: darkColor(light, dark, seed: seed), supportsOpacity: false) { Text("Dark") }
-                    .frame(minHeight: 44)
-                    .accessibilityLabel("\(token.title), Dark")
-                    .accessibilityIdentifier("tuning.token.\(token.key)Dark")
+                ColorPicker(selection: darkColor(light, dark, seed: seed), supportsOpacity: false) {
+                    Text("Dark").accessibilityLabel("\(token.title), Dark")
+                }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("tuning.token.\(token.key)Dark")
             }
         case .accent:
             AccentControl(tuning: $tuning, color: $color)
@@ -275,16 +284,20 @@ private struct AccentControl: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("tuning.token.accent")
             ModeColumns {
-                ColorPicker(selection: $color.customAccentColor, supportsOpacity: false) { Text("Custom") }
-                    .frame(minHeight: 44)
-                    .accessibilityLabel("Custom accent, Light")
-                    .accessibilityIdentifier("tuning.token.customAccent")
+                ColorPicker(selection: $color.customAccentColor, supportsOpacity: false) {
+                    Text("Custom").accessibilityLabel("Custom accent, Light")
+                }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("tuning.token.customAccent")
             } dark: {
-                ColorPicker(selection: $color.customAccentDarkColor, supportsOpacity: false) { Text("Dark") }
-                    .frame(minHeight: 44)
-                    .accessibilityLabel("Custom accent, Dark")
-                    .accessibilityIdentifier("tuning.token.customAccentDark")
+                ColorPicker(selection: $color.customAccentDarkColor, supportsOpacity: false) {
+                    Text("Dark").accessibilityLabel("Custom accent, Dark")
+                }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("tuning.token.customAccentDark")
             }
         }
     }
@@ -326,7 +339,7 @@ private struct ChecksRows: View {
                 asks: pair.verdict == .fails && actions.ask != nil, actions: actions)
         }
         VStack(alignment: .leading, spacing: 4) {
-            Text("Text needs 4.5:1 in light and dark. A system color may reach it with Increase Contrast; a custom color has no such variant.")
+            Text("Text needs 4.5:1 in light and dark. A system color may reach it with Increase Contrast. A custom color does not change with it.")
             if audit.secondaryIsDerived {
                 Text("Secondary text follows the foreground; give it its own color to measure it.")
             }

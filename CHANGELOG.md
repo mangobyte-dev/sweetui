@@ -74,8 +74,9 @@
   or Fails against the 4.5:1 the Human Interface Guidelines apply to text up to 17 points, with the
   ratios beside it, and the Color header counts the failures ("Color · 1 fails"). When the other label
   (white or black) would pass, Fix label applies it; Ask the agent on a failing check goes to Notes
-  with the pair and its ratios drafted. Ratios agree with WebAIM's checker to two decimals
-  (`ContrastAuditTests`).
+  with the pair and its ratios drafted under any draft already there. Under Source, Tune cannot read
+  the app's colors, so the Checks say so and the header counts no failure. Ratios agree with
+  WebAIM's checker to two decimals (`ContrastAuditTests`).
 - Tokens and Selecting. With nothing selected, Tokens shows Start from, then the theme's tokens in
   seven groups: Color open, and Type, Space, Shape, Surface, Chart, and Disabled collapsed, each header
   counting what changed ("Space · 2 changed"). A token row shows its title, value ("source" while Tune
@@ -85,11 +86,12 @@
   (title, name, size and origin, instances, the item around it, the notes about it, Copy name), its
   knobs (the agent's marked "From the agent"), only the tokens that reach it, and what it reads that
   no token moves ("Also reads negative. No token moves it."). A pick from Notes stays on Notes as the
-  composer's subject. A tap on nothing, or Cancel on the Selecting pill, keeps the selection. Note
-  with nothing selected arms Selecting and returns to the focused composer. The item menu lists the
-  selection's chain and the items on this screen, and says when the selection is not on this screen;
-  with VoiceOver running, Select opens it. `TokenCatalog` gives every key a code encodes one token
-  (`TokenCatalogTests`), and `TuningPanel(tuning:)` draws the same groups.
+  composer's subject and pushes no host page over it. A tap on nothing, or Cancel on the Selecting
+  pill, keeps the selection. Note with nothing selected arms Selecting and returns to the focused
+  composer. The item menu lists the selection's chain and the items on this screen, and says when the
+  selection is not on this screen; with VoiceOver running, Select opens it. `TokenCatalog` gives
+  every key a code encodes one token (`TokenCatalogTests`), and `TuningPanel(tuning:)` draws the same
+  groups.
 - Knobs the agent declares, and two new kinds. `ItemKnob.bool` draws a switch stored as 0 or 1 and
   `ItemKnob.choice` draws a picker stored as the option's index, so `design-knobs.json`, proposals,
   and versions keep their numeric shape; foundations gain `registryKnob(_:_:default: Bool)` and
@@ -107,8 +109,8 @@
 
 ### Known limitations
 
-- Changes name a token by its key in words ("Card radius") with points for the metrics, until the
-  token catalog gives titles and units.
+- Changes name a token by its key in words ("Card radius") with points for the metrics; they do not
+  read the token catalog's titles and units yet.
 - In a card too short to keep 120 pt for Notes, the composer drops its subject line (the field's hint
   still names it) and the bottom bar; the Trying strip stays while a proposal is trying.
 - The composer field's own accessibility frame stays one line tall (about 22 pt on the iPhone Duo):

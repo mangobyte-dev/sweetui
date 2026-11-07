@@ -111,10 +111,12 @@ extension TuneModel {
         tuningEdit.darkLabelOnAccent = dark
     }
 
-    /// Goes to Notes with the check's pair and ratios drafted for the agent.
+    /// Goes to Notes with the check's pair and ratios drafted for the agent,
+    /// on a new line under a draft the person was writing.
     func askAgentTapped(_ pair: ContrastAudit.Pair) {
-        noteDraft = "\(pair.title) \(pair.verdictWord.lowercased()): \(pair.ratios). "
+        let ask = "\(pair.title) \(pair.verdictWord.lowercased()): \(pair.ratios). "
             + "Text needs \(ContrastAudit.minimum.formatted()):1 in light and dark. Find colors that pass."
+        noteDraft = noteDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? ask : noteDraft + "\n" + ask
         replyTarget = nil
         place = .notes
         composerFocused = true
@@ -158,12 +160,13 @@ extension TuneModel {
     }
 
     /// Selects an item and the items around it, innermost first. Tokens shows
-    /// it, unless the card is on Notes, where it is the composer's subject.
+    /// it and pushes its host page, unless the card is on Notes, where it is
+    /// the composer's subject and a page would cover the composer.
     func select(_ chain: [String]) {
         stage.selection.item = chain.first
         stage.selection.chain = chain
         hostPageItem = stage.hostPage.flatMap { page in chain.first { page($0) != nil } }
-        hostPageToPush = hostPageItem
+        hostPageToPush = place == .notes ? nil : hostPageItem
         if place != .notes { place = .tokens }
     }
 

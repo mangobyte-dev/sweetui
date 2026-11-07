@@ -152,10 +152,10 @@ Apply), then Color open (accent swatches, custom accent, the Checks with light a
 ratios, background, foreground, secondary foreground with Light and Dark columns), then Type,
 Space (density first), Shape, Surface, Chart, Disabled as collapsed headers ("Space · 2
 changed"; "Color · 1 fails"), then "App tokens, outside versions" (the host pages), then host
-sections. While Tune sets no token, every row reads its Source value as "source" and the app shows
-its own theme. Item selected: the Item section (title, name in monospace, size and origin,
-instances, "Inside: Grid", "2 notes about Card", Copy name), Knobs ("From the agent" on declared
-ones), then only the tokens that reach it, open, then "Also reads negative and positive. No
+sections. While Tune sets no token, every row reads its Source value as "source", the Checks say
+they cannot measure the app's own colors, and the app shows its own theme. Item selected: the
+Item section (title, name in monospace, size and origin, instances, "Inside: Grid", "2 notes
+about Card", Copy name), Knobs ("From the agent" on declared ones), then only the tokens that reach it, open, then "Also reads negative and positive. No
 token moves them.", then host sections and the host page. Each token row: title, key, value, a
 changed dot, "reaches 4 on screen", Reset token when changed.
 
@@ -172,8 +172,9 @@ changed dot, "reaches 4 on screen", Reset token when changed.
 - App token control → applied live through `TokenDocument.apply()`, no version
 - Preset, Default, Source, pasted code → Apply: a new child of Current with that origin (Source clears every token and knob override)
 
-Edges: an item that reads no theme token ("Alert dialog reads no theme tokens. Accent and type
-still reach it."); `registry-tokens.json` that did not decode is said, not only logged; an
+Edges: an item that reads no theme token ("Alert dialog reads no theme tokens. Accent, type, and
+the colors still reach it.", since the theme's tint, font design, foreground, and background reach
+the whole tree); `registry-tokens.json` that did not decode is said, not only logged; an
 undrawable agent knob spec is named with its reason; a proposal arriving while a control is
 held waits for the release and builds on the new version; an edit while trying keeps the
 proposal ("Kept Warm. Your change is on top."); `tunesRegistryTheme: false` hides the theme
@@ -233,7 +234,7 @@ not Current, a trial base, or Shipped drops and its children take its parent.
 
 [the live app with every item outlined] [pill: "Tap an item to select it." with Cancel] [the card hidden]
 
-- Tap an item → the innermost item and its chain selected; Tokens when Select came from Tokens or Versions, Notes (as the subject) when it came from Notes; a chain with a host page pushes it
+- Tap an item → the innermost item and its chain selected; Tokens when Select came from Tokens or Versions, Notes (as the subject) when it came from Notes; a chain with a host page pushes it, except on Notes, where the page would cover the composer
 - Tap on nothing, Cancel → the place the card left, selection unchanged
 
 Edges: no items on screen (the pill says so); items inside sheets and covers are selectable; the

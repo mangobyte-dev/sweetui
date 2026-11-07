@@ -70,6 +70,30 @@ extension TuneModelTests {
             #expect(!model.composerFocused, "A pick from Notes does not focus the composer; Note does.")
         }
 
+        @Test func `A host page is pushed from Tokens and never over the composer on Notes`() {
+            let stage = TuneModelTests.screen()
+            stage.hostPage = { $0 == "dashboard" ? AnyView(Text(verbatim: "Dashboard")) : nil }
+            let model = TuneModelTests.launched(stage)
+
+            model.place = .notes
+            model.selectButtonTapped()
+            model.selectingTapped(["card", "dashboard"])
+            #expect(model.hostPageToPush == nil, "The pushed page has no composer, so Notes would lose it.")
+            #expect(model.hostPageItem == "dashboard", "Tokens still links the page.")
+
+            model.clearSelectionTapped()
+            model.noteButtonTapped()
+            model.selectingTapped(["card", "dashboard"])
+            #expect(model.hostPageToPush == nil, "Note's pick returns to the composer, not to a page.")
+            #expect(model.composerFocused)
+
+            model.place = .versions
+            model.selectButtonTapped()
+            model.selectingTapped(["card", "dashboard"])
+            #expect(model.place == .tokens)
+            #expect(model.hostPageToPush == "dashboard", "The innermost item with a page is pushed.")
+        }
+
         @Test func `A tap on nothing or Cancel keeps the selection`() {
             let model = TuneModelTests.launched(TuneModelTests.screen())
             model.itemMenuSelected("card")
@@ -215,6 +239,15 @@ extension TuneModelTests {
             #expect(model.composerFocused)
             #expect(model.noteDraft.hasPrefix("Label on accent fails: \(pair.ratios)."))
             #expect(model.history.entries.count == before, "Asking changes no token.")
+        }
+
+        @Test func `Ask the agent keeps the draft the person was writing`() throws {
+            let model = TuneModelTests.launched()
+            let pair = try #require(ContrastAudit(model.tuning).pair(.labelOnAccent))
+            model.noteDraft = "The badge looks cramped."
+
+            model.askAgentTapped(pair)
+            #expect(model.noteDraft.hasPrefix("The badge looks cramped.\nLabel on accent fails: \(pair.ratios)."))
         }
     }
 }

@@ -28,6 +28,7 @@ func simlessFixtures(_ r: SimlessRegistry) {
     r.add("TuneCardTokensFull") { TuneCardFixture(place: .tokens, full: true) }
     r.add("TuneCardTokensItem") { TuneCardFixture(place: .tokens, sample: .selection) }
     r.add("TuneCardTokensItemFull") { TuneCardFixture(place: .tokens, sample: .selection, full: true) }
+    r.add("TuneCardTokensTryingFull") { TuneCardFixture(place: .tokens, sample: .trying, full: true) }
     r.add("TuneCardNotes") { TuneCardFixture(place: .notes) }
     r.add("TuneCardNotesThread") { TuneCardFixture(place: .notes, sample: .conversation, tall: true) }
     r.add("TuneCardNotesTrying") { TuneCardFixture(place: .notes, sample: .trying, tall: true) }
