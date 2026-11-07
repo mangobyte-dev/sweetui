@@ -88,16 +88,17 @@ public extension View {
 }
 
 public enum DesignSurface {
-    /// Forgets where the Tune button and the card were left, so the next
-    /// open uses the defaults again: the button at the trailing side, the
-    /// card above the bottom bar on a compact width and the trailing column
-    /// on a regular one. A host offers it as a reset, and a test harness
-    /// calls it at launch so a card a person moved never shapes a run.
+    /// Forgets where the Tune button and the card were left and the place
+    /// the card last showed, so the next open uses the defaults again: the
+    /// button at the trailing side, the card above the bottom bar on a
+    /// compact width and the trailing column on a regular one, on Tokens. A
+    /// host offers it as a reset, and a test harness calls it at launch so a
+    /// card a person moved never shapes a run.
     @MainActor public static func forgetRememberedLayout() {
         let defaults = UserDefaults.standard
         for key in [
             PanelGeometry.storageKey(regular: false), PanelGeometry.storageKey(regular: true),
-            FloatingButtonStorage.restingY, FloatingButtonStorage.restingTrailing,
+            FloatingButtonStorage.restingY, FloatingButtonStorage.restingTrailing, TuneModel.placeStorageKey,
         ] {
             defaults.removeObject(forKey: key)
         }
@@ -132,7 +133,13 @@ private struct DesignSurfaceModifier<PresetsFooter: View>: ViewModifier {
     var hostPage: ((String) -> AnyView?)?
     var panelWrap: ((AnyView) -> AnyView)?
     @Shared(.designTokens) private var tuning
+    @SharedReader(.designHistory) private var history
     private let state = DesignSurfaceState.shared
+
+    /// Tune's design sets no token: the app's own theme shows through.
+    private var showsSource: Bool {
+        history.design(code: tuning.presetCode, knobs: [:]).code.isEmpty
+    }
 
     func body(content: Content) -> some View {
         content
@@ -153,7 +160,8 @@ private struct DesignSurfaceModifier<PresetsFooter: View>: ViewModifier {
             // capture layer and its outlines read the reported frames.
             .environment(\.registrySurfaceReporter, enabled ? surfaceReporter : nil)
             .environment(\.registryKnobs, state.knobs.environmentValue)
-            .modifier(TunedTheme(tuning: tunesTheme ? tuning : nil))
+            .modifier(TunedTheme(tuning: tunesTheme ? tuning : nil, passesThrough: showsSource))
+            .modifier(PreviewOverrides(tuning: tuning))
             .onAppear {
                 // A registry-tokens.json that fails to decode (edited by hand,
                 // or written by a newer version) leaves the defaults in place
@@ -196,29 +204,52 @@ private struct DesignSurfaceModifier<PresetsFooter: View>: ViewModifier {
 }
 
 /// The tuned registry theme over the app tree, or nothing for a host that
-/// paints the items from its own tokens.
+/// paints the items from its own tokens. While Tune's design sets no token
+/// (Source) it passes the app's own theme through, with the same modifiers,
+/// so the app keeps its state when the design leaves or returns to Source.
 struct TunedTheme: ViewModifier {
     let tuning: ThemeTuning?
+    var passesThrough = false
+    @Environment(\.registryTheme) private var source
 
     func body(content: Content) -> some View {
         if let tuning {
+            // System exports no accent, so a consumer's controls keep their
+            // own colors. The theme below carries the app accent to keep its
+            // tint branch from flipping (and resetting the app); this inner
+            // tint takes it off again. One unconditional modifier, no reset.
             content
-                // System exports no accent, so a consumer's controls keep their
-                // own colors. The theme below carries the app accent to keep its
-                // tint branch from flipping (and resetting the app); this inner
-                // tint takes it off again. One unconditional modifier, no reset.
-                .tint(tuning.accent == .system ? nil : tuning.theme.accent)
-                .registryTheme(tuning.theme)
-                .preferredColorScheme(tuning.preferredColorScheme)
-                .transformEnvironment(\.layoutDirection) { direction in
-                    if tuning.rightToLeft { direction = .rightToLeft }
-                }
-                .transformEnvironment(\.dynamicTypeSize) { size in
-                    if let tuned = tuning.dynamicTypeSize { size = tuned }
-                }
+                .tint(passesThrough ? source.accent : tuning.accent == .system ? nil : tuning.theme.accent)
+                .registryTheme(passesThrough ? sourceWithAccent : tuning.theme)
         } else {
             content
         }
+    }
+
+    /// The app's own theme, carrying the app accent when it names none, for
+    /// the same unflipped tint branch as a tuned theme.
+    private var sourceWithAccent: RegistryTheme {
+        var theme = source
+        if theme.accent == nil { theme.accent = .accentColor }
+        return theme
+    }
+}
+
+/// Preview's overrides over the app tree: appearance, text size, and
+/// direction, applied beside the theme and also for a host that paints the
+/// items from its own tokens. Tune's card keeps the system's, in its own window.
+struct PreviewOverrides: ViewModifier {
+    let tuning: ThemeTuning
+
+    func body(content: Content) -> some View {
+        content
+            .preferredColorScheme(tuning.preferredColorScheme)
+            .transformEnvironment(\.layoutDirection) { direction in
+                if let previewed = tuning.layoutDirection { direction = previewed }
+            }
+            .transformEnvironment(\.dynamicTypeSize) { size in
+                if let previewed = tuning.dynamicTypeSize { size = previewed }
+            }
     }
 }
 #endif

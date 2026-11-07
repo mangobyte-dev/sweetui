@@ -104,26 +104,15 @@ final class DesignSurfaceState {
         static let margins = Guides(rawValue: 4)
     }
 
-    private init() {}
+    /// The process has one stage, ``shared``, which the reporter writes; a
+    /// test or a preview builds its own.
+    init() {}
 
     func report(_ item: RegistryItemReport) { frames[item.id] = item }
     func forget(_ id: UUID) { frames[id] = nil }
     func screenAppeared(_ name: String) { screens.append(name) }
     func screenLeft(_ name: String) {
         if let index = screens.lastIndex(of: name) { screens.remove(at: index) }
-    }
-}
-
-extension Binding where Value == DesignSurfaceState.Guides {
-    /// A per-flag toggle binding, the one place this derivation constructs a
-    /// `Binding` directly: everywhere else derives one from this subscript.
-    subscript(contains member: DesignSurfaceState.Guides) -> Binding<Bool> {
-        Binding<Bool>(
-            get: { wrappedValue.contains(member) },
-            set: { isOn in
-                if isOn { wrappedValue.insert(member) } else { wrappedValue.remove(member) }
-            }
-        )
     }
 }
 #endif

@@ -48,18 +48,6 @@ public struct DesignHandoff: Codable, Equatable, Sendable {
             checkpoints: history.named.map { Checkpoint(name: $0.name ?? "", code: $0.design.code, knobs: $0.design.knobs) },
             screenshot: screenshot)
     }
-
-    /// Writes the file; `false` with a log line when it could not be.
-    @discardableResult
-    func write() -> Bool {
-        do {
-            try DesignNote.fileEncoder.encode(self).write(to: Self.fileURL, options: .atomic)
-            return true
-        } catch {
-            SurfaceLog.logger.error("design-handoff.json was not written: \(error)")
-            return false
-        }
-    }
 }
 
 #endif

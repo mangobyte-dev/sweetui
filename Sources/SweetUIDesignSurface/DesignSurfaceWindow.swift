@@ -106,8 +106,8 @@ final class DesignSurfaceWindow {
 /// here by the named regions instead.
 private final class PassthroughWindow: UIWindow {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        // A sheet the panel presents (Import) owns the whole window while it
-        // is up; otherwise only the named regions take touches.
+        // A system picker the card presents (ColorPicker) owns the whole
+        // window while it is up; otherwise only the named regions take touches.
         if rootViewController?.presentedViewController != nil {
             return super.hitTest(point, with: event)
         }
@@ -132,44 +132,22 @@ extension View {
     }
 }
 
-/// The overlay's content: the floating button, and the panel card while it
-/// is up. Its chrome is fixed (``ToolChrome``), never the tuned theme. Every
-/// layer is positioned in window points with a left origin, whatever the
-/// app's layout direction, because the reported frames are global; the card's
-/// own content reads the system direction again.
+/// The overlay's content: the floating button, and Tune's card while it is
+/// up. It owns the one ``TuneModel``, which records versions and writes the
+/// agent's context with the card open or closed. Its chrome is fixed
+/// (``ToolChrome``), never the tuned theme. Every layer is positioned in
+/// window points with a left origin, whatever the app's layout direction,
+/// because the reported frames are global; the card's own content reads the
+/// system direction again.
 private struct DesignSurfaceOverlayRoot: View {
-    @Shared(.designTokens) private var tuning
     @Environment(\.layoutDirection) private var direction
     @Bindable private var state = DesignSurfaceState.shared
+    @State private var model = TuneModel(stage: .shared)
 
-    @Shared(.designHistory) private var history
-    @Shared(.agentChange) private var agentChange
-    @Shared(.designVariants) private var variants
-
-    /// Records the settled design as a version, naming who moved it: you for
-    /// the first one when nothing has moved, the agent when its last write is
-    /// this code or a proposal chip matches, you otherwise.
-    private func recordHistory() {
-        let design = DesignHistory.Design(code: tuning.presetCode, knobs: state.knobs.values)
-        let author: DesignHistory.Author
-        let origin: DesignHistory.Origin
-        if history.entries.isEmpty, design.code == ThemeTuning.default.presetCode, design.knobs.isEmpty {
-            (author, origin) = (.you, .first)
-        } else if agentChange?.code == design.code {
-            (author, origin) = (.agent, .edit)
-        } else if let variant = variants.matching(tuning) {
-            (author, origin) = (.agent, .proposal(id: variant.id))
-        } else {
-            (author, origin) = (.you, .edit)
-        }
-        $history.withLock { $0.record(design, author: author, origin: origin) }
-    }
-
-    /// What a context rewrite waits for; a scroll moves frames, not this.
-    private var contextKey: [String] {
-        [state.isPresented ? "up" : "down", state.screen ?? "", tuning.presetCode, state.selection.item ?? ""]
-            + state.visibleItemNames.map(\.name)
-            + state.knobs.values.flatMap { item, knobs in knobs.map { "\(item).\($0.key)=\($0.value)" } }.sorted()
+    /// What a context rewrite waits for besides a version: the screen, its
+    /// items, and the selection; a scroll moves frames, not this.
+    private var screenKey: [String] {
+        [state.screen ?? "", state.selection.item ?? ""] + state.visibleItemNames.map(\.name)
     }
 
     var body: some View {
@@ -190,9 +168,7 @@ private struct DesignSurfaceOverlayRoot: View {
             // the screen is tappable; it returns with the scope once picked.
             if state.isPresented && !state.selection.isSelecting {
                 FloatingPanel(contentDirection: direction) {
-                    TuningPanel(tuning: Binding($tuning), selection: $state.selection, showsScreen: true) {
-                        if let footer = state.presetsFooter { footer }
-                    }
+                    TuneCard(model: model)
                 }
             }
             // The card has its own collapse control, so the button steps out while it is up.
@@ -217,25 +193,28 @@ private struct DesignSurfaceOverlayRoot: View {
                     state.stage = frame
                 }
         }
+        .task { await model.task() }
         .onChange(of: state.isPresented) { _, presented in
             if !presented {
                 DesignSurfaceWindow.shared.setKey(false)
                 DesignSurfaceWindow.shared.hitRects["panel"] = nil
+                model.cardClosed()
             }
         }
-        // The agent's view of the screen follows the panel: rewritten when
-        // the screen, its items, the selection, the theme, or a knob changes,
-        // never on a scroll (frames are read at write time).
-        .onChange(of: contextKey, initial: true) { _, _ in
-            guard state.isPresented else { return }
-            DesignContext.write(state: state, tuning: tuning)
-            recordHistory()
+        // The agent's view of the screen follows the app, card open or
+        // closed; frames are read at write time.
+        .onChange(of: screenKey) { _, _ in
+            model.screenChanged()
+        }
+        .onChange(of: state.isEnabled) { _, enabled in
+            if enabled { model.screenChanged() }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
             state.keyboardFrame = (note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect) ?? .zero
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             state.keyboardFrame = .zero
+            model.keyboardHid()
         }
     }
 }
@@ -347,11 +326,10 @@ enum FloatingButtonStorage {
     static let restingTrailing = "designSurface.button.trailing"
 }
 
-/// The draggable button that opens the panel. It settles to the nearer side
-/// after a drag and remembers its place. A hold offers the outlines and the
-/// guides.
+/// The draggable button that opens the card. It settles to the nearer side
+/// after a drag and remembers its place.
 private struct FloatingTuneButton: View {
-    @Bindable private var state = DesignSurfaceState.shared
+    private let state = DesignSurfaceState.shared
     @AppStorage(FloatingButtonStorage.restingY) private var restingY = 0.72
     @AppStorage(FloatingButtonStorage.restingTrailing) private var restingTrailing = true
     @State private var drag: CGSize = .zero
@@ -372,14 +350,8 @@ private struct FloatingTuneButton: View {
             }
             .buttonStyle(.borderedProminent)
             .clipShape(Circle())
-            .contextMenu {
-                Toggle("Outline the pieces", systemImage: "rectangle.dashed", isOn: $state.showsOutlines)
-                Toggle("8 pt grid", systemImage: "grid", isOn: $state.guides[contains: .grid])
-                Toggle("24 pt lines", systemImage: "text.justify", isOn: $state.guides[contains: .lines])
-                Toggle("Margins", systemImage: "arrow.left.and.right", isOn: $state.guides[contains: .margins])
-            }
             .accessibilityLabel("Tune")
-            .accessibilityHint("Opens the design surface panel. Hold for outlines and guides.")
+            .accessibilityHint("Opens Tune.")
             .accessibilityIdentifier("designSurface.button")
             .shadow(radius: 8, y: 4)
             // Measured on the button itself: after `position` the view fills
@@ -470,8 +442,7 @@ private struct FloatingPanel<Content: View>: View {
                     .safeAreaPadding(.bottom, overlap)
                     .environment(\.layoutDirection, contentDirection)
             }
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: ToolChrome.cardRadius, style: .continuous))
-            .clipShape(RoundedRectangle(cornerRadius: ToolChrome.cardRadius, style: .continuous))
+            .tuneCardSurface()
             .overlay(alignment: .bottomTrailing) { grip(area: area, current: current) }
             .shadow(radius: 16, y: 8)
             .frame(width: current.width, height: current.height)
@@ -508,32 +479,9 @@ private struct FloatingPanel<Content: View>: View {
     /// 2026-09-08: a plain gesture on a labeled container gave the button the
     /// bar's frame and a tap at its center landed on the spacer).
     private func dragBar(area: CGRect, current: CGRect) -> some View {
-        HStack(spacing: ToolChrome.spacing) {
-            HStack {
-                Capsule().fill(.secondary).frame(width: 36, height: 5)
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .contentShape(Rectangle())
-            .accessibilityElement()
-            .accessibilityLabel("Tuning panel drag bar")
-            .accessibilityHint("Drag to move the panel.")
-            .accessibilityIdentifier("designSurface.dragBar")
-            Button {
-                withAnimation(ToolChrome.animation) { state.isPresented = false }
-            } label: {
-                Image(systemName: "chevron.down.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Collapse the tuning panel")
-            .accessibilityIdentifier("designSurface.collapse")
+        CardDragBar {
+            withAnimation(ToolChrome.animation) { state.isPresented = false }
         }
-        .padding(.horizontal, ToolChrome.spacing)
-        .contentShape(Rectangle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 4, coordinateSpace: .global)
                 .onChanged { value in

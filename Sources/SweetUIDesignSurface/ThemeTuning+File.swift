@@ -29,7 +29,7 @@ extension ThemeTuning: Codable {
     }
 
     private enum EnvironmentKeys: String, CodingKey {
-        case appearance, textSize, rightToLeft
+        case appearance, textSize, rightToLeft, direction
     }
 
     /// The numeric knobs in the reference order, each with its key.
@@ -83,6 +83,7 @@ extension ThemeTuning: Codable {
         try environment.encode(appearance.rawValue, forKey: .appearance)
         try environment.encode(textSize.rawValue, forKey: .textSize)
         try environment.encode(rightToLeft, forKey: .rightToLeft)
+        try environment.encode(direction.rawValue, forKey: .direction)
     }
 
     public init(from decoder: Decoder) throws {
@@ -148,7 +149,10 @@ extension ThemeTuning: Codable {
                let size = TextSize(rawValue: raw) {
                 result.textSize = size
             }
-            if let flag = try environment.decodeIfPresent(Bool.self, forKey: .rightToLeft) {
+            if let raw = try environment.decodeIfPresent(String.self, forKey: .direction),
+               let direction = Direction(rawValue: raw) {
+                result.direction = direction
+            } else if let flag = try environment.decodeIfPresent(Bool.self, forKey: .rightToLeft) {
                 result.rightToLeft = flag
             }
         }

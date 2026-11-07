@@ -3,27 +3,22 @@ import Sharing
 import SwiftUI
 import SweetUIFoundations
 
-/// The theme tuning panel: every foundation token as a live control, the
-/// preset code that names the result, and the exact Swift to paste once at
-/// an app root. It stays up beside the catalog, an inspector column on iPad
-/// and a sheet the catalog remains interactive under on iPhone, so a change
-/// shows on the demo behind it at once.
+
+/// The theme tuning panel embedded in a host's own screen or a preview:
+/// every foundation token as a live control, the preset code that names the
+/// result, and the exact Swift to paste once at an app root. Tune's card
+/// shows the same groups under Tokens.
 public struct TuningPanel<PresetsFooter: View>: View {
     @Binding var tuning: ThemeTuning
     let presetsFooter: PresetsFooter
-    /// The item scope, when the host is a design surface: `nil` shows every
-    /// section and no Select control, as the Showcase's previews and tests do.
+    /// The item scope: `nil` shows every section and no Select control, as
+    /// the Showcase's previews and tests do.
     private let selection: Binding<ItemSelection>?
-    /// Shows the On this screen section from the tool state: the screen's
-    /// name, the items on it, and the outline switch. Off for a host that
-    /// embeds the panel without the window.
-    private let showsScreen: Bool
-    @State private var isImporting = false
-    /// The item names pushed as host pages.
-    @State private var path: [String] = []
 
     /// The panel over the tuning it edits. `presetsFooter` is the host's own
     /// row under the preset chips, such as a link to a sample design system.
+    /// `showsScreen` is no longer read: the screen, its notes, and its
+    /// versions live in Tune's card, which `designSurface()` shows.
     public init(
         tuning: Binding<ThemeTuning>,
         selection: Binding<ItemSelection>? = nil,
@@ -32,114 +27,30 @@ public struct TuningPanel<PresetsFooter: View>: View {
     ) {
         _tuning = tuning
         self.selection = selection
-        self.showsScreen = showsScreen
         self.presetsFooter = presetsFooter()
     }
 
-    /// The tokens the selected item reads, or `nil` for the whole theme.
-    private var scope: Set<String>? {
-        guard let item = selection?.wrappedValue.item,
-              let tokens = RegistryItemTokens.tokens(for: item) else { return nil }
-        return Set(tokens)
-    }
-
-    /// Off for a host that paints the items from its own tokens: the theme
-    /// sections would move nothing there.
-    private var tunesTheme: Bool { !showsScreen || DesignSurfaceState.shared.tunesTheme }
-
-    /// Whether a section whose knobs are `tokens` reaches the selected item.
-    private func shows(_ tokens: Set<String>) -> Bool {
-        guard let scope else { return true }
-        return !scope.isDisjoint(with: tokens)
-    }
+    private var scope: Set<String>? { ThemeSections.scope(for: selection?.wrappedValue.item) }
 
     public var body: some View {
-        if showsScreen, let wrap = DesignSurfaceState.shared.panelWrap {
-            wrap(AnyView(stack))
-        } else {
-            stack
-        }
-    }
-
-    private var stack: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             Form {
-                if showsScreen {
-                    AgentChangeSection(tuning: $tuning)
-                }
-                if showsScreen, let selection {
-                    OnThisScreenSection(selection: selection)
-                }
                 if let selection, let item = selection.wrappedValue.item {
-                    // A host with its own tokens shows its own selection rows.
-                    if tunesTheme {
-                        ScopeSection(item: item, tokenCount: scope?.count ?? 0) {
-                            withAnimation(ToolChrome.animation) { selection.wrappedValue.item = nil }
-                        }
-                    }
-                    if showsScreen {
-                        ItemKnobsSection(item: item)
+                    ScopeSection(item: item, tokenCount: scope?.count ?? 0) {
+                        withAnimation(ToolChrome.animation) { selection.wrappedValue.item = nil }
                     }
                 }
-                if showsScreen, let selection {
-                    NotesSection(selection: selection.wrappedValue, tuning: tuning)
-                }
-                if showsScreen, let host = DesignSurfaceState.shared.hostTokens {
-                    HostTokensSection(store: host)
-                }
-                if showsScreen, let host = DesignSurfaceState.shared.hostSections {
-                    host(selection?.wrappedValue.chain ?? [])
-                }
-                if showsScreen && tunesTheme {
-                    HistorySection(tuning: $tuning)
-                }
-                if tunesTheme {
-                    PresetsSection(tuning: $tuning, footer: presetsFooter)
-                    if showsScreen { VariantsSection(tuning: $tuning) }
-                    ExportSection(tuning: tuning)
-                    if showsScreen { HandoffSection(tuning: tuning) }
-                    ContrastSection(tuning: $tuning)
-                    AccentSection(tuning: $tuning)
-                    TypographySection(tuning: $tuning)
-                    if shows(PanelScope.surface) { SurfaceSection(tuning: $tuning) }
-                    if shows(["chartPalette"]) { ChartSection(tuning: $tuning) }
-                    if shows(PanelScope.radius.union(PanelScope.spacing)) { DensitySection(tuning: $tuning) }
-                    if shows(PanelScope.radius) { RadiusSection(tuning: $tuning) }
-                    if shows(PanelScope.spacing) { SpacingSection(tuning: $tuning) }
-                    ColorsSection(tuning: $tuning)
-                    if shows(["disabledOpacity"]) { StateSection(tuning: $tuning) }
-                    EnvironmentSection(tuning: $tuning)
-                }
+                PresetsSection(tuning: $tuning, footer: presetsFooter)
+                ExportSection(tuning: tuning)
+                ThemeSections(tuning: $tuning, color: $tuning, scope: scope)
             }
             .accessibilityIdentifier("tuning.form")
-            // The floating card is its own label (the drag bar says so), and
-            // at its minimum width the four toolbar controls need the room a
-            // title would take (measured 2026-09-08: "Tune" truncated to "Tu"
-            // at 300 points); the embedded panel keeps its title.
-            .navigationTitle(showsScreen ? "" : "Tune")
+            .navigationTitle("Tune")
             .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(for: String.self) { name in
-                if let page = DesignSurfaceState.shared.hostPage?(name) { page } else { Text(verbatim: name) }
-            }
-            // A pick lands on the innermost item the host has a page for; an
-            // item without one leaves the panel on its form.
-            .onChange(of: selection?.wrappedValue.chain ?? []) { _, chain in
-                guard showsScreen, let hostPage = DesignSurfaceState.shared.hostPage,
-                      let name = chain.first(where: { hostPage($0) != nil }) else { return }
-                path = [name]
-            }
-            // Clearing the selection (All tokens, a pick on nothing) also
-            // leaves a pushed host page, which was about the selected item.
-            .onChange(of: selection?.wrappedValue.item) { _, item in
-                if item == nil { path = [] }
-            }
-            .sheet(isPresented: $isImporting, onDismiss: { if showsScreen { DesignSurfaceWindow.shared.setKey(false) } }) {
-                ImportThemeSheet(apply: applyImport)
-            }
             .toolbar {
-                if tunesTheme {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Reset", action: reset)
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Reset") {
+                        withAnimation(ToolChrome.animation) { tuning = .default }
                     }
                 }
                 if let selection {
@@ -152,33 +63,8 @@ public struct TuningPanel<PresetsFooter: View>: View {
                         .accessibilityAddTraits(selection.wrappedValue.isSelecting ? [.isSelected] : [])
                     }
                 }
-                if tunesTheme {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Import", systemImage: "square.and.arrow.down", action: beginImport)
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        CopyButton("Copy Swift", text: tuning.swiftSource)
-                    }
-                }
             }
         }
-    }
-
-    private func reset() {
-        withAnimation(ToolChrome.animation) { tuning = .default }
-    }
-
-    private func beginImport() {
-        // A field inside a sheet takes focus only in the key window.
-        if showsScreen { DesignSurfaceWindow.shared.setKey(true) }
-        isImporting = true
-    }
-
-    /// Applies a pasted code or initializer; `false` leaves the sheet up to show the failure.
-    private func applyImport(_ text: String) -> Bool {
-        guard let parsed = ThemeTuning.parse(text, into: tuning) else { return false }
-        withAnimation(ToolChrome.animation) { tuning = parsed }
-        return true
     }
 }
 
@@ -188,79 +74,44 @@ extension TuningPanel where PresetsFooter == EmptyView {
     }
 }
 
-/// The selected item's own knobs, registered by the host, as sliders bound to
-/// the knob store; a value at its shipped default leaves the file.
-private struct ItemKnobsSection: View {
-    let item: String
-    private let knobs = DesignSurfaceState.shared.knobs
+/// The theme's groups, in Tune's Tokens and the embedded panel alike. With
+/// an item selected, only the groups that reach it show; the accent, the
+/// type, and the color pairs reach every item.
+struct ThemeSections: View {
+    @Binding var tuning: ThemeTuning
+    /// The same tuning for the color pickers, whose version settles after
+    /// the last change rather than at once.
+    @Binding var color: ThemeTuning
+    /// Told when a slider's touch goes down and comes up.
+    var hold: (Bool) -> Void = { _ in }
+    let scope: Set<String>?
+
+    /// The tokens the item reads, or `nil` for the whole theme.
+    static func scope(for item: String?) -> Set<String>? {
+        guard let item, let tokens = RegistryItemTokens.tokens(for: item) else { return nil }
+        return Set(tokens)
+    }
+
+    /// Whether a section whose knobs are `tokens` reaches the selected item.
+    private func shows(_ tokens: Set<String>) -> Bool {
+        guard let scope else { return true }
+        return !scope.isDisjoint(with: tokens)
+    }
 
     var body: some View {
-        let specs = knobs.knobs(for: item)
-        if !specs.isEmpty {
-            Section {
-                ForEach(specs) { knob in
-                    switch knob.kind {
-                    case .bool:
-                        Toggle(knob.title, isOn: Binding(
-                            get: { knobs.value(item, knob) != 0 },
-                            set: { knobs.set(item, knob, to: $0 ? 1 : 0) }))
-                            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
-                    case .choice(let options):
-                        Picker(knob.title, selection: Binding(
-                            get: { knob.option(for: knobs.value(item, knob)) ?? options[0] },
-                            set: { word in knobs.set(item, knob, to: Double(options.firstIndex(of: word) ?? 0)) })
-                        ) {
-                            ForEach(options, id: \.self) { Text(verbatim: $0).tag($0) }
-                        }
-                        .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
-                    case .number:
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(knob.title)
-                                Spacer()
-                                Text(knobs.value(item, knob), format: .number.precision(.fractionLength(knob.step < 1 ? 2 : 0)))
-                                    .monospacedDigit()
-                                    .foregroundStyle(.secondary)
-                            }
-                            .font(.subheadline)
-                            Slider(
-                                value: Binding(
-                                    get: { knobs.value(item, knob) },
-                                    set: { knobs.set(item, knob, to: $0) }),
-                                in: knob.range, step: knob.step
-                            ) { Text(knob.title) }
-                            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
-                        }
-                    }
-                }
-                Button("Reset these knobs") { knobs.reset(item) }
-                    .accessibilityIdentifier("tuning.knob.reset")
-            } header: {
-                Text("\(item) knobs")
-            }
-        }
+        ContrastSection(tuning: $tuning)
+        AccentSection(tuning: $tuning, color: $color)
+        TypographySection(tuning: $tuning)
+        if shows(PanelScope.surface) { SurfaceSection(tuning: $tuning, hold: hold) }
+        if shows(["chartPalette"]) { ChartSection(tuning: $tuning) }
+        if shows(PanelScope.radius.union(PanelScope.spacing)) { DensitySection(tuning: $tuning) }
+        if shows(PanelScope.radius) { RadiusSection(tuning: $tuning, hold: hold) }
+        if shows(PanelScope.spacing) { SpacingSection(tuning: $tuning, hold: hold) }
+        ColorsSection(tuning: $tuning, color: $color)
+        if shows(["disabledOpacity"]) { StateSection(tuning: $tuning, hold: hold) }
     }
 }
 
-/// The host's own token document: one row per page, each pushing the page's
-/// knobs, and a reset for the whole document.
-private struct HostTokensSection: View {
-    let store: any AnyTokenStore
-
-    var body: some View {
-        Section("App tokens") {
-            ForEach(Array(store.pageTitles.enumerated()), id: \.offset) { index, title in
-                NavigationLink(title) {
-                    Form { store.page(index) }
-                        .navigationTitle(title)
-                        .navigationBarTitleDisplayMode(.inline)
-                }
-                .accessibilityIdentifier("tuning.tokens.\(index)")
-            }
-            Button("Reset the app tokens", role: .destructive) { store.reset() }
-        }
-    }
-}
 
 /// The knobs each scoped section moves, as the token names the generated
 /// `RegistryItemTokens` map uses; a section shows when the selected item reads
@@ -276,56 +127,9 @@ private enum PanelScope {
     ]
 }
 
-/// The screen under the tool and the registry items on it, top to bottom:
-/// a row selects its item, and the switch outlines every piece over the app.
-private struct OnThisScreenSection: View {
-    let selection: Binding<ItemSelection>
-    private let state = DesignSurfaceState.shared
-
-    var body: some View {
-        Section {
-            let items = state.visibleItemNames
-            if items.isEmpty {
-                Text("No registry item is on this screen.")
-                    .foregroundStyle(.secondary)
-            }
-            ForEach(items, id: \.name) { item in
-                Button {
-                    withAnimation(ToolChrome.animation) {
-                        selection.wrappedValue.item = item.name
-                        selection.wrappedValue.chain = [item.name]
-                    }
-                } label: {
-                    HStack {
-                        Text(verbatim: state.title(item.name))
-                        if item.count > 1 {
-                            Text("\(item.count)").foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        if selection.wrappedValue.item == item.name {
-                            Image(systemName: "checkmark").foregroundStyle(.tint)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityElement(children: .combine)
-                .accessibilityAddTraits(.isButton)
-                .accessibilityIdentifier("tuning.screen.\(item.name)")
-            }
-            Toggle("Outline the pieces", isOn: Binding(
-                get: { state.showsOutlines }, set: { state.showsOutlines = $0 }))
-                .accessibilityIdentifier("tuning.outlines")
-        } header: {
-            Text(state.screen ?? "On this screen")
-                .accessibilityIdentifier("tuning.screen")
-        }
-    }
-}
-
 /// The selected item's name and how many of the theme's tokens reach it, with
 /// the way back to the whole theme.
-private struct ScopeSection: View {
+struct ScopeSection: View {
     let item: String
     let tokenCount: Int
     let showAll: () -> Void
@@ -345,415 +149,45 @@ private struct ScopeSection: View {
     }
 }
 
-/// Every settled state of the design on this device: Undo and Redo walk
-/// it, a checkpoint names the current state so it can be restored by name,
-/// and Compare to shipped lists each knob that differs from the defaults.
-private struct HistorySection: View {
-    @Binding var tuning: ThemeTuning
-    @Shared(.designHistory) private var history
-    @State private var checkpointName = ""
-    private let state = DesignSurfaceState.shared
-
-    private var differences: [ThemeTuning.Difference] { tuning.differences(from: .default) }
-
-    var body: some View {
-        Section {
-            HStack {
-                Button("Undo", systemImage: "arrow.uturn.backward") { step { $0.undo() } }
-                    .disabled(!history.canUndo)
-                    .accessibilityIdentifier("tuning.history.undo")
-                Spacer()
-                Text("\(history.entries.count) states")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                Spacer()
-                Button("Redo", systemImage: "arrow.uturn.forward") { step { $0.redo() } }
-                    .disabled(!history.canRedo)
-                    .accessibilityIdentifier("tuning.history.redo")
-            }
-            .buttonStyle(.borderless)
-            HStack {
-                TextField("Name this state", text: $checkpointName)
-                    .accessibilityIdentifier("tuning.history.name")
-                Button("Checkpoint") {
-                    $history.withLock { $0.name(checkpointName) }
-                    checkpointName = ""
-                }
-                .buttonStyle(.borderless)
-                .disabled(checkpointName.trimmingCharacters(in: .whitespaces).isEmpty || history.current == nil)
-                .accessibilityIdentifier("tuning.history.checkpoint")
-            }
-            ForEach(history.named) { entry in
-                Button {
-                    step { $0.restore(entry.id) }
-                } label: {
-                    LabeledContent {
-                        if history.current == entry.id {
-                            Image(systemName: "checkmark").foregroundStyle(.tint).accessibilityHidden(true)
-                        }
-                    } label: {
-                        Text(verbatim: entry.name ?? "")
-                        Text(entry.date, format: .dateTime.hour().minute())
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(history.current == entry.id ? [.isSelected] : [])
-                .accessibilityIdentifier("tuning.history.restore")
-            }
-            DisclosureGroup("Compare to shipped (\(differences.count))") {
-                if differences.isEmpty {
-                    Text("Every knob is at its shipped value.")
-                        .foregroundStyle(.secondary)
-                }
-                ForEach(differences, id: \.key) { difference in
-                    LabeledContent(difference.key) {
-                        Text(verbatim: "\(difference.from) → \(difference.to)")
-                            .font(.footnote.monospaced())
-                    }
-                    .accessibilityIdentifier("tuning.history.difference.\(difference.key)")
-                }
-            }
-            .accessibilityIdentifier("tuning.history.compare")
-        } header: {
-            Text("History")
-        } footer: {
-            Text("Every settled change is kept in design-history.json, by the person, the agent, or a variant.")
-        }
-    }
-
-    /// Moves Current with `move`, then applies the version it lands on: the
-    /// code over the current tuning (the switches stay) and the knobs.
-    private func step(_ move: (inout DesignHistory) -> DesignHistory.Entry?) {
-        var landed: DesignHistory.Entry?
-        $history.withLock { landed = move(&$0) }
-        guard let entry = landed else { return }
-        withAnimation(ToolChrome.animation) {
-            if let restored = ThemeTuning(presetCode: entry.design.code, base: tuning) { tuning = restored }
-            state.knobs.replaceAll(entry.design.knobs)
-        }
-    }
-}
-
-/// What the agent last wrote to the device, read from the record MCP
-/// `set_tuning` and `set_knobs` leave beside the files; the panel already
-/// shows the change itself through its file watch. Undo restores the
-/// previous values; Dismiss keeps them. Both clear the record.
-private struct AgentChangeSection: View {
-    @Binding var tuning: ThemeTuning
-    @Shared(.agentChange) private var change
-    private let state = DesignSurfaceState.shared
-
-    var body: some View {
-        if let change {
-            Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(change.summary)
-                    Text(change.changedAt, format: .dateTime.hour().minute().second())
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("tuning.agentChange")
-                HStack {
-                    Button("Undo", systemImage: "arrow.uturn.backward") {
-                        withAnimation(ToolChrome.animation) { change.undo(tuning: &tuning, knobs: state.knobs) }
-                        $change.withLock { $0 = nil }
-                    }
-                    .accessibilityIdentifier("tuning.agentChange.undo")
-                    Spacer()
-                    Button("Keep", systemImage: "checkmark") {
-                        $change.withLock { $0 = nil }
-                    }
-                    .accessibilityIdentifier("tuning.agentChange.keep")
-                }
-                .buttonStyle(.borderless)
-            } header: {
-                Text("From the agent")
-            }
-        }
-    }
-}
-
-/// The notes a person leaves for the agent: one about the selected item or,
-/// with nothing selected, about the screen. Open notes list newest first
-/// with what they are about; a resolved note stays in the file for the
-/// agent and leaves the list.
-private struct NotesSection: View {
-    let selection: ItemSelection
-    let tuning: ThemeTuning
-    @Shared(.designNotes) private var notes
-    @State private var isWriting = false
-    /// The file name of the last screenshot taken from the camera button.
-    @State private var captured: String?
-    private let state = DesignSurfaceState.shared
-
-    private static let stamp: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd-HHmmss"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
-
-    private var open: [DesignNote] { notes.filter { !$0.resolved }.reversed() }
-    private var answered: [DesignNote] { notes.filter(\.resolved).reversed() }
-
-    var body: some View {
-        Section {
-            ForEach(open) { note in
-                NoteRow(note: note, about: note.item.map(state.title) ?? note.screen ?? "Screen")
-                    .accessibilityIdentifier("tuning.note")
-                    .swipeActions {
-                        Button("Delete", systemImage: "trash", role: .destructive) {
-                            $notes.withLock { $0.removeAll { $0.id == note.id } }
-                        }
-                    }
-            }
-            if !answered.isEmpty {
-                DisclosureGroup("Answered (\(answered.count))") {
-                    ForEach(answered) { note in
-                        NoteRow(note: note, about: note.item.map(state.title) ?? note.screen ?? "Screen")
-                            .accessibilityIdentifier("tuning.note.answered")
-                            .swipeActions {
-                                Button("Reopen", systemImage: "arrow.uturn.backward") {
-                                    $notes.withLock { notes in
-                                        if let index = notes.firstIndex(where: { $0.id == note.id }) { notes[index].reopen() }
-                                    }
-                                }
-                                .tint(ToolChrome.accent)
-                                Button("Delete", systemImage: "trash", role: .destructive) {
-                                    $notes.withLock { $0.removeAll { $0.id == note.id } }
-                                }
-                            }
-                    }
-                }
-                .accessibilityIdentifier("tuning.notes.answered")
-            }
-            Button(selection.item == nil ? "Note this screen" : "Note this item", systemImage: "square.and.pencil") {
-                // A field inside a sheet takes focus only in the key window.
-                DesignSurfaceWindow.shared.setKey(true)
-                isWriting = true
-            }
-            .accessibilityIdentifier("tuning.note.add")
-            Button(captured == nil ? "Capture the screen" : "Captured \(captured!)", systemImage: "camera") {
-                let name = "screen-" + Self.stamp.string(from: .now)
-                captured = DesignContext.saveScreenshot(named: name, state: state).map { _ in name + ".png" }
-                DesignContext.write(state: state, tuning: tuning)
-            }
-            .accessibilityIdentifier("tuning.capture")
-        } header: {
-            Text("Notes for the agent")
-        } footer: {
-            Text("Saved to design-notes.json beside the tokens, with the item, the tokens it reads, its knobs, the preset code, and a screenshot under notes/. The screen's items and frames are in design-context.json.")
-        }
-        .sheet(isPresented: $isWriting, onDismiss: { DesignSurfaceWindow.shared.setKey(false) }) {
-            NoteSheet(about: selection.item.map(state.title) ?? state.screen ?? "this screen") { text in
-                var note = DesignNote.take(text, selection: selection, tuning: tuning, state: state)
-                note.screenshot = DesignContext.saveScreenshot(named: note.id.uuidString, state: state)
-                $notes.withLock { $0.append(note) }
-                DesignContext.write(state: state, tuning: tuning, screenshot: note.screenshot)
-            }
-        }
-    }
-}
-
-/// One note: its text, what it is about, and the agent's reply once it
-/// has one, with the files the agent changed.
-private struct NoteRow: View {
-    let note: DesignNote
-    let about: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(note.text)
-            Text(verbatim: about)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            if let reply = note.reply {
-                Label(reply, systemImage: "arrowshape.turn.up.left")
-                    .font(.footnote)
-                    .padding(.top, 2)
-                if let files = note.changedFiles, !files.isEmpty {
-                    Text(files.joined(separator: ", "))
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .accessibilityElement(children: .combine)
-    }
-}
-
-/// The note's text. The draft lives with the sheet, so dismissing it keeps nothing.
-private struct NoteSheet: View {
-    let about: String
-    let save: (String) -> Void
-    @State private var text = ""
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.registryTheme) private var theme
-
-    private var trimmed: String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
-
-    var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("About \(about). The agent reads it with the item, its tokens, and the theme that is up now.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                TextEditor(text: $text)
-                    .accessibilityLabel(Text("Note"))
-                    .frame(minHeight: 160)
-                    .padding(theme.metrics.compactSpacing)
-                    .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.metrics.controlRadius))
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("Note for the agent")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        save(trimmed)
-                        dismiss()
-                    }
-                    .disabled(trimmed.isEmpty)
-                }
-            }
-        }
-    }
-}
-
 private struct PresetsSection<Footer: View>: View {
     @Binding var tuning: ThemeTuning
     let footer: Footer
 
     var body: some View {
         Section("Presets") {
-            ScrollView(.horizontal) {
-                HStack(spacing: 8) {
-                    ForEach(RegistryTheme.presets) { preset in
-                        Button(preset.name) {
-                            withAnimation(ToolChrome.animation) { tuning.apply(presetNamed: preset.name) }
-                        }
-                        // A native style, not the registry button item: the
-                        // panel is a package product and items are copied source.
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .registryTheme(preset.theme)
-                    }
-                }
+            PresetChips { name in
+                withAnimation(ToolChrome.animation) { tuning.apply(presetNamed: name) }
             }
-            .scrollIndicators(.hidden)
-            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-
             footer
         }
     }
 }
 
-/// The themes an agent staged in `design-variants.json`, one chip each; a
-/// tap applies the code and records the pick as `chosen`. Hidden until the
-/// file names a variant. A chip reads selected while the knobs still match
-/// its code, so a knob moved afterwards clears it without clearing the pick.
-private struct VariantsSection: View {
-    @Binding var tuning: ThemeTuning
-    @Shared(.designVariants) private var variants
+/// One chip per foundation preset, each in its own theme, in a row that scrolls.
+struct PresetChips: View {
+    let apply: (String) -> Void
 
     var body: some View {
-        if !variants.variants.isEmpty {
-            Section {
-                ScrollView(.horizontal) {
-                    HStack(spacing: 8) {
-                        ForEach(variants.variants) { variant in
-                            VariantChip(variant: variant, isCurrent: variants.matching(tuning)?.name == variant.name) {
-                                guard let picked = variants.tuning(for: variant, base: tuning) else { return }
-                                withAnimation(ToolChrome.animation) { tuning = picked }
-                                $variants.withLock { $0.chosen = variant.name }
-                            }
-                        }
-                    }
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(RegistryTheme.presets) { preset in
+                    Button(preset.name) { apply(preset.name) }
+                        // A native style, not the registry button item: the
+                        // panel is a package product and items are copied source.
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .registryTheme(preset.theme)
+                        .accessibilityIdentifier("tuning.preset.\(preset.name)")
                 }
-                .scrollIndicators(.hidden)
-                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-            } header: {
-                Text("Variants from the agent")
-            } footer: {
-                Text(variants.chosen.map { "Chosen: \($0). The pick is written to design-variants.json." }
-                    ?? "Staged in design-variants.json. A tap applies the code and records the pick.")
             }
         }
-    }
-}
-
-private struct VariantChip: View {
-    let variant: DesignVariants.Variant
-    let isCurrent: Bool
-    let action: () -> Void
-
-    var body: some View {
-        // A native style, not the registry button item: the panel is a
-        // package product and items are copied source.
-        Button(variant.name, action: action)
-            .buttonStyle(isCurrent ? AnyButtonStyle(.borderedProminent) : AnyButtonStyle(.bordered))
-            .controlSize(.small)
-            .accessibilityAddTraits(isCurrent ? [.isSelected] : [])
-            .accessibilityIdentifier("tuning.variant.\(variant.name)")
-    }
-}
-
-/// A button style chosen at runtime, erased once so the chip's chain stays one expression.
-private struct AnyButtonStyle: PrimitiveButtonStyle {
-    private let make: (Configuration) -> AnyView
-
-    init<Style: PrimitiveButtonStyle>(_ style: Style) {
-        make = { AnyView(style.makeBody(configuration: $0)) }
-    }
-
-    func makeBody(configuration: Configuration) -> some View { make(configuration) }
-}
-
-/// The device to code hand-off: one tap writes design-handoff.json with the
-/// theme, the chosen variant, the moved knobs, the open notes, and the
-/// checkpoints, and takes a screenshot; the agent reads it with read_handoff
-/// and writes the theme and the knob defaults into source.
-private struct HandoffSection: View {
-    let tuning: ThemeTuning
-    @Shared(.designVariants) private var variants
-    @Shared(.designNotes) private var notes
-    @Shared(.designHistory) private var history
-    @State private var sentAt: Date?
-    private let state = DesignSurfaceState.shared
-
-    var body: some View {
-        Section {
-            Button("Send to agent", systemImage: "paperplane") {
-                let screenshot = DesignContext.saveScreenshot(named: "handoff", state: state)
-                let handoff = DesignHandoff.capture(
-                    tuning: tuning, knobs: state.knobs.values, variants: variants, notes: notes,
-                    history: history, screenshot: screenshot)
-                if handoff.write() { sentAt = handoff.sentAt }
-            }
-            .accessibilityIdentifier("tuning.handoff")
-            if let sentAt {
-                LabeledContent("Sent") {
-                    Text(sentAt, format: .dateTime.hour().minute().second())
-                }
-                .accessibilityIdentifier("tuning.handoff.sent")
-            }
-        } header: {
-            Text("Hand off")
-        } footer: {
-            Text("Writes design-handoff.json: the theme as a code and as Swift, the chosen variant, the moved knobs, the open notes, and the checkpoints. The agent reads it with read_handoff and writes the theme and the knob defaults into source.")
-        }
+        .scrollIndicators(.hidden)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
     }
 }
 
 /// The preset code and the Swift, the two ways the tuned theme leaves the app.
-private struct ExportSection: View {
+struct ExportSection: View {
     let tuning: ThemeTuning
     @State private var isShowingSwift = false
 
@@ -762,12 +196,15 @@ private struct ExportSection: View {
             LabeledContent {
                 CopyButton("Copy Code", text: "--preset \(tuning.presetCode)")
                     .labelStyle(.iconOnly)
+                    .accessibilityIdentifier("tuning.copyCode")
             } label: {
                 Text("Preset code")
                 Text(verbatim: tuning.presetCode)
                     .font(.footnote.monospaced())
                     .textSelection(.enabled)
             }
+            CopyButton("Copy Swift", text: tuning.swiftSource)
+                .accessibilityIdentifier("tuning.copySwift")
             DisclosureGroup("Swift", isExpanded: $isShowingSwift) {
                 CodeBlock(tuning.swiftSource)
                 Text("Paste this once at your scene root. Every registry item you install inherits it.")
@@ -851,6 +288,7 @@ private struct ContrastRow: View {
 
 private struct AccentSection: View {
     @Binding var tuning: ThemeTuning
+    @Binding var color: ThemeTuning
 
     var body: some View {
         Section("Accent") {
@@ -868,10 +306,10 @@ private struct AccentSection: View {
             }
             .padding(.vertical, 4)
 
-            ColorPicker("Custom accent", selection: $tuning.customAccentColor, supportsOpacity: false)
+            ColorPicker("Custom accent", selection: $color.customAccentColor, supportsOpacity: false)
             Toggle("Separate dark accent", isOn: $tuning.hasSeparateDarkAccent)
             if tuning.customAccentDark != nil {
-                ColorPicker("Custom accent in dark", selection: $tuning.customAccentDarkColor, supportsOpacity: false)
+                ColorPicker("Custom accent in dark", selection: $color.customAccentDarkColor, supportsOpacity: false)
             }
             Toggle("Dark label on accent", isOn: $tuning.darkLabelOnAccent)
                 .disabled(tuning.accent == .ink)
@@ -969,6 +407,7 @@ private struct DensitySection: View {
 
 private struct ColorsSection: View {
     @Binding var tuning: ThemeTuning
+    @Binding var color: ThemeTuning
 
     var body: some View {
         Section("Colors") {
@@ -976,25 +415,25 @@ private struct ColorsSection: View {
                 name: "Background",
                 identifier: "background",
                 isOn: $tuning.hasBackground,
-                color: $tuning.backgroundColor,
+                color: $color.backgroundColor,
                 hasDark: $tuning.hasBackgroundDark,
-                darkColor: $tuning.backgroundDarkColor
+                darkColor: $color.backgroundDarkColor
             )
             ColorPairRows(
                 name: "Foreground",
                 identifier: "foreground",
                 isOn: $tuning.hasForeground,
-                color: $tuning.foregroundColor,
+                color: $color.foregroundColor,
                 hasDark: $tuning.hasForegroundDark,
-                darkColor: $tuning.foregroundDarkColor
+                darkColor: $color.foregroundDarkColor
             )
             ColorPairRows(
                 name: "Secondary foreground",
                 identifier: "secondaryForeground",
                 isOn: $tuning.hasSecondaryForeground,
-                color: $tuning.secondaryForegroundColor,
+                color: $color.secondaryForegroundColor,
                 hasDark: $tuning.hasSecondaryForegroundDark,
-                darkColor: $tuning.secondaryForegroundDarkColor
+                darkColor: $color.secondaryForegroundDarkColor
             )
         }
     }
@@ -1028,16 +467,17 @@ private struct ColorPairRows: View {
 
 private struct SurfaceSection: View {
     @Binding var tuning: ThemeTuning
+    let hold: (Bool) -> Void
 
     var body: some View {
         Section("Surface") {
-            TuningSlider("Surface opacity", value: $tuning.surfaceOpacity, in: 0...0.2, step: 0.005, fraction: 3)
-            TuningSlider("Surface step", value: $tuning.surfaceStep, in: 0...0.07, step: 0.01, fraction: 2)
+            TuningSlider("Surface opacity", value: $tuning.surfaceOpacity, in: 0...0.2, step: 0.005, fraction: 3, hold: hold)
+            TuningSlider("Surface step", value: $tuning.surfaceStep, in: 0...0.07, step: 0.01, fraction: 2, hold: hold)
                 .accessibilityIdentifier("tuning.surfaceStep")
             SurfaceLadderPreview(opacity: tuning.surfaceOpacity, step: tuning.surfaceStep)
-            TuningSlider("Border opacity", value: $tuning.borderOpacity, in: 0...0.3, step: 0.01, fraction: 2)
-            TuningSlider("Border width", value: $tuning.borderWidth, in: 0.5...3, step: 0.5, fraction: 1)
-            TuningSlider("Emphasized border", value: $tuning.emphasizedBorderWidth, in: 1...4, step: 0.5, fraction: 1)
+            TuningSlider("Border opacity", value: $tuning.borderOpacity, in: 0...0.3, step: 0.01, fraction: 2, hold: hold)
+            TuningSlider("Border width", value: $tuning.borderWidth, in: 0.5...3, step: 0.5, fraction: 1, hold: hold)
+            TuningSlider("Emphasized border", value: $tuning.emphasizedBorderWidth, in: 1...4, step: 0.5, fraction: 1, hold: hold)
         }
     }
 }
@@ -1080,117 +520,38 @@ private struct SurfaceLadderPreview: View {
 
 private struct RadiusSection: View {
     @Binding var tuning: ThemeTuning
+    let hold: (Bool) -> Void
 
     var body: some View {
         Section("Radius") {
-            TuningSlider("Compact", value: $tuning.compactRadius, in: 0...12, step: 1)
-            TuningSlider("Control", value: $tuning.controlRadius, in: 0...22, step: 1)
-            TuningSlider("Card", value: $tuning.cardRadius, in: 0...32, step: 1)
+            TuningSlider("Compact", value: $tuning.compactRadius, in: 0...12, step: 1, hold: hold)
+            TuningSlider("Control", value: $tuning.controlRadius, in: 0...22, step: 1, hold: hold)
+            TuningSlider("Card", value: $tuning.cardRadius, in: 0...32, step: 1, hold: hold)
         }
     }
 }
 
 private struct SpacingSection: View {
     @Binding var tuning: ThemeTuning
+    let hold: (Bool) -> Void
 
     var body: some View {
         Section("Spacing") {
-            TuningSlider("Compact", value: $tuning.compactSpacing, in: 4...16, step: 1)
-            TuningSlider("Standard", value: $tuning.standardSpacing, in: 8...32, step: 1)
-            TuningSlider("Section", value: $tuning.sectionSpacing, in: 12...48, step: 1)
-            TuningSlider("Control padding", value: $tuning.controlHorizontalPadding, in: 8...24, step: 1)
+            TuningSlider("Compact", value: $tuning.compactSpacing, in: 4...16, step: 1, hold: hold)
+            TuningSlider("Standard", value: $tuning.standardSpacing, in: 8...32, step: 1, hold: hold)
+            TuningSlider("Section", value: $tuning.sectionSpacing, in: 12...48, step: 1, hold: hold)
+            TuningSlider("Control padding", value: $tuning.controlHorizontalPadding, in: 8...24, step: 1, hold: hold)
         }
     }
 }
 
 private struct StateSection: View {
     @Binding var tuning: ThemeTuning
+    let hold: (Bool) -> Void
 
     var body: some View {
         Section("State") {
-            TuningSlider("Disabled opacity", value: $tuning.disabledOpacity, in: 0.2...0.8, step: 0.05, fraction: 2)
-        }
-    }
-}
-
-private struct EnvironmentSection: View {
-    @Binding var tuning: ThemeTuning
-
-    var body: some View {
-        Section("Environment") {
-            Picker("Appearance", selection: $tuning.appearance) {
-                ForEach(ThemeTuning.Appearance.allCases) { Text($0.title).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            Picker("Text size", selection: $tuning.textSize) {
-                ForEach(ThemeTuning.TextSize.allCases) { Text($0.title).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            Toggle("Right to left", isOn: $tuning.rightToLeft)
-        }
-    }
-}
-
-/// Paste a preset code, with or without its `--preset` flag, or a
-/// `RegistryTheme(...)` initializer in the shape Copy Swift produces, to load
-/// it into the knobs. Typing into the editor is a keyboard paste, which never
-/// raises the system pasteboard prompt.
-/// The draft and its failure live with the sheet: they exist only while it
-/// is up, so the panel cannot hold a stale draft or a failure after dismissal.
-private struct ImportThemeSheet: View {
-    let apply: (String) -> Bool
-    @State private var text = ""
-    @State private var failed = false
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.registryTheme) private var theme
-
-    private var fieldShape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: theme.metrics.controlRadius, style: .continuous)
-    }
-
-    var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Paste a preset code or a RegistryTheme initializer. A code replaces every knob; an initializer replaces the knobs it names and the rest keep their values.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                // Native chrome, not the registry textarea item: the panel is a
-                // package product and items are copied source.
-                TextEditor(text: $text)
-                    .accessibilityLabel(Text("Preset code or Swift"))
-                    .frame(minHeight: 240)
-                    .padding(theme.metrics.compactSpacing)
-                    .background(theme.surface, in: fieldShape)
-                    .overlay {
-                        fieldShape.stroke(
-                            failed ? Color.red : theme.border,
-                            lineWidth: failed ? theme.metrics.emphasizedBorderWidth : theme.metrics.borderWidth
-                        )
-                    }
-                    .font(.footnote.monospaced())
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                if failed {
-                    Text("No preset code or RegistryTheme( initializer found in the pasted text.")
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                }
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("Import theme")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Apply") {
-                        if apply(text) { dismiss() } else { failed = true }
-                    }
-                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
+            TuningSlider("Disabled opacity", value: $tuning.disabledOpacity, in: 0.2...0.8, step: 0.05, fraction: 2, hold: hold)
         }
     }
 }
@@ -1201,19 +562,23 @@ private struct TuningSlider: View {
     let range: ClosedRange<Double>
     let step: Double
     let fraction: Int
+    /// Told when the touch goes down and comes up, so a drag is one version.
+    let hold: (Bool) -> Void
 
     init(
         _ title: LocalizedStringResource,
         value: Binding<Double>,
         in range: ClosedRange<Double>,
         step: Double,
-        fraction: Int = 0
+        fraction: Int = 0,
+        hold: @escaping (Bool) -> Void
     ) {
         self.title = title
         _value = value
         self.range = range
         self.step = step
         self.fraction = fraction
+        self.hold = hold
     }
 
     var body: some View {
@@ -1229,7 +594,7 @@ private struct TuningSlider: View {
             .font(.subheadline)
             Slider(value: $value, in: range, step: step) {
                 Text(title)
-            }
+            } onEditingChanged: { hold($0) }
         }
     }
 }

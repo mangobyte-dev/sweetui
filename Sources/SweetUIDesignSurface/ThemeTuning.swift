@@ -129,6 +129,19 @@ public struct ThemeTuning: Equatable, Sendable {
     /// The font design the theme carries, applied by `registryTheme(_:)` through
     /// `fontDesign(_:)`. A custom family is never a knob: it lives in the Swift
     /// export and the theme package, not in a code.
+    /// Preview's layout direction: the system's, or one forced either way.
+    public enum Direction: String, Codable, CaseIterable, Identifiable, Sendable {
+        case system, leftToRight, rightToLeft
+        public var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .system: "System"
+            case .leftToRight: "Left to right"
+            case .rightToLeft: "Right to left"
+            }
+        }
+    }
+
     public enum FontDesign: String, Codable, CaseIterable, Identifiable, Sendable {
         case `default`, rounded, serif, monospaced
         public var id: String { rawValue }
@@ -227,7 +240,14 @@ public struct ThemeTuning: Equatable, Sendable {
     /// export; the surface applies them around the tuned subtree.
     public var appearance: Appearance = .system
     public var textSize: TextSize = .system
-    public var rightToLeft = false
+    public var direction: Direction = .system
+
+    /// Whether Preview forces right to left; setting `false` returns to the
+    /// system direction.
+    public var rightToLeft: Bool {
+        get { direction == .rightToLeft }
+        set { direction = newValue ? .rightToLeft : .system }
+    }
 
     public static let `default` = ThemeTuning()
 
@@ -395,6 +415,14 @@ public struct ThemeTuning: Equatable, Sendable {
         case .system: nil
         case .light: .light
         case .dark: .dark
+        }
+    }
+
+    public var layoutDirection: LayoutDirection? {
+        switch direction {
+        case .system: nil
+        case .leftToRight: .leftToRight
+        case .rightToLeft: .rightToLeft
         }
     }
 

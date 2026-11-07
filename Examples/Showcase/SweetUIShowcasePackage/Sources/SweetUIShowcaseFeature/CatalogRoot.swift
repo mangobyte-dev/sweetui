@@ -64,6 +64,8 @@ struct CatalogRoot: View {
             }
             .accessibilityIdentifier("tuning.mango")
         }
+        // The Showcase's own theme, which shows while Tune sets no token.
+        .registryTheme(ThemeTuning.default.theme)
     }
 }
 

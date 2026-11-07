@@ -14,7 +14,8 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(name: "SweetUI", path: "../../..")
+        .package(name: "SweetUI", path: "../../.."),
+        .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0")
     ],
     targets: [
         .target(
@@ -32,7 +33,10 @@ let package = Package(
         ),
         .testTarget(
             name: "SweetUIShowcaseFeatureTests",
-            dependencies: ["SweetUIShowcaseFeature"]
+            dependencies: [
+                "SweetUIShowcaseFeature",
+                .product(name: "DependenciesTestSupport", package: "swift-dependencies")
+            ]
         )
     ]
 )

@@ -24,6 +24,25 @@ func simlessFixtures(_ r: SimlessRegistry) {
         tuning.accent = .green
         return TunePanelFixture(tuning: tuning)
     }
+    r.add("TuneCardTokens") { TuneCardFixture(place: .tokens) }
+    r.add("TuneCardNotes") { TuneCardFixture(place: .notes) }
+    r.add("TuneCardVersions") { TuneCardFixture(place: .versions) }
+    r.add("TuneCardTokensAX") { TuneCardFixture(place: .tokens, accessibility: true) }
+    r.add("TuneCardNotesAX") { TuneCardFixture(place: .notes, accessibility: true) }
+    r.add("TuneCardVersionsAX") { TuneCardFixture(place: .versions, accessibility: true) }
+}
+
+/// Tune's card at its smallest: 300 × 260, or 300 × 360 at an accessibility
+/// text size, where the place picker becomes a menu.
+private struct TuneCardFixture: View {
+    let place: DesignSurface.Place
+    var accessibility = false
+
+    var body: some View {
+        DesignSurface.card(at: place)
+            .frame(width: 300, height: accessibility ? 360 : 260)
+            .dynamicTypeSize(accessibility ? .accessibility3 : .large)
+    }
 }
 
 /// The embedded panel over a fixed tuning, as the Showcase previews host it.

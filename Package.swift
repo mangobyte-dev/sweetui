@@ -63,6 +63,7 @@ let package = Package(
             name: "SweetUIDesignSurface",
             dependencies: [
                 "SweetUIFoundations",
+                .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "Sharing", package: "swift-sharing")
             ]
         ),
