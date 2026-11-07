@@ -331,7 +331,16 @@ private struct NotesSection: View {
     let tuning: ThemeTuning
     @Shared(.designNotes) private var notes
     @State private var isWriting = false
+    /// The file name of the last screenshot taken from the camera button.
+    @State private var captured: String?
     private let state = DesignSurfaceState.shared
+
+    private static let stamp: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
 
     private var open: [DesignNote] { notes.filter { !$0.resolved }.reversed() }
 
@@ -358,15 +367,23 @@ private struct NotesSection: View {
                 isWriting = true
             }
             .accessibilityIdentifier("tuning.note.add")
+            Button(captured == nil ? "Capture the screen" : "Captured \(captured!)", systemImage: "camera") {
+                let name = "screen-" + Self.stamp.string(from: .now)
+                captured = DesignContext.saveScreenshot(named: name, state: state).map { _ in name + ".png" }
+                DesignContext.write(state: state, tuning: tuning)
+            }
+            .accessibilityIdentifier("tuning.capture")
         } header: {
             Text("Notes for the agent")
         } footer: {
-            Text("Saved to design-notes.json beside the tokens, with the item, the tokens it reads, its knobs, and the preset code.")
+            Text("Saved to design-notes.json beside the tokens, with the item, the tokens it reads, its knobs, the preset code, and a screenshot under notes/. The screen's items and frames are in design-context.json.")
         }
         .sheet(isPresented: $isWriting, onDismiss: { DesignSurfaceWindow.shared.setKey(false) }) {
             NoteSheet(about: selection.item.map(state.title) ?? state.screen ?? "this screen") { text in
-                let note = DesignNote.take(text, selection: selection, tuning: tuning, state: state)
+                var note = DesignNote.take(text, selection: selection, tuning: tuning, state: state)
+                note.screenshot = DesignContext.saveScreenshot(named: note.id.uuidString, state: state)
                 $notes.withLock { $0.append(note) }
+                DesignContext.write(state: state, tuning: tuning, screenshot: note.screenshot)
             }
         }
     }

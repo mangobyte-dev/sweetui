@@ -76,6 +76,7 @@ public struct MCPServer {
       [
         "search_items", "describe_item", "plan_install", "diff_item", "install_item",
         "describe_preset", "apply_preset", "list_design_notes", "resolve_design_note",
+        "get_design_context",
       ].contains(name)
     else {
       throw InvalidParams(message: "Unknown tool: \(params["name"].string ?? "None")")
@@ -148,6 +149,13 @@ public struct MCPServer {
           "A note names the item and the tokens it reads; tune those tokens or the item's source, then call resolve_design_note with its id"
         ],
       ]
+    }
+    if tool == "get_design_context" {
+      let file = try AppContainer.locate(
+        DesignContext.fileName, file: optional(arguments, "file"),
+        udid: optional(arguments, "udid"),
+        bundleId: optional(arguments, "bundleId"))
+      return ["file": .string(file), "context": OrderedJSON(try DesignContext.read(file: file))]
     }
     if tool == "resolve_design_note" {
       let file = try notesFile(arguments)

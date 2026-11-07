@@ -26,6 +26,14 @@
   the code over the current tuning (the environment switches stay) and writes the pick back as
   `chosen`. A chip reads selected while the knobs still match its code. No build or capture per
   variant: a preset code applies at runtime. A code the panel cannot decode applies nothing.
+- The agent's eyes. While the panel is up it rewrites `design-context.json` beside the tokens when
+  the screen, its items, the selection, the theme, or a knob changes (never on a scroll): the named
+  screen, every registry item on it with its frame in window points, ancestors, the tokens it reads
+  and its moved knobs, the selection chain, the preset code, the environment switches, and the last
+  screenshot. Saving a note, or the Capture the screen button, renders the app's window without the
+  tool's own window, outlines the selected item, and saves `notes/<id>.png`; a note carries its
+  `screenshot` path. MCP `get_design_context` returns the file with absolute screenshot paths, so
+  an agent reads what the person saw, as Figma's `get_screenshot` lets its agent do.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
   background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only

@@ -63,6 +63,23 @@ final class DesignSurfaceWindow {
         setKey(fieldWindow === window)
     }
 
+    /// The app's window as an image, without this window's button, card,
+    /// or outlines, with `frame` (window points) stroked over it so the
+    /// agent sees which item the note is about.
+    func appImage(outlining frame: CGRect?) -> UIImage? {
+        guard let app = appWindow ?? window?.windowScene?.windows.first(where: { $0 !== window }) else {
+            return nil
+        }
+        let renderer = UIGraphicsImageRenderer(bounds: app.bounds)
+        return renderer.image { context in
+            app.drawHierarchy(in: app.bounds, afterScreenUpdates: false)
+            guard let frame else { return }
+            context.cgContext.setStrokeColor(UIColor.systemBlue.cgColor)
+            context.cgContext.setLineWidth(2)
+            context.cgContext.stroke(frame.insetBy(dx: -2, dy: -2))
+        }
+    }
+
     /// The window's safe area in window points, the region the card is
     /// clamped into. Read from the window rather than a geometry reader,
     /// whose reported insets depend on where it sits in the tree (measured
@@ -125,6 +142,13 @@ private struct DesignSurfaceOverlayRoot: View {
     @Environment(\.layoutDirection) private var direction
     @Bindable private var state = DesignSurfaceState.shared
 
+    /// What a context rewrite waits for; a scroll moves frames, not this.
+    private var contextKey: [String] {
+        [state.isPresented ? "up" : "down", state.screen ?? "", tuning.presetCode, state.selection.item ?? ""]
+            + state.visibleItemNames.map(\.name)
+            + state.knobs.values.flatMap { item, knobs in knobs.map { "\(item).\($0.key)=\($0.value)" } }.sorted()
+    }
+
     var body: some View {
         ZStack {
             if !state.isEnabled {
@@ -175,6 +199,12 @@ private struct DesignSurfaceOverlayRoot: View {
                 DesignSurfaceWindow.shared.setKey(false)
                 DesignSurfaceWindow.shared.hitRects["panel"] = nil
             }
+        }
+        // The agent's view of the screen follows the panel: rewritten when
+        // the screen, its items, the selection, the theme, or a knob changes,
+        // never on a scroll (frames are read at write time).
+        .onChange(of: contextKey, initial: true) { _, _ in
+            if state.isPresented { DesignContext.write(state: state, tuning: tuning) }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
             state.keyboardFrame = (note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect) ?? .zero

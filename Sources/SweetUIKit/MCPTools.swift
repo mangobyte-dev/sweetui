@@ -226,6 +226,30 @@ extension MCPServer {
             }
           },
           {
+            "name": "get_design_context",
+            "title": "Get the design context",
+            "description": "What the person sees on the device while the Tune panel is up (design-context.json): the named screen, every registry item on it with its frame in window points, the tokens it reads and its moved knobs, the selection, the preset code, the environment switches, and the screenshots saved under notes/ (absolute paths; read one to see the screen). Locate the file as list_design_notes does.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "Path of design-context.json"
+                },
+                "udid": {
+                  "type": "string"
+                },
+                "bundleId": {
+                  "type": "string"
+                }
+              }
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "idempotentHint": true
+            }
+          },
+          {
             "name": "resolve_design_note",
             "title": "Resolve a design note",
             "description": "Mark a note resolved in design-notes.json once its work is done; the Tune panel then drops it from its list. Locate the file as list_design_notes does.",

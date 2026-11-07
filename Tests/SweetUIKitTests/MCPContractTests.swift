@@ -40,6 +40,7 @@ extension Commands {
         Set(tools.map { $0["name"].text }) == [
           "search_items", "describe_item", "plan_install", "diff_item", "install_item",
           "describe_preset", "apply_preset", "list_design_notes", "resolve_design_note",
+          "get_design_context",
         ])
       for tool in tools { #expect(tool["inputSchema"]["type"] == "object") }
       let search = try rpc(server, call(3, "search_items", ["query": "dropdown"]))

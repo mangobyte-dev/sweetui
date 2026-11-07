@@ -219,12 +219,12 @@ Unmodified files update; local edits stay; disjoint edits merge via `git merge-f
 
 Add `"--registry", "/path/to/clone"` to `args` to serve checkout, not pinned snapshot.
 
-Nine tools, each CLI counterpart but the two note tools (MCP only), over JSON-RPC on stdin/stdout: `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`, `list_design_notes`, `resolve_design_note`.
+Ten tools, each CLI counterpart but the three design-surface tools (MCP only), over JSON-RPC on stdin/stdout: `search_items`, `describe_item`, `plan_install`, `diff_item`, `install_item`, `describe_preset`, `apply_preset`, `list_design_notes`, `resolve_design_note`, `get_design_context`.
 
 - **DO** rely on hints: read-only tools carry `readOnlyHint`; `install_item` carries `destructiveHint`.
 - **DO** expect metadata reloads every call; clone edits show without restart.
 - **DO NOT** parse log lines; logs go to stderr, stdout stays clean JSON-RPC.
-- **DO** read `list_design_notes` (`file`, or `udid` + `bundleId` for the simulator app container) before tuning a screen a person reviewed: each note names the item, its chain, the tokens it reads, its knobs, frame, and preset code. Act on it, then `resolve_design_note` with its `id`; the Tune panel drops it.
+- **DO** read `list_design_notes` (`file`, or `udid` + `bundleId` for the simulator app container) before tuning a screen a person reviewed: each note names the item, its chain, the tokens it reads, its knobs, frame, and preset code. `get_design_context` gives the screen as the person sees it: every item with its frame and tokens, the preset code, and the screenshots under `notes/` (read one). Act on it, then `resolve_design_note` with its `id`; the Tune panel drops it.
 
 ## Working from a clone or snapshot
 

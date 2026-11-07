@@ -120,4 +120,49 @@ struct DesignNotesTests {
       #expect(typed["result"]["isError"] == true)
     }
   }
+
+  @Test func contextReadsTheScreenAndListsScreenshots() throws {
+    let fs = try fixture()
+    try fs.createDirectory("/app")
+    try fs.createDirectory("/app/notes")
+    try fs.write(Data([0x89, 0x50]), to: "/app/notes/screen-1.png")
+    try fs.write(Data("not a capture".utf8), to: "/app/notes/readme.txt")
+    try fs.write(
+      Data(
+        #"""
+        {
+          "capturedAt" : "2026-11-07T00:40:00Z",
+          "screen" : "button",
+          "stage" : { "height" : 852, "width" : 393, "x" : 0, "y" : 0 },
+          "selectedItem" : "button",
+          "selectionChain" : ["button"],
+          "items" : [ { "name" : "button", "title" : "button", "frame" : { "x" : 16, "y" : 200, "width" : 120, "height" : 36 }, "ancestors" : [], "tokens" : ["accent"], "knobs" : {} } ],
+          "presetCode" : "a13GkaOXWwIF",
+          "appearance" : "system",
+          "textSize" : "system",
+          "rightToLeft" : false,
+          "screenshot" : "notes/screen-1.png"
+        }
+        """#.utf8), to: "/app/design-context.json")
+    try withFixture(fs) {
+      let context = try DesignContext.read(file: "/app/design-context.json")
+      #expect(context["screen"] == "button")
+      #expect(context["items"].array?.first?["tokens"].strings == ["accent"])
+      #expect(context["screenshots"].strings == ["/app/notes/screen-1.png"])
+      #expect(context["screenshotPath"] == "/app/notes/screen-1.png")
+      #expect(throws: RegistryError.self) { try DesignContext.read(file: "/app/missing.json") }
+
+      let server = MCPServer(root: "/registry")
+      let request: JSON = [
+        "jsonrpc": "2.0", "id": 9, "method": "tools/call",
+        "params": [
+          "name": "get_design_context", "arguments": ["file": "/app/design-context.json"],
+        ],
+      ]
+      let response = try JSON.read(
+        Data(try #require(try server.response(to: Data(request.rendered().utf8))).utf8))
+      #expect(response["result"]["isError"] == false)
+      #expect(response["result"]["structuredContent"]["context"]["presetCode"] == "a13GkaOXWwIF")
+    }
+  }
 }

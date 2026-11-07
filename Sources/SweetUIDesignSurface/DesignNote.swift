@@ -29,6 +29,8 @@ public struct DesignNote: Codable, Equatable, Identifiable, Sendable {
     public var frame: Frame?
     /// The preset code that was up when the note was taken.
     public var presetCode: String
+    /// The screenshot taken with the note, relative to Documents (`notes/<id>.png`).
+    public var screenshot: String? = nil
     public var resolved = false
 
     public init(
