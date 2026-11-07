@@ -1,4 +1,5 @@
 #if canImport(UIKit)
+import Sharing
 import SwiftUI
 import SweetUIFoundations
 
@@ -76,6 +77,9 @@ public struct TuningPanel<PresetsFooter: View>: View {
                     if showsScreen {
                         ItemKnobsSection(item: item)
                     }
+                }
+                if showsScreen, let selection {
+                    NotesSection(selection: selection.wrappedValue, tuning: tuning)
                 }
                 if showsScreen, let host = DesignSurfaceState.shared.hostTokens {
                     HostTokensSection(store: host)
@@ -312,6 +316,98 @@ private struct ScopeSection: View {
                     .font(.body.monospaced())
                     .accessibilityIdentifier("tuning.scope.item")
                 Text("\(tokenCount) tokens reach it")
+            }
+        }
+    }
+}
+
+/// The notes a person leaves for the agent: one about the selected item or,
+/// with nothing selected, about the screen. Open notes list newest first
+/// with what they are about; a resolved note stays in the file for the
+/// agent and leaves the list.
+private struct NotesSection: View {
+    let selection: ItemSelection
+    let tuning: ThemeTuning
+    @Shared(.designNotes) private var notes
+    @State private var isWriting = false
+    private let state = DesignSurfaceState.shared
+
+    private var open: [DesignNote] { notes.filter { !$0.resolved }.reversed() }
+
+    var body: some View {
+        Section {
+            ForEach(open) { note in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(note.text)
+                    Text(verbatim: note.item.map(state.title) ?? note.screen ?? "Screen")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("tuning.note")
+                .swipeActions {
+                    Button("Delete", systemImage: "trash", role: .destructive) {
+                        $notes.withLock { $0.removeAll { $0.id == note.id } }
+                    }
+                }
+            }
+            Button(selection.item == nil ? "Note this screen" : "Note this item", systemImage: "square.and.pencil") {
+                // A field inside a sheet takes focus only in the key window.
+                DesignSurfaceWindow.shared.setKey(true)
+                isWriting = true
+            }
+            .accessibilityIdentifier("tuning.note.add")
+        } header: {
+            Text("Notes for the agent")
+        } footer: {
+            Text("Saved to design-notes.json beside the tokens, with the item, the tokens it reads, its knobs, and the preset code.")
+        }
+        .sheet(isPresented: $isWriting, onDismiss: { DesignSurfaceWindow.shared.setKey(false) }) {
+            NoteSheet(about: selection.item.map(state.title) ?? state.screen ?? "this screen") { text in
+                let note = DesignNote.take(text, selection: selection, tuning: tuning, state: state)
+                $notes.withLock { $0.append(note) }
+            }
+        }
+    }
+}
+
+/// The note's text. The draft lives with the sheet, so dismissing it keeps nothing.
+private struct NoteSheet: View {
+    let about: String
+    let save: (String) -> Void
+    @State private var text = ""
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.registryTheme) private var theme
+
+    private var trimmed: String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("About \(about). The agent reads it with the item, its tokens, and the theme that is up now.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                TextEditor(text: $text)
+                    .accessibilityLabel(Text("Note"))
+                    .frame(minHeight: 160)
+                    .padding(theme.metrics.compactSpacing)
+                    .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.metrics.controlRadius))
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Note for the agent")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        save(trimmed)
+                        dismiss()
+                    }
+                    .disabled(trimmed.isEmpty)
+                }
             }
         }
     }

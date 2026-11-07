@@ -11,8 +11,18 @@
   to 17 points, with the ratios beside it. When the other label (white or black) would pass, a button
   applies it. Ratios agree with WebAIM's checker to two decimals (`ContrastAuditTests`).
 - Two simless fixtures, `TunePanel` and `TunePanelEmerald`, render the embedded panel headless.
+- Notes for the agent. A Notes section under the screen and the selection takes a note about the
+  selected item, or about the screen when nothing is selected, and appends it to `design-notes.json`
+  beside `registry-tokens.json`: the text, the item and its chain, the named screen, the tokens the
+  item reads (from the generated map), its moved knobs, its frame in window points, the preset code
+  that was up, an ISO 8601 date, and `resolved: false`. Open notes list newest first; swipe to
+  delete. An agent reads the file from the app container and sets `resolved` when the work is done.
+  Absent keys mean `nil` (a screen note has no `item` or `frame`).
 
 ### Known limitations
+
+- On the iPhone Duo cover display (iOS 27.1 simulator) the panel's sheets (Import, Note) never
+  present; the same taps present them on the open inner display. Unverified on the pinned iPhone 17.
 
 - The shipped default (SwiftUI's indigo under a white label) fails in dark at 3.51:1, and Increase
   Contrast lowers it to 2.13:1, because the accessible indigo is lighter. `systemRed` under the white
