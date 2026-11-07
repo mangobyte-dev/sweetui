@@ -4,25 +4,25 @@ import Sharing
 import SwiftUI
 
 /// A host's own design tokens as the surface tunes them: a Codable value the
-/// app declares pages of knobs for. The surface keeps it in a file of its
-/// own, renders its pages in the panel, and hands every change back live
-/// through ``TokenDocument/apply()``, so the app's views follow a slider with
-/// no bridge code beyond the conformance. seeFood's `ThemeTokens` is the first
-/// host document (Stage 9, D3); the registry's own `ThemeTuning` keeps its
-/// bespoke panel and is not one.
+/// app declares pages of tokens for. The surface keeps it in a file of its
+/// own, lists its pages in Tokens under "App tokens, outside versions", and
+/// hands every change back live through ``TokenDocument/apply()``, so the
+/// app's views follow a slider with no bridge code beyond the conformance.
+/// seeFood's `ThemeTokens` is the first host document (Stage 9, D3); the
+/// registry's own `ThemeTuning` has Tune's theme groups and is not one.
 public protocol TokenDocument: Codable, Equatable, Sendable {
-    /// The shipped values, and what Reset returns to.
+    /// The shipped values, and what Reset app tokens returns to.
     static var shipped: Self { get }
     /// The file the surface keeps the tuned document in, inside Documents.
     static var fileName: String { get }
-    /// The pages of knobs the panel shows, in order.
+    /// The pages of tokens Tokens lists, in order.
     static var pages: [TokenPage<Self>] { get }
     /// Called on the main actor after every change with the new value, so the
     /// app can push it into whatever its views read.
     @MainActor func apply()
 }
 
-/// One page of the panel for a host document: a title and its knobs.
+/// One page of a host document in Tokens: a title and its tokens.
 public struct TokenPage<Document: TokenDocument>: Identifiable, Sendable {
     public let title: String
     public let knobs: [TokenKnob<Document>]
@@ -36,7 +36,7 @@ public struct TokenPage<Document: TokenDocument>: Identifiable, Sendable {
 
 /// One control on a page: a numeric slider, a choice among words, or a color.
 public struct TokenKnob<Document: TokenDocument>: Identifiable, Sendable {
-    /// A numeric knob reads and writes through closures, so a document can
+    /// A number token reads and writes through closures, so a document can
     /// keep its numbers as `Double` or `CGFloat`.
     public struct Number: Sendable {
         public let get: @Sendable (Document) -> Double
@@ -125,7 +125,7 @@ final class TokenStore<Document: TokenDocument>: AnyTokenStore {
     /// The store over the document's file in Documents, or over `url` (a test's
     /// temporary file). A file that fails to decode (written by a newer
     /// version, or by hand) leaves the shipped document in place, is reported
-    /// once in the log, and is not rewritten until a knob moves.
+    /// once in the log, and is not rewritten until a token moves.
     init(url: URL? = nil) {
         let url = url ?? URL.documentsDirectory.appending(component: Document.fileName)
         _document = Shared(wrappedValue: Document.shipped, .fileStorage(url, decoder: nil, encoder: ThemeTuning.fileEncoder))
@@ -164,7 +164,7 @@ final class TokenStore<Document: TokenDocument>: AnyTokenStore {
     }
 }
 
-/// One page of a host document as a Form section: every knob as its control.
+/// One page of a host document as a Form section: every token as its control.
 struct TokenPageView<Document: TokenDocument>: View {
     let store: TokenStore<Document>
     let page: TokenPage<Document>

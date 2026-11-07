@@ -48,7 +48,7 @@ Quote every API, code from these, never memory; codes come from codec, never han
 A preset code is one short `RegistryTheme` string; tool, Showcase, website, MCP read/write it.
 
 1. `sweetui preset decode a13GkaOXWwIF`: code, version, accent, ..., website URL.
-2. `--json`: machine-readable knobs, same payload as MCP `describe_preset`. A custom accent, or a custom foreground over a custom background, adds `contrast`: WCAG 2.2 ratios in light and dark and `passes` against 4.5:1. A system accent is not measured there (it resolves on the device); the Tune panel measures it.
+2. `--json`: machine-readable tokens, same payload as MCP `describe_preset`. A custom accent, or a custom foreground over a custom background, adds `contrast`: WCAG 2.2 ratios in light and dark and `passes` against 4.5:1. A system accent is not measured there (it resolves on the device); Tune's Checks measure it.
 3. `preset url a13GkaOXWwIF`: just the URL.
 
 - **DO** treat the code as portable: `a13GkaOXWwIF` = Indigo preset, foundation metrics; never hand-assemble characters, decode it.
@@ -93,9 +93,9 @@ MANGO is the template for `docs/mango.md`'s Layers order.
 - **DO** keep customized items as owned copies, receipt-tracked; header names item, version, edits. MANGO: `MangoButtonStyle`, `MangoMetricCard`.
 - **DO NOT** add a `theme` item kind.
 
-## How to use the Create studio and the tuning panel
+## How to use the Create studio and Tune
 
-Create studio, Showcase tuning panel: the theme creator; a slider move updates open demo.
+Create studio, Tune in the Showcase: the theme creators; a slider move updates the open demo.
 
 1. Create page at the code's URL: CSS token board, capture (six presets); `?preset=<code>` on website.
 2. Showcase: tap Tune in accent strip; slide, Copy Swift (initializer), Copy Code (preset code), or Import.

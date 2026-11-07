@@ -11,7 +11,7 @@ consumer app
 ```
 
 - Foundations: shallow, environment contract, 1 surface modifier, `registryItem(_:)` hook (environment value, anchor preference), `registryScreen(_:)`, reporter, knobs; inert without surface. Components/blocks not package products.
-- `SweetUIDesignSurface`: 2nd, optional debug-build product (tuning panel, preset codec, token engine, per-item knobs), moved from Showcase 2026-09-08, behind `designSurface()`. Foundations independent; MUST NOT import registry items; item-only consumers SHOULD NOT add it; from seeFood's Design mode.
+- `SweetUIDesignSurface`: 2nd, optional debug-build product (Tune, preset codec, token engine, per-item knobs), moved from Showcase 2026-09-08, behind `designSurface()`. Foundations independent; MUST NOT import registry items; item-only consumers SHOULD NOT add it; from seeFood's Design mode.
 
 ## Why this split
 
@@ -26,7 +26,7 @@ Hypothesis: finance/nutrition test, not universal-reuse. Foundation-free item SH
 - `Registry/sources/components/`: copied styles, focused modifiers, compositions
 - `Registry/sources/blocks/`: copied block source
 - `Sources/SweetUIKit/`, `Sources/SweetUICLI/`: `sweetui`, SwiftUI-free: validation, resolution, receipts, install, conflict-aware updates, search, preset codes, MCP server, generators
-- `Examples/Showcase/`: iOS consumer, catalog, demo per item, tuning panel, item-screenshot route
+- `Examples/Showcase/`: iOS consumer, catalog, demo per item, Tune, item-screenshot route
 - `Examples/TodoCounter/`: 2nd consumer (Composable Architecture), URL package at published tag, Homebrew install, customized preset theme
 - `sweetui generate catalog | showcase-manifest | site-data | item-tokens | usage-checks`: derived from metadata
 - `Website/`: Next.js static export, shadcn/ui, reads only `content/registry.json`; `npm run deploy` → Cloudflare Workers (`Website/wrangler.jsonc`); `.github/workflows/pages.yml` → alt GitHub Pages deploy
@@ -55,8 +55,10 @@ Registry lookup order: `--registry <path>` override; nearest ancestor clone (`Re
 - `registryTheme(_:)`: `EnvironmentValues`/`@Entry`, accent→subtree tint (1 scene-root call); `nil`→app tint (default MUST NOT override). `tint(nil)` resets not inherits: SwiftUICore's `environment(\.tintColor, tint)` (package-private). Toggle at runtime resets subtree; apply pre-scene, use `Color.accentColor`.
 - Presets: `system`, `graphite`, `indigo`, `rose`, `emerald`, `amber`, starting points not a theme engine. `graphite`: primary accent, background-colored label. `amber`: light accent, dark label, proves `onAccent`.
 - Semantic tokens replace repeated colors/metrics; token enters foundations once 2 items need it (`everyFoundationTokenHasTwoSemanticConsumers`, `Tests/SweetUIKitTests/RegistryContractTests.swift`). Style stays source-owned until 2 items match.
-- Tuning panel: theme creator. Since Stage 9, Tune button (`tabViewBottomAccessory`) above tab bar opens a floating resizable card. Tool's own window, not a sheet; app stays live. Live tokens, one-tap presets, Copy Swift (`RegistryTheme` init), Copy Code, Import.
-- Custom accent: separate dark value, dynamic `UIColor`. Panel/model/tokens live in `SweetUIDesignSurface`; swift-sharing persists `registry-tokens.json`.
+- Tune: theme creator and agent loop; contract `docs/design-surface.md`. Tune button (Showcase: `tabViewBottomAccessory` above tab bar) opens a floating resizable card in the tool's own window, not a sheet; app stays live. One `TuneModel`, three places: Tokens (Start from, theme groups with the Checks, selected item, its knobs, app tokens outside versions), Notes (person's notes, agent's answers and proposals, composer), Versions (Current, Copy code, Copy Swift, Hand off, history). Selecting is a mode, not a place. Each settled gesture is 1 version; Undo, Redo, Preview, Note sit in the bottom bar. `TunedTheme` passes the app's own theme through while the design sets no token (Source).
+- One writer per file. Tune: `registry-tokens.json`, `design-knobs.json`, `design-notes.json`, `design-history.json`, `design-context.json`, `design-handoff.json`. Agent (MCP): only `design-agent.json`, which Tune holds through `@SharedReader` and never saves, so neither side loses the other's write. swift-sharing persists every file.
+- `TuningPanel(tuning:)`: the Tokens theme groups alone, for a host's own screen or a preview.
+- Custom accent: separate dark value, dynamic `UIColor`.
 - Theme preview: `preview` block's `PreviewWall` (`ItemDemos` `theme-preview`), live in panel. `capture_previews.py --themes`/`--preset`: full screen/preset (not 1 strip); Create/Themes: first screen/preset, iPhone 17; else CSS board.
 - Preset code (`docs/registry-spec.md`, "Preset codes"): theme as 1 string. Read/written by Create page, Showcase, `sweetui preset`, MCP server. `preset apply`→`RegistryTheme+App.swift`; `capture_previews.py --preset`: any code, pinned simulator. Create page: CSS board, real capture (6 presets), no SwiftUI render.
 

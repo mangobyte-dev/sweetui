@@ -81,6 +81,37 @@ private struct CurrentSection: View {
     }
 }
 
+/// Copy code, Copy Swift, and the Swift to read: the two ways a tuned theme
+/// leaves the app. Under Source the app shows its own theme, so there is no
+/// code to copy.
+private struct CodeRows: View {
+    let tuning: ThemeTuning
+    var isSource = false
+
+    var body: some View {
+        CopyButton("Copy code", text: "--preset \(tuning.presetCode)")
+            .disabled(isSource)
+            .accessibilityIdentifier("tuning.copyCode")
+        CopyButton("Copy Swift", text: tuning.swiftSource)
+            .disabled(isSource)
+            .accessibilityIdentifier("tuning.copySwift")
+        if isSource {
+            Text("Tune sets no token, so there is no code to copy. The app shows its own theme.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        } else {
+            DisclosureGroup("Swift") {
+                Text(verbatim: tuning.swiftSource)
+                    .font(.footnote.monospaced())
+                    .textSelection(.enabled)
+                Text("Paste this once at your scene root. Every registry item you install inherits it.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
 /// A count of changes that opens to the changes in words.
 private struct ChangesRow: View {
     let title: String

@@ -3,7 +3,7 @@ import SwiftUI
 import SweetUIFoundations
 
 /// What a token row does beyond its binding. In Tune each action records one
-/// version; the embedded panel edits its binding.
+/// version; `TuningPanel` edits its binding.
 struct TokenActions {
     /// A slider's touch went down or came up.
     var hold: @MainActor (TokenCatalog.Token, Bool) -> Void = { _, _ in }
@@ -17,7 +17,7 @@ struct TokenActions {
     /// Tune sets no token, so the app shows its own theme.
     var isSource = false
 
-    /// Edits the tuning in place, for a panel outside Tune's card.
+    /// Edits the tuning in place, for `TuningPanel` outside Tune's card.
     static func editing(_ tuning: Binding<ThemeTuning>) -> TokenActions {
         TokenActions(
             reset: { $0.reset(&tuning.wrappedValue) },
@@ -286,7 +286,6 @@ private struct AccentControl: View {
                 }
             }
             .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("tuning.token.accent")
             ModeColumns {
                 ColorPicker(selection: $color.customAccentColor, supportsOpacity: false) {
                     Text("Custom").accessibilityLabel("Custom accent, Light")

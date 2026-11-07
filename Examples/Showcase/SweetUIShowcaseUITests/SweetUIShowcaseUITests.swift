@@ -667,36 +667,87 @@ final class SweetUIShowcaseUITests: XCTestCase {
         XCTAssertTrue(legend.exists, "The shortcut legend must expose the spoken shortcut, not the glyph alone.")
     }
 
-    // MARK: - Tuning panel
+    // MARK: - Tune
 
-    /// The panel opens from the strip above the tab bar and stays up as a
-    /// sheet the catalog remains interactive under.
+    /// Tune opens from the strip above the tab bar as a card the catalog
+    /// stays interactive under; a `-default-tuning` launch opens it on Tokens.
     @MainActor
     private func openTuning(_ app: XCUIApplication) {
         let tune = app.buttons["Tune"]
         XCTAssertTrue(tune.waitForExistence(timeout: 5), "The tuning strip must be on screen from launch.")
         tune.tap()
-        XCTAssertTrue(app.buttons["Copy Swift"].waitForExistence(timeout: 5), "The Tune button must present the panel.")
+        XCTAssertTrue(
+            app.buttons["designSurface.collapse"].waitForExistence(timeout: 5), "The Tune button must open the card.")
     }
 
-    /// The floating panel is a card the person resizes, so a row can sit below
-    /// its fold; scroll the panel's own form until the element is there.
+    /// Shows a place through its segment in the place picker.
+    @MainActor
+    private func show(_ place: String, _ app: XCUIApplication) {
+        let segment = app.descendants(matching: .any).matching(identifier: "tuning.place.\(place)").firstMatch
+        XCTAssertTrue(segment.waitForExistence(timeout: 3), "The place picker must offer \(place).")
+        segment.tap()
+    }
+
+    /// Applies a code through Paste a code, under Start from at the top of Tokens.
+    @MainActor
+    private func paste(_ code: String, _ app: XCUIApplication) {
+        let field = app.textFields["tuning.code.field"]
+        revealInPanel(app, field)
+        XCTAssertTrue(field.waitForExistence(timeout: 3), "Start from must offer Paste a code.")
+        field.tap()
+        field.typeText(code)
+        app.buttons["tuning.code.apply"].tap()
+    }
+
+    /// Selects an item through the item menu, which lists the items on this screen.
+    @MainActor
+    private func selectFromItemMenu(_ app: XCUIApplication, _ name: String) {
+        let menu = app.buttons["tuning.screen"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 3), "The toolbar must offer the item menu.")
+        menu.tap()
+        let row = itemMenuRow(app, name)
+        XCTAssertTrue(row.waitForExistence(timeout: 3), "The item menu must list \(name).")
+        row.tap()
+    }
+
+    /// An item menu row by its label, "button" or "button (9)": on iOS 27.1
+    /// the rows do not carry their `tuning.screen.<item>` identifier.
+    @MainActor
+    private func itemMenuRow(_ app: XCUIApplication, _ name: String) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", name, "\(name) (")).firstMatch
+    }
+
+    /// The Swift the Versions place shows for Current, opened.
+    @MainActor
+    private func currentSwift(_ app: XCUIApplication, containing text: String) -> XCUIElement {
+        show("versions", app)
+        let swiftRow = app.buttons["Swift"]
+        revealInPanel(app, swiftRow)
+        XCTAssertTrue(swiftRow.waitForExistence(timeout: 3), "Current must offer its Swift to read.")
+        swiftRow.tap()
+        let swift = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
+        revealInPanel(app, swift)
+        return swift
+    }
+
+    /// The floating card is resizable, so a row can sit below its fold;
+    /// scroll the place's own form until the element is there.
     @MainActor
     private func revealInPanel(_ app: XCUIApplication, _ element: XCUIElement) {
         let panel = app.descendants(matching: .any).matching(identifier: "tuning.form").firstMatch
         // A row can exist while half clipped at the card's edge, and a tap on
         // its center would then fall through to the app, so scroll until the
-        // panel's frame holds the whole element. A full swipe throws a Form
-        // row out of the tree, so the scroll is a short drag inside the card.
-        // The whole form is several card heights tall; each step is a third of one.
+        // card's frame holds the element's center. A full swipe throws a Form
+        // row out of the tree, so the scroll is a short drag inside the card,
+        // toward the element: down the form for a row below, up for one above.
         for _ in 0..<30 where !isInsidePanel(element, panel) {
-            nudge(panel, up: true)
+            nudge(panel, up: !element.exists || element.frame.midY > panel.frame.midY)
         }
     }
 
     /// Whether the element's center, where a tap lands, is inside the card
     /// and clear of its top bar and bottom edge; the center rather than the
-    /// whole frame, because an export block is taller than the card.
+    /// whole frame, because the Swift block is taller than the card.
     @MainActor
     private func isInsidePanel(_ element: XCUIElement, _ panel: XCUIElement) -> Bool {
         guard element.exists else { return false }
@@ -704,7 +755,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
         return panel.frame.insetBy(dx: 0, dy: 60).contains(CGPoint(x: frame.midX, y: frame.midY))
     }
 
-    /// Scrolls the panel's form by a third of its height, up or down.
+    /// Scrolls the place's form by a third of its height, up or down.
     @MainActor
     private func nudge(_ panel: XCUIElement, up: Bool) {
         let from = panel.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.75 : 0.45))
@@ -713,92 +764,62 @@ final class SweetUIShowcaseUITests: XCTestCase {
     }
 
     @MainActor
-    func testTuningPanelExportsTheSelectedPresetAsSwift() {
+    func testVersionsShowsTheSelectedPresetAsSwift() {
         let app = launchCatalog()
         openTuning(app)
 
-        let graphite = app.buttons["Graphite"]
-        XCTAssertTrue(graphite.waitForExistence(timeout: 5), "Foundation presets must be one tap away.")
+        let graphite = app.buttons["tuning.preset.Graphite"]
+        XCTAssertTrue(graphite.waitForExistence(timeout: 5), "Start from must put the presets one tap away.")
         graphite.tap()
 
         // Reading UIPasteboard from the test process raises the simulator's
         // paste-permission prompt and hangs the suite, so the proof is the
-        // Swift section the panel renders from the same export string.
-        XCTAssertTrue(app.buttons["Copy Swift"].exists)
-        let swiftRow = app.buttons["Swift"]
-        revealInPanel(app, swiftRow)
-        XCTAssertTrue(swiftRow.waitForExistence(timeout: 3), "The export must sit one tap below the presets.")
-        swiftRow.tap()
-        let export = app.staticTexts.matching(
-            NSPredicate(format: "label CONTAINS %@", "accent: .primary")
-        ).firstMatch
-        revealInPanel(app, export)
-        XCTAssertTrue(export.waitForExistence(timeout: 3), "The Graphite preset must export its primary accent.")
-        XCTAssertTrue(export.label.contains("RegistryTheme("), "The export must be the foundation initializer.")
-        XCTAssertTrue(export.label.contains(".registryTheme(theme)"), "The export must show the one-line root setup.")
+        // Swift Current shows from the same string Copy Swift copies.
+        let swift = currentSwift(app, containing: "accent: .primary")
+        XCTAssertTrue(app.buttons["tuning.copySwift"].exists)
+        XCTAssertTrue(swift.waitForExistence(timeout: 3), "The Graphite preset must give its primary accent.")
+        XCTAssertTrue(swift.label.contains("RegistryTheme("), "The Swift must be the foundation initializer.")
+        XCTAssertTrue(swift.label.contains(".registryTheme(theme)"), "The Swift must show the one-line root setup.")
     }
 
     @MainActor
-    func testTuningPanelImportsAPastedThemeIntoTheKnobs() {
+    func testPasteACodeAppliesItsTokensAndRefusesText() {
         let app = launchCatalog()
         openTuning(app)
 
-        app.buttons["Import"].tap()
-        let editor = app.textViews["Preset code or Swift"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 3), "The import sheet must offer a labeled editor.")
-        editor.tap()
-        // A subset of arguments is enough: only the named knobs change.
-        editor.typeText("RegistryTheme(accent: .rose, disabledOpacity: 0.3, metrics: RegistryMetrics(cardRadius: 20))")
-        app.buttons["Apply"].tap()
+        // A subset of arguments is enough: only the named tokens change.
+        paste("RegistryTheme(accent: .rose, disabledOpacity: 0.3, metrics: RegistryMetrics(cardRadius: 20))", app)
+        let swift = currentSwift(app, containing: "cardRadius: 20")
+        XCTAssertTrue(swift.waitForExistence(timeout: 3), "The pasted card radius must round-trip into the Swift.")
+        XCTAssertTrue(swift.label.contains("accent: .pink"), "The rose preset name must map to its pink accent.")
+        XCTAssertTrue(swift.label.contains("disabledOpacity: 0.300"))
+        XCTAssertTrue(swift.label.contains("standardSpacing: 16"), "Tokens the paste does not name must keep their values.")
 
-        let swiftRow = app.buttons["Swift"]
-        revealInPanel(app, swiftRow)
-        XCTAssertTrue(swiftRow.waitForExistence(timeout: 3))
-        swiftRow.tap()
-        let export = app.staticTexts.matching(
-            NSPredicate(format: "label CONTAINS %@", "cardRadius: 20")
-        ).firstMatch
-        revealInPanel(app, export)
-        XCTAssertTrue(export.waitForExistence(timeout: 3), "The imported card radius must round-trip into the export.")
-        XCTAssertTrue(export.label.contains("accent: .pink"), "The rose preset name must map to its pink accent.")
-        XCTAssertTrue(export.label.contains("disabledOpacity: 0.300"))
-        XCTAssertTrue(export.label.contains("standardSpacing: 16"), "Knobs the paste does not name must keep their values.")
-
-        // Text without a code or an initializer is refused, and the knobs stay put.
-        app.buttons["Import"].tap()
-        let editorAgain = app.textViews["Preset code or Swift"]
-        XCTAssertTrue(editorAgain.waitForExistence(timeout: 3))
-        editorAgain.tap()
-        editorAgain.typeText("nothing here")
-        app.buttons["Apply"].tap()
-        XCTAssertTrue(app.staticTexts["No preset code or RegistryTheme( initializer found in the pasted text."].waitForExistence(timeout: 2))
+        // Text without a code or an initializer is refused, and the tokens stay put.
+        show("tokens", app)
+        paste("nothing here", app)
+        XCTAssertTrue(
+            app.staticTexts["That is not a code Tune can read. Copy one from sweetui.dev/create."]
+                .waitForExistence(timeout: 2))
     }
 
-    /// The panel's contrast audit closes the loop on the device: a theme whose
-    /// label fails the HIG's 4.5:1 says so in words, offers the other label
-    /// when that one would pass, and the row reads Passes once it is taken.
-    /// Emerald is the fixture: white on green fails in both appearances, a
-    /// black label passes both. The negative case is the shipped Indigo, where
-    /// a black label fails light, so a failing row must offer no fix.
+    /// The Checks close the loop on the device: a theme whose label fails
+    /// the HIG's 4.5:1 says so in words, offers the other label when that one
+    /// would pass, and the row reads Passes once it is taken. Emerald is the
+    /// fixture: white on green fails in both appearances, a black label
+    /// passes both. The negative case is Default's indigo, where a black
+    /// label fails light, so a failing row must offer no fix.
     @MainActor
     func testContrastAuditNamesTheFailingPairAndOffersTheLabelThatFixesIt() {
         let app = launchCatalog()
         openTuning(app)
-
-        // Import before any scroll: the toolbar is always there, and a Form
-        // drops rows above the fold from the tree.
-        app.buttons["Import"].tap()
-        let editor = app.textViews["Preset code or Swift"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 5), "The import sheet must offer a labeled editor.")
-        editor.tap()
-        editor.typeText("RegistryTheme(accent: .emerald)")
-        app.buttons["Apply"].tap()
+        paste("RegistryTheme(accent: .emerald)", app)
 
         let label = app.descendants(matching: .any).matching(identifier: "tuning.contrast.labelOnAccent").firstMatch
         let fix = app.buttons["tuning.contrast.fixLabel"]
         revealInPanel(app, fix)
         XCTAssertTrue(fix.waitForExistence(timeout: 3), "Emerald under a white label must offer the dark one.")
-        XCTAssertEqual(fix.label, "Use a dark label")
+        XCTAssertEqual(fix.label, "Fix label")
         XCTAssertTrue(label.label.contains("Fails"), "White on emerald fails: \(label.label)")
         XCTAssertTrue(label.label.contains(":1"), "The row must show the ratios, not only a verdict: \(label.label)")
         fix.tap()
@@ -808,115 +829,101 @@ final class SweetUIShowcaseUITests: XCTestCase {
         )
         XCTAssertFalse(fix.exists, "A passing pair offers nothing.")
 
-        app.buttons["Reset"].tap()
+        let defaultTheme = app.buttons["tuning.start.default"]
+        revealInPanel(app, defaultTheme)
+        defaultTheme.tap()
+        revealInPanel(app, label)
         XCTAssertTrue(label.waitForExistence(timeout: 3))
-        XCTAssertTrue(label.label.contains("Fails"), "The shipped indigo fails in dark: \(label.label)")
+        XCTAssertTrue(label.label.contains("Fails"), "Default's indigo fails in dark: \(label.label)")
         XCTAssertFalse(fix.exists, "A black label fails indigo in light; no fix may be offered.")
     }
 
-    /// The design surface's Select mode: arming it and tapping a registry item
-    /// on the screen behind the panel scopes the panel to that item's tokens
-    /// (`RegistryItemTokens`, generated from the sources), so a designer tunes
-    /// the knobs that move what they tapped and nothing else; All tokens
-    /// brings the whole theme back. The negative case is the section the
-    /// button never reads: spacing must leave the panel and come back.
+    /// Select, then a tap on a registry item on the screen behind the card,
+    /// shows that item in Tokens with only the tokens that reach it
+    /// (`RegistryItemTokens`, generated from the sources), so a designer
+    /// tunes what moves what they tapped and nothing else; Clear selection
+    /// brings the whole theme back. The negative case is a token the button
+    /// never reads: Control padding must leave Tokens and come back.
     @MainActor
-    func testSelectingAnItemScopesThePanelToItsTokens() {
+    func testSelectingAnItemShowsOnlyTheTokensThatReachIt() {
         let app = launchCatalog()
         openItem(app, tab: "Components", name: "button")
         openTuning(app)
 
         let select = app.buttons["tuning.select"]
-        XCTAssertTrue(select.waitForExistence(timeout: 3), "The panel must offer Select on a design surface.")
+        XCTAssertTrue(select.waitForExistence(timeout: 3), "The card must offer Select on a design surface.")
         select.tap()
         let target = app.buttons["Save changes"].firstMatch
-        XCTAssertTrue(target.waitForExistence(timeout: 3), "The button demo must stay visible behind the sheet.")
+        XCTAssertTrue(target.waitForExistence(timeout: 3), "The button demo must stay visible while Selecting.")
         target.tap()
 
-        let scoped = app.staticTexts["tuning.scope.item"]
-        XCTAssertTrue(scoped.waitForExistence(timeout: 3), "A tap while selecting must select the item under it.")
-        XCTAssertEqual(scoped.label, "button", "The innermost tagged item under the tap must win.")
-        // The count comes from the generated map: RegistryItemTokens.swift lists
-        // seven tokens for button (border, borderWidth, controlRadius,
-        // disabledOpacity, negative, onAccent, surface), none of them spacing.
-        XCTAssertTrue(app.staticTexts["7 tokens reach it"].waitForExistence(timeout: 3), "The scope must count the item's tokens.")
-        // The Form only materializes rows on screen, so scroll the panel to its
-        // end before asking which sections exist.
-        // The panel's own Form, not the catalog list behind it.
-        let panel = app.descendants(matching: .any).matching(identifier: "tuning.form").firstMatch
-        XCTAssertTrue(panel.waitForExistence(timeout: 3), "The panel's form must be identifiable.")
-        revealInPanel(app, app.staticTexts["Control"])
-        XCTAssertTrue(app.staticTexts["Control"].waitForExistence(timeout: 3), "Radius reaches the button, so its section stays.")
-        XCTAssertFalse(app.staticTexts["Control padding"].exists, "Spacing never reaches the button, so its section leaves.")
+        let name = app.staticTexts["tuning.scope.item"]
+        XCTAssertTrue(name.waitForExistence(timeout: 3), "A tap while Selecting must select the item under it.")
+        XCTAssertEqual(name.label, "Name, button", "The innermost tagged item under the tap must win.")
+        // RegistryItemTokens.swift lists controlRadius for button and no spacing.
+        let radius = app.sliders["tuning.token.controlRadius"]
+        revealInPanel(app, radius)
+        XCTAssertTrue(radius.exists, "Control radius reaches the button, so its row stays.")
+        XCTAssertFalse(
+            app.sliders["tuning.token.controlHorizontalPadding"].exists,
+            "Control padding never reaches the button, so its row leaves.")
 
-        let all = app.buttons["tuning.scope.all"]
-        // A row exists while it is still under the card's toolbar, where a tap
-        // lands on the bar; scroll until the whole row is inside the card.
-        for _ in 0..<30 where !isInsidePanel(all, panel) { nudge(panel, up: false) }
-        XCTAssertTrue(all.waitForExistence(timeout: 3))
-        all.tap()
-        XCTAssertFalse(scoped.waitForExistence(timeout: 1), "All tokens must clear the scope.")
-        revealInPanel(app, app.staticTexts["Control padding"])
-        XCTAssertTrue(app.staticTexts["Control padding"].waitForExistence(timeout: 3), "The whole theme must return.")
+        app.buttons["tuning.screen"].tap()
+        let clear = app.descendants(matching: .any).matching(identifier: "tuning.scope.all").firstMatch
+        XCTAssertTrue(clear.waitForExistence(timeout: 3), "The item menu must offer Clear selection.")
+        clear.tap()
+        XCTAssertFalse(name.waitForExistence(timeout: 1), "Clear selection must show the whole theme.")
+        let space = app.descendants(matching: .any).matching(identifier: "tuning.group.space").firstMatch
+        revealInPanel(app, space)
+        space.tap()
+        let padding = app.sliders["tuning.token.controlHorizontalPadding"]
+        revealInPanel(app, padding)
+        XCTAssertTrue(padding.waitForExistence(timeout: 3), "The whole theme must return.")
     }
 
-    /// The panel knows the screen it is looking at and the registry items on
-    /// it, reported by the tagged roots through the environment: the header
-    /// carries the screen's name, a row per visible item selects it, and the
-    /// list follows the screen behind the panel, so a designer never has to
-    /// find an item by hunting for it.
+    /// Tune knows the screen behind the card and the registry items on it,
+    /// reported by the tagged roots through the environment: the item menu's
+    /// label names the screen and its count, and a row per visible item
+    /// selects it, so a designer never has to hunt for an item.
     @MainActor
-    func testOnThisScreenNamesTheScreenAndListsItsItems() {
+    func testTheItemMenuNamesTheScreenAndListsItsItems() {
         let app = launchCatalog()
         openItem(app, tab: "Components", name: "button")
         openTuning(app)
 
-        let screen = app.staticTexts["tuning.screen"]
-        XCTAssertTrue(screen.waitForExistence(timeout: 3), "The panel must name the screen.")
-        XCTAssertEqual(screen.label, "button", "The innermost named screen wins.")
-        let row = app.descendants(matching: .any).matching(identifier: "tuning.screen.button").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 3), "The button demo's item must be listed.")
-        row.tap()
-        let scoped = app.staticTexts["tuning.scope.item"]
-        XCTAssertTrue(scoped.waitForExistence(timeout: 3), "A row must select its item.")
-        XCTAssertEqual(scoped.label, "button")
+        let menu = app.buttons["tuning.screen"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 3), "The card must name the screen.")
+        XCTAssertTrue(menu.label.hasPrefix("button · "), "The innermost named screen wins: \(menu.label)")
+        selectFromItemMenu(app, "button")
+        let name = app.staticTexts["tuning.scope.item"]
+        XCTAssertTrue(name.waitForExistence(timeout: 3), "A row must select its item.")
+        XCTAssertEqual(name.label, "Name, button")
     }
 
     /// Codes from `Registry/preset_vectors.json`: Amber (yellow
     /// accent, dark label) and Graphite (primary accent).
     @MainActor
-    func testTuningStaysUpWhileBrowsingAndSpeaksPresetCodes() {
+    func testTuningStaysUpWhileBrowsingAndAppliesPresetCodes() {
         let app = launchCatalog(["-preset", "a13GkaOXWwIa"])
         openTuning(app)
-        XCTAssertTrue(app.staticTexts["a13GkaOXWwIa"].waitForExistence(timeout: 3), "The panel must show the code it was launched with.")
+        let amber = currentSwift(app, containing: "accent: .yellow")
+        XCTAssertTrue(amber.waitForExistence(timeout: 3), "Current must be the code the app was launched with.")
 
-        // The catalog behind the panel keeps working: a row pushes its detail
-        // while the panel stays up, which is what makes live tuning possible.
+        // The catalog behind the card keeps working: a row pushes its detail
+        // while the card stays up, which is what makes live tuning possible.
         let row = app.descendants(matching: .any).matching(identifier: "catalog.item.accordion").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 3), "The list must remain reachable under the panel.")
+        XCTAssertTrue(row.waitForExistence(timeout: 3), "The list must remain reachable under the card.")
         row.tap()
-        XCTAssertTrue(app.navigationBars["accordion"].waitForExistence(timeout: 5), "The tuning panel must not block navigation.")
-        XCTAssertTrue(app.buttons["Copy Swift"].exists, "The panel must still be up after navigating.")
+        XCTAssertTrue(app.navigationBars["accordion"].waitForExistence(timeout: 5), "Tune must not block navigation.")
+        XCTAssertTrue(app.buttons["designSurface.collapse"].exists, "The card must still be up after navigating.")
 
-        app.buttons["Import"].tap()
-        let editor = app.textViews["Preset code or Swift"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 3))
-        editor.tap()
-        editor.typeText("--preset a13GkaOXWxLl")
-        app.buttons["Apply"].tap()
-        let imported = app.staticTexts["a13GkaOXWxLl"]
-        revealInPanel(app, imported)
-        XCTAssertTrue(imported.waitForExistence(timeout: 3), "An imported code must become the current code.")
-        let swiftRow = app.buttons["Swift"]
-        revealInPanel(app, swiftRow)
-        XCTAssertTrue(swiftRow.waitForExistence(timeout: 3))
-        swiftRow.tap()
-        let export = app.staticTexts.matching(
-            NSPredicate(format: "label CONTAINS %@", "accent: .primary")
-        ).firstMatch
-        revealInPanel(app, export)
-        XCTAssertTrue(export.waitForExistence(timeout: 3), "The Graphite code must decode to the primary accent.")
-        XCTAssertTrue(export.label.contains("surface: .primary.opacity(0.050)"), "The code must carry every knob, not only the accent.")
+        show("tokens", app)
+        paste("--preset a13GkaOXWxLl", app)
+        let graphite = currentSwift(app, containing: "accent: .primary")
+        XCTAssertTrue(graphite.waitForExistence(timeout: 3), "The Graphite code must decode to the primary accent.")
+        XCTAssertTrue(
+            graphite.label.contains("surface: .primary.opacity(0.050)"),
+            "The code must carry every token, not only the accent.")
     }
 
     /// The card is positioned in window points and clamped into the safe
@@ -926,7 +933,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
     /// Showcase rotates on iPad only (`Config/Shared.xcconfig`), so the iPhone
     /// destination proves nothing here and skips.
     @MainActor
-    func testFloatingPanelStaysReachableAfterRotation() throws {
+    func testTheCardStaysReachableAfterRotation() throws {
         try XCTSkipUnless(
             UIDevice.current.userInterfaceIdiom == .pad,
             "The Showcase is portrait-only on iPhone; rotation is measured on the iPad destination.")
@@ -947,83 +954,82 @@ final class SweetUIShowcaseUITests: XCTestCase {
                 window.insetBy(dx: -1, dy: -1).contains(CGPoint(x: bar.midX, y: bar.midY)),
                 "After rotating to \(orientation.rawValue) the drag bar \(bar) must be inside the window \(window)."
             )
-            XCTAssertTrue(app.buttons["Copy Swift"].exists, "The panel must stay up through a rotation.")
+            XCTAssertTrue(app.buttons["designSurface.collapse"].exists, "The card must stay up through a rotation.")
         }
     }
 
-    /// Select arms the next tap; a tap that lands on nothing tagged must clear
-    /// the selection and disarm Select rather than leave the tool waiting or
-    /// keep a stale scope, so a designer can back out by tapping empty space.
+    /// Select arms the next tap; a tap that lands on nothing tagged must keep
+    /// the selection and disarm Select rather than leave the tool waiting, so
+    /// a designer can back out by tapping empty space without losing the item.
     @MainActor
-    func testAPickOnNothingClearsTheSelectionAndDisarmsSelect() {
+    func testATapOnNothingKeepsTheSelectionAndDisarmsSelect() {
         let app = launchCatalog()
         openItem(app, tab: "Components", name: "button")
         openTuning(app)
-        let row = app.descendants(matching: .any).matching(identifier: "tuning.screen.button").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 3))
-        row.tap()
-        let scoped = app.staticTexts["tuning.scope.item"]
-        XCTAssertTrue(scoped.waitForExistence(timeout: 3))
+        selectFromItemMenu(app, "button")
+        let name = app.staticTexts["tuning.scope.item"]
+        XCTAssertTrue(name.waitForExistence(timeout: 3))
 
         let select = app.buttons["tuning.select"]
         XCTAssertTrue(select.waitForExistence(timeout: 3))
         select.tap()
-        // The card steps aside while Select is armed, so the whole screen is
-        // the capture; the navigation bar holds no registry item.
+        // The card steps aside while Selecting, so the whole screen is the
+        // capture; the navigation bar holds no registry item.
         let bar = app.navigationBars["button"]
         XCTAssertTrue(bar.waitForExistence(timeout: 3))
         bar.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
 
-        XCTAssertTrue(app.buttons["Copy Swift"].waitForExistence(timeout: 3), "The card must return after the pick.")
-        XCTAssertFalse(scoped.waitForExistence(timeout: 1), "A pick on nothing must clear the selection.")
-        XCTAssertFalse(select.isSelected, "Select must be disarmed after the pick.")
+        XCTAssertTrue(
+            app.buttons["designSurface.collapse"].waitForExistence(timeout: 3), "The card must return after the tap.")
+        XCTAssertTrue(name.waitForExistence(timeout: 3), "A tap on nothing must keep the selection.")
+        XCTAssertEqual(name.label, "Name, button")
+        XCTAssertFalse(select.isSelected, "Select must be disarmed after the tap.")
     }
 
     /// Collapsing the card to the button and reopening it must keep what the
-    /// designer was doing: the selected item and its scope come back.
+    /// designer was doing: the selected item and its tokens come back.
     @MainActor
-    func testCollapsingAndReopeningThePanelKeepsTheSelection() {
+    func testCollapsingAndReopeningTheCardKeepsTheSelection() {
         let app = launchCatalog()
         openItem(app, tab: "Components", name: "button")
         openTuning(app)
-        let row = app.descendants(matching: .any).matching(identifier: "tuning.screen.button").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 3))
-        row.tap()
+        selectFromItemMenu(app, "button")
         XCTAssertTrue(app.staticTexts["tuning.scope.item"].waitForExistence(timeout: 3))
 
         let collapse = app.buttons["designSurface.collapse"]
         XCTAssertTrue(collapse.waitForExistence(timeout: 3), "The card must offer a collapse control.")
         collapse.tap()
-        XCTAssertFalse(app.buttons["Copy Swift"].waitForExistence(timeout: 1), "Collapse must take the card down.")
+        XCTAssertFalse(collapse.waitForExistence(timeout: 1), "Collapse must take the card down.")
 
         openTuning(app)
-        let scoped = app.staticTexts["tuning.scope.item"]
-        XCTAssertTrue(scoped.waitForExistence(timeout: 3), "Reopening must restore the selection.")
-        XCTAssertEqual(scoped.label, "button")
+        let name = app.staticTexts["tuning.scope.item"]
+        XCTAssertTrue(name.waitForExistence(timeout: 3), "Reopening must restore the selection.")
+        XCTAssertEqual(name.label, "Name, button")
     }
 
     /// The tool's own controls speak: VoiceOver reads a label for the drag
-    /// bar, the collapse control, the resize grip, Select, and every row and
-    /// slider in the card. An unlabeled control in the tool is a defect on
-    /// the same footing as one in an item.
+    /// bar, the collapse control, the resize grip, Select, the bottom bar,
+    /// and every row and slider in the card. An unlabeled control in the tool
+    /// is a defect on the same footing as one in an item.
     @MainActor
-    func testEveryPanelControlSpeaksItsLabel() {
+    func testEveryTuneControlSpeaksItsLabel() {
         let app = launchCatalog()
         openItem(app, tab: "Components", name: "button")
         openTuning(app)
         for (identifier, label) in [
-            ("designSurface.dragBar", "Tuning panel drag bar"),
-            ("designSurface.collapse", "Collapse the tuning panel"),
-            ("designSurface.grip", "Resize the tuning panel"),
+            ("designSurface.dragBar", "Tune drag bar"),
+            ("designSurface.collapse", "Collapse Tune"),
+            ("designSurface.grip", "Resize Tune"),
             ("tuning.select", "Select"),
+            ("tuning.undo", "Undo"),
+            ("tuning.redo", "Redo"),
+            ("tuning.preview", "Preview"),
+            ("tuning.note", "Note"),
         ] {
             let element = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
             XCTAssertTrue(element.waitForExistence(timeout: 3), "\(identifier) must be on the card.")
             XCTAssertEqual(element.label, label, "\(identifier) must speak its label.")
         }
-        let row = app.descendants(matching: .any).matching(identifier: "tuning.screen.button").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 3))
-        XCTAssertTrue(row.label.contains("button"), "An On this screen row must speak the item's name.")
 
         let unlabeled = NSPredicate(format: "label == ''")
         let labeledFrames = app.descendants(matching: .any)
@@ -1039,6 +1045,9 @@ final class SweetUIShowcaseUITests: XCTestCase {
             }
             XCTAssertTrue(offenders.isEmpty, "The tool exposes a \(kind) without a label at \(offenders.map { $0.frame }).")
         }
+
+        app.buttons["tuning.screen"].tap()
+        XCTAssertTrue(itemMenuRow(app, "button").waitForExistence(timeout: 3), "An item menu row must speak the item's name.")
     }
 
     /// Opening and closing the card fifty times must not grow the app: the
@@ -1046,7 +1055,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
     /// released with it. The metric is attached as evidence; the growth is
     /// read from the result bundle.
     @MainActor
-    func testOpeningAndClosingThePanelFiftyTimesHoldsMemory() {
+    func testOpeningAndClosingTheCardFiftyTimesHoldsMemory() {
         let app = launchCatalog()
         openItem(app, tab: "Components", name: "button")
         let tune = app.buttons["Tune"]

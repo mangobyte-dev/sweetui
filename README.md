@@ -76,7 +76,7 @@ Every item, in light and dark, with its install command: [catalog](docs/catalog/
 
 <table>
   <tr>
-    <td width="260"><img src="docs/images/design-surface/iphone-card-light.png" alt="Design surface tuning panel over the auth-form block" width="240"></td>
+    <td width="260"><img src="docs/images/design-surface/iphone-card-light.png" alt="Tune over the auth-form block" width="240"></td>
     <td>Add <code>SweetUIDesignSurface</code> and a debug build gets a Tune button. Select any item on screen, move the sliders, then <b>Copy Swift</b> to paste a <code>RegistryTheme(...)</code> back into your app. Release builds stay unchanged. Details: <a href="#tune-on-device">Tune on device</a></td>
   </tr>
 </table>
@@ -127,7 +127,7 @@ Every command is real; `sweetui describe <item>` prints usage snippet
        .registryTheme(.graphite)
    ```
 
-   Controls follow tint. Presets: `.system` (app tint), `.graphite`, `.indigo`, `.rose`, `.emerald`, `.amber`, `.mango` (sample, [MANGO](docs/mango.md)). Custom: Tune panel / `designSurface()`, move sliders, Copy Swift exports `RegistryTheme(...)`
+   Controls follow tint. Presets: `.system` (app tint), `.graphite`, `.indigo`, `.rose`, `.emerald`, `.amber`, `.mango` (sample, [MANGO](docs/mango.md)). Custom: Tune / `designSurface()`, move sliders, Copy Swift copies `RegistryTheme(...)`
 
 3. Install via Homebrew, anywhere:
 

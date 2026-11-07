@@ -1,10 +1,10 @@
 #if canImport(UIKit)
 import Foundation
 
-/// Preset codes: the tuning knobs as a short shareable string, the same code
+/// Preset codes: the theme's tokens as a short shareable string, the same code
 /// `sweetui preset` and the website's `/create` page speak. Fields
 /// pack little-endian in the reference order into one integer written in
-/// base62 behind a version letter; numeric knobs store their slider-grid
+/// base62 behind a version letter; number tokens store their slider-grid
 /// index. Version `a` is the twelve-metric layout; version `b` appends, after
 /// the custom accent block, the font design, the surface step, the chart
 /// palette, and three optional color pairs, and a version `a` code still
@@ -110,7 +110,7 @@ extension ThemeTuning {
             || secondaryForeground != nil
     }
 
-    /// The code for these knobs; numeric values snap to their slider grid.
+    /// The code for these tokens; numeric values snap to their slider grid.
     public var presetCode: String {
         var writer = BitWriter()
         writeBaseBits(into: &writer)
@@ -160,7 +160,7 @@ extension ThemeTuning {
         }
     }
 
-    /// The knobs a code carries, over `base` for what a code never stores
+    /// The tokens a code carries, over `base` for what a code never stores
     /// (the environment switches and a named accent's remembered custom
     /// color); `nil` when the text is not a valid code. A version `a` code
     /// yields the version-b defaults for the appended fields.

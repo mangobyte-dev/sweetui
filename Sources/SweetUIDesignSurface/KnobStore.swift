@@ -4,12 +4,12 @@ import Sharing
 import SweetUIFoundations
 
 /// One tunable number an item exposes: its name in the item's source, the
-/// title the panel shows, its range and step, and the shipped default. A step
+/// title Tune shows, its range and step, and the shipped default. A step
 /// that is not positive becomes 1 and a shipped value outside the range is
 /// clamped into it, with a line in the log, so a host's slip never traps the
 /// slider in a build that ships.
 public struct ItemKnob: Identifiable, Sendable, Equatable {
-    /// How the panel draws the knob and how the item reads it: a slider over
+    /// How Tune draws the knob and how the item reads it: a slider over
     /// a number, a switch stored as 0 or 1, or a picker stored as the index
     /// into its options (`registryKnob(_:_:options:default:)`).
     public enum Kind: Sendable, Equatable {
@@ -74,7 +74,7 @@ public struct ItemKnob: Identifiable, Sendable, Equatable {
 /// A knob as an agent declares it in `design-knob-specs.json`: the file is
 /// `{"<item>": [spec, ...]}`, each spec `{"name", "title"?, "kind": "number" |
 /// "bool" | "choice", "min", "max", "step"? (number), "options" (choice),
-/// "shipped"}` with `shipped` a number, a bool, or a word by kind. The panel
+/// "shipped"}` with `shipped` a number, a bool, or a word by kind. Tune
 /// shows the controls after the file lands; the item reads the knob once it
 /// calls `registryKnob` for it, which takes one build.
 public struct ItemKnobSpec: Codable, Equatable, Sendable {

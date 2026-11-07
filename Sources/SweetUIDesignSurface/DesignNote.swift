@@ -18,7 +18,7 @@ public struct DesignNote: Codable, Equatable, Identifiable, Sendable {
     public var text: String
     /// The selected item's name, or `nil` for a note about the screen.
     public var item: String?
-    /// Every tagged item under the pick, innermost first; the first is `item`.
+    /// Every tagged item under the tap that selected it, innermost first; the first is `item`.
     public var chain: [String]
     /// The named screen the note was taken on.
     public var screen: String?

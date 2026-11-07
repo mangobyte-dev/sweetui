@@ -185,6 +185,34 @@ private struct StartFromSection: View {
     }
 }
 
+/// One chip per foundation preset, each in its own theme, in a row that scrolls.
+private struct PresetChips: View {
+    let apply: (String) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(RegistryTheme.presets) { preset in
+                    Button {
+                        apply(preset.name)
+                    } label: {
+                        // The small bezel around it makes a 44 pt target.
+                        Text(preset.name).frame(minHeight: 34)
+                    }
+                    // A native style, not the registry button item: Tune is
+                    // a package product and items are copied source.
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .registryTheme(preset.theme)
+                    .accessibilityIdentifier("tuning.preset.\(preset.name)")
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+}
+
 /// The selected item's knobs, registered by the host or declared by the
 /// agent ("From the agent"); a value at its default leaves the file.
 private struct KnobsSection: View {
@@ -286,7 +314,7 @@ private struct HostTokensSection: View {
                 }
                 .accessibilityIdentifier("tuning.tokens.\(index)")
             }
-            Button("Reset the app tokens", role: .destructive) { store.reset() }
+            Button("Reset app tokens", role: .destructive) { store.reset() }
         }
     }
 }

@@ -188,7 +188,7 @@ public struct MCPServer {
         "file": .string(file), "proposal": OrderedJSON(proposal),
         "nextSteps": [
           proposal["apply"] == true
-            ? "Tune tries it on the device at once, merged over the current version; call get_design_context and read its screenshot to check it"
+            ? "Tune tries it on the device at once, merged over the current design version; call get_design_context and read its screenshot to check it"
             : "It waits in Tune's Notes for the person to try",
           "list_design_notes reports whether the person kept or discarded it",
         ],

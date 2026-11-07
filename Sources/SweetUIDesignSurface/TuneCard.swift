@@ -74,7 +74,7 @@ struct TuneCard: View {
         } action: { height in
             self.height = height
         }
-        // A pick lands on the innermost item the host has a page for; an
+        // A selection lands on the innermost item the host has a page for; an
         // item without one leaves the card on its place. The card is gone
         // while Selecting, so the page waits on the model until it is back.
         .onChange(of: model.hostPageToPush, initial: true) { _, name in
@@ -462,8 +462,8 @@ struct CardDragBar: View {
             .frame(maxWidth: .infinity, minHeight: 44)
             .contentShape(Rectangle())
             .accessibilityElement()
-            .accessibilityLabel("Tuning panel drag bar")
-            .accessibilityHint("Drag to move the panel.")
+            .accessibilityLabel("Tune drag bar")
+            .accessibilityHint("Drag to move the card.")
             .accessibilityIdentifier("designSurface.dragBar")
             Button(action: collapse) {
                 Image(systemName: "chevron.down.circle.fill")
@@ -473,7 +473,7 @@ struct CardDragBar: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Collapse the tuning panel")
+            .accessibilityLabel("Collapse Tune")
             .accessibilityIdentifier("designSurface.collapse")
         }
         .padding(.horizontal, ToolChrome.spacing)

@@ -104,7 +104,7 @@
   composer. The item menu lists the selection's chain and the items on this screen, and says when the
   selection is not on this screen; with VoiceOver running, Select opens it. `TokenCatalog` gives
   every key a code encodes one token (`TokenCatalogTests`), and `TuningPanel(tuning:)` draws the same
-  groups with Copy code, Copy Swift, and the Swift. Changes read the catalog's titles and units ("Card
+  groups alone. Changes read the catalog's titles and units ("Card
   radius: 16 to 20 pt", "Label on accent: white to black", "Background, Dark: none to #1A1A1A"). Paste
   a code takes a code typed on iOS, where smart punctuation turns `--preset` into a dash, and Return
   on an empty field does nothing. Each accent swatch carries `tuning.token.accent.<accent>`.
@@ -123,6 +123,13 @@
   when there is something to measure, so a code with a system accent prints what it always did; the
   Tune measures system accents on the device.
 
+### Deprecated
+
+- `TuningPanel(tuning:selection:showsScreen:presetsFooter:)`: Tune's card holds the presets, the
+  selection, and the code, so use `designSurface(isPresented:presetsFooter:)`. It still draws the
+  theme groups, the tokens that reach the selected item, with the host's row above them.
+  `TuningPanel` no longer shows presets, Copy code, Copy Swift, Reset, or Select.
+
 ### Known limitations
 
 - In a card too short to keep 120 pt for Notes, the composer drops its subject line (the field's hint
@@ -135,17 +142,31 @@
 - `design-variants.json` and `design-agent-change.json` from earlier builds are ignored, not deleted.
 - On the iPhone Duo cover display (iOS 27.1 simulator) Tune's Preview menu opens upward and runs past
   the top edge: Outlines and Guides sit off screen when it opens, so they take more than 2 taps.
-  Whether the system color picker presents there is not checked. Unverified on the pinned iPhone 17.
+  The system color picker presents there (checked 2026-11-07). Unverified on the pinned iPhone 17.
+- Under Source, `TunedTheme` applies the app's own theme again, read from above `designSurface()`,
+  rather than removing itself, so the app keeps its state when the design leaves or returns to
+  Source; an app theme without an accent carries the app's accent color there. Source shows the
+  app's theme only when `designSurface()` sits inside the app's `registryTheme(_:)`. The theme file
+  cannot say Source, so the default theme written from outside while Current is Source reads as
+  Source.
+- The place picker's segments are the system segmented control, 32 pt tall (92 × 32 pt in a 300 pt
+  card under simless, 32 pt on the iPhone Duo), in the 40 pt row the card's height budget allows. A
+  44 pt row would take 4 pt from the place at the 300 × 260 minimum. At an accessibility text size and
+  in a short card the picker is a menu with a 44 pt target.
+- On iOS 27.1 the item menu's rows carry no accessibility identifier (`tuning.screen.<item>`,
+  `tuning.chain.<item>`), while Clear selection keeps `tuning.scope.all`. A title initializer in
+  place of the label closure did not change it; the cause is not isolated. The UI suite finds a row
+  by its label.
 
 - The shipped default (SwiftUI's indigo under a white label) fails in dark at 3.51:1, and Increase
   Contrast lowers it to 2.13:1, because the accessible indigo is lighter. `systemRed` under the white
   destructive label is 3.57:1 light and 3.43:1 dark, so the button style's "always dark enough for a
   white label" comment is not true at 15 points; the panel does not measure the negative color, which
   is not a knob.
-- The new UI test `testContrastAuditNamesTheFailingPairAndOffersTheLabelThatFixesIt` follows the
-  import test's steps but has not run on the pinned iPhone 17: the only runtime on the release machine
-  is iOS 27.1 with the iPhone Duo, whose cover display puts the tab bar in a side strip, so the
-  existing panel UI tests fail there too ("The Components tab must exist").
+- The UI suite's Tune tests are rewritten for the card's places, identifiers, and labels, and they
+  compile (`build-for-testing`), but they have not run: the pinned iPhone 17 is not on the release
+  machine, whose only runtime is iOS 27.1 with the iPhone Duo, and its cover display puts the tab bar
+  in a side strip, so the catalog's UI tests fail there ("The Components tab must exist").
 
 ## 0.6.0 (2026-10-10)
 

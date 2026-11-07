@@ -3,8 +3,8 @@
 
 #if canImport(UIKit)
 /// The `RegistryTheme` and `RegistryMetrics` fields each catalog item
-/// reads, over its dependency closure, so the design surface can scope its
-/// panel to the knobs that move a selected item. A recipe reads what its
+/// reads, over its dependency closure, so Tune's Tokens shows only the
+/// tokens that reach a selected item. A recipe reads what its
 /// usage snippet uses, which for a native one is nothing scoped: the accent
 /// and the typography still reach it through the root modifier.
 public enum RegistryItemTokens {

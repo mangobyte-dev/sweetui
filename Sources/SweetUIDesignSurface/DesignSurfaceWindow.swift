@@ -6,8 +6,8 @@ import UIKit
 
 /// The tool's own window above the app: transparent, at the alert level so it
 /// covers every tab, sheet, and cover, and taking only the touches that land
-/// on its button or its panel. Everything else falls through to the app, so
-/// the app stays live while a knob moves. The shape is seeFood's Design mode
+/// on its button or its card. Everything else falls through to the app, so
+/// the app stays live while a token moves. The shape is seeFood's Design mode
 /// (its ADR 0015), ported here in Stage 9.
 @MainActor
 final class DesignSurfaceWindow {
@@ -166,7 +166,7 @@ private struct DesignSurfaceOverlayRoot: View {
                 SelectingPill(model: model)
             }
             // While Select is armed the card steps aside so every item on
-            // the screen is tappable; it returns with the scope once picked.
+            // the screen is tappable; it returns once an item is selected.
             if state.isPresented && !state.selection.isSelecting {
                 FloatingPanel(contentDirection: direction) {
                     TuneCard(model: model)
@@ -421,7 +421,7 @@ private struct FloatingTuneButton: View {
 }
 
 /// The tool's own look: fixed system values, never the tuned theme, so the
-/// panel holds still while a knob moves (owner, 2026-09-08). Its motion
+/// card holds still while a token moves (owner, 2026-09-08). Its motion
 /// follows Reduce Motion: none when the setting is on.
 enum ToolChrome {
     static let accent = Color(uiColor: .systemBlue)
@@ -438,7 +438,7 @@ enum ToolChrome {
     }
 }
 
-/// The panel as a floating card: a drag bar moves it, a corner grip resizes
+/// Tune as a floating card: a drag bar moves it, a corner grip resizes
 /// it, a chevron collapses it to the button, and dragging it against the
 /// trailing edge snaps it into a full-height side column. Its frame is
 /// remembered per size class, re-clamped when the area changes (rotation),
@@ -553,8 +553,8 @@ private struct FloatingPanel<Content: View>: View {
             .padding(ToolChrome.compactSpacing)
             .frame(minWidth: 44, minHeight: 44)
             .contentShape(Rectangle())
-            .accessibilityLabel("Resize the tuning panel")
-            .accessibilityHint("Drag to resize the panel.")
+            .accessibilityLabel("Resize Tune")
+            .accessibilityHint("Drag to resize the card.")
             .accessibilityIdentifier("designSurface.grip")
             .gesture(
                 DragGesture(minimumDistance: 4, coordinateSpace: .global)

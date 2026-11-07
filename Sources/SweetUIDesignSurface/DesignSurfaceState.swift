@@ -4,7 +4,7 @@ import SweetUIFoundations
 
 /// The surface's tool state, shared between the app window (where the items
 /// live and report their frames) and the overlay window (where the button and
-/// the panel live): whether the panel is up, which item is selected, and the
+/// the card live): whether the card is up, which item is selected, and the
 /// host's optional row under the preset chips.
 @MainActor
 @Observable
@@ -15,20 +15,20 @@ final class DesignSurfaceState {
     /// Off, the window shows nothing and the app tree carries no surface;
     /// the host's own switch (seeFood's Design mode) drives it.
     var isEnabled = true
-    /// Whether the panel tunes the registry theme itself. A host that paints
-    /// the registry items from its own tokens turns this off, so the panel
-    /// shows only its screen, its selection, and the host's sections.
+    /// Whether Tune tunes the registry theme itself. A host that paints
+    /// the registry items from its own tokens turns this off, so Tokens
+    /// shows only the selection, its knobs, and the host's sections.
     var tunesTheme = true
-    /// The host's own panel sections, given the selected item's name; they
-    /// follow the screen and the selection in the panel's form.
+    /// The host's own sections, given the selected item's name; they
+    /// follow the screen and the selection in Tokens.
     var hostSections: (([String]) -> AnyView)?
     /// The host's title for an item name, for the item menu and the
     /// outlines; `nil` keeps the name.
     var itemTitle: ((String) -> String?)?
-    /// The host's page for an item name, pushed on the panel's own stack when
-    /// a pick lands on an item the host has a page for; `nil` for none.
+    /// The host's page for an item name, pushed on the card's own stack when
+    /// a selection lands on an item the host has a page for; `nil` for none.
     var hostPage: ((String) -> AnyView?)?
-    /// Wraps the panel's navigation stack, so a host can set environment values
+    /// Wraps the card's navigation stack, so a host can set environment values
     /// that every pushed page reads (a pushed page never reads its link's).
     var panelWrap: ((AnyView) -> AnyView)?
 

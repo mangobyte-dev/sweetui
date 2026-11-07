@@ -9,7 +9,7 @@ import UIKit
 /// Increase Contrast on. A system color adapts there; a custom color does not,
 /// so it must pass on its own.
 ///
-/// A pair is listed when a knob decides it: the accent pairs always, the text
+/// A pair is listed when a token decides it: the accent pairs always, the text
 /// pairs once the theme sets its own foreground or background. Two system
 /// colors over each other are the system's to keep legible.
 @MainActor

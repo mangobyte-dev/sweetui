@@ -9,7 +9,7 @@ extension SharedKey where Self == FileStorageKey<ThemeTuning>.Default {
     /// uses there; measured 2026-09-08, the two clobbered each other). The
     /// file is the export: it carries the preset code the registry tools read
     /// (`sweetui preset decode`, `preset apply`, the MCP
-    /// `describe_preset` and `apply_preset`) beside every knob, in the shape
+    /// `describe_preset` and `apply_preset`) beside every token, in the shape
     /// `ThemeTuning`'s `Codable` conformance describes. A tuning survives a
     /// relaunch through it.
     public static var designTokens: Self {
@@ -24,11 +24,11 @@ extension ThemeTuning {
     /// Where the surface keeps the tokens. On a simulator the file is readable
     /// from the host through the app's data container (`xcrun simctl
     /// get_app_container <udid> <bundle id> data`); on a device the code and
-    /// the Swift leave through the panel's copy actions and the share sheet.
+    /// the Swift leave through Copy code and Copy Swift in Versions.
     public static let fileURL = URL.documentsDirectory.appending(component: "registry-tokens.json")
 
     /// Pretty-printed with sorted keys, so the file reads as a document and a
-    /// diff of it shows the knob that moved.
+    /// diff of it shows the token that moved.
     static var fileEncoder: JSONEncoder {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]

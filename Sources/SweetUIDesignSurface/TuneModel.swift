@@ -58,7 +58,7 @@ final class TuneModel {
     /// and that page while it waits for the card to push it.
     var hostPageItem: String?
     var hostPageToPush: String?
-    /// Note armed Selecting: the pick returns to the focused composer.
+    /// Note armed Selecting: the tap returns to the focused composer.
     @ObservationIgnored var composesAfterSelecting = false
 
     @ObservationIgnored @Shared(.designTokens) var tuning

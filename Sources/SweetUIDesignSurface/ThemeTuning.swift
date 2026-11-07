@@ -4,7 +4,7 @@ import SwiftUI
 import SweetUIFoundations
 import UIKit
 
-/// Every knob the tuning panel exposes, as plain values so the result can be
+/// Every token Tune exposes, as plain values so the result can be
 /// persisted, restored, and exported as the exact `RegistryTheme` source a
 /// consuming app pastes once at its root.
 public struct ThemeTuning: Equatable, Sendable {
@@ -84,8 +84,8 @@ public struct ThemeTuning: Equatable, Sendable {
         }
 
         /// The fewest decimals, never under `minimum`, that read back as the
-        /// value, so a knob off its slider grid exports what the screen shows
-        /// and a knob on it keeps its short form.
+        /// value, so a token off its slider grid exports what the screen shows
+        /// and a token on it keeps its short form.
         static func format(_ value: Double, minimum: Int = 3) -> String {
             for digits in minimum...15 {
                 let text = String(format: "%.\(digits)f", value)
@@ -140,7 +140,7 @@ public struct ThemeTuning: Equatable, Sendable {
     }
 
     /// The font design the theme carries, applied by `registryTheme(_:)` through
-    /// `fontDesign(_:)`. A custom family is never a knob: it lives in the Swift
+    /// `fontDesign(_:)`. A custom family is never a token: it lives in the Swift
     /// export and the theme package, not in a code.
     public enum FontDesign: String, Codable, CaseIterable, Identifiable, Sendable {
         case `default`, rounded, serif, monospaced
@@ -199,8 +199,8 @@ public struct ThemeTuning: Equatable, Sendable {
     }
 
     /// A named bundle of the spacing, padding, and radius metrics. Not a stored
-    /// field or part of a code: selecting one writes those seven knobs, and the
-    /// panel shows which bundle the current knobs match, or Custom.
+    /// field or part of a code: selecting one writes those seven tokens, and
+    /// Tokens shows which bundle the current tokens match, or Custom.
     enum Density: String, CaseIterable, Identifiable {
         case compact, regular, generous
         var id: String { rawValue }
@@ -283,7 +283,7 @@ public struct ThemeTuning: Equatable, Sendable {
 
     // MARK: Derived
 
-    /// These knobs as the preset code carries them: each number on its slider
+    /// These tokens as the preset code carries them: each number on its slider
     /// grid, each color at 8 bits a channel. A value that arrives off the grid
     /// (an import, an edited file) renders and exports snapped, so the screen
     /// never shows what the code would change.
@@ -455,7 +455,7 @@ public struct ThemeTuning: Equatable, Sendable {
 
     /// Reads a preset code, with or without its `--preset` flag, or a
     /// `RegistryTheme(...)` initializer in the exact shape ``swiftSource`` writes
-    /// or any subset of its labeled arguments, into the knobs. Unknown or
+    /// or any subset of its labeled arguments, into the tokens. Unknown or
     /// malformed arguments are ignored; nothing is imported when neither a code
     /// nor a `RegistryTheme(` call is present. Environment switches are never
     /// part of a theme.
@@ -545,8 +545,8 @@ public struct ThemeTuning: Equatable, Sendable {
     // MARK: Density
 
     /// The seven metrics a density bundle sets. Density is derived, never stored:
-    /// selecting a bundle writes these knobs, and `matchingDensity` reports which
-    /// bundle, if any, the current knobs match.
+    /// selecting a bundle writes these tokens, and `matchingDensity` reports which
+    /// bundle, if any, the current tokens match.
     private struct DensityMetrics {
         let compactSpacing, standardSpacing, sectionSpacing, controlHorizontalPadding: Double
         let compactRadius, controlRadius, cardRadius: Double
@@ -567,7 +567,7 @@ public struct ThemeTuning: Equatable, Sendable {
         ),
     ]
 
-    /// Writes a density bundle's seven metrics, leaving every other knob alone.
+    /// Writes a density bundle's seven metrics, leaving every other token alone.
     mutating func apply(density: Density) {
         guard let bundle = Self.densityBundles[density] else { return }
         compactSpacing = bundle.compactSpacing
@@ -579,7 +579,7 @@ public struct ThemeTuning: Equatable, Sendable {
         cardRadius = bundle.cardRadius
     }
 
-    /// The bundle the spacing, padding, and radius knobs currently match, or
+    /// The bundle the spacing, padding, and radius tokens currently match, or
     /// `nil` when they match none, in which case the panel shows Custom.
     var matchingDensity: Density? {
         Density.allCases.first { density in
@@ -596,7 +596,7 @@ public struct ThemeTuning: Equatable, Sendable {
 
     // MARK: Presets
 
-    /// Loads a foundation preset's accent choice into the knobs, keeping the
+    /// Loads a foundation preset's accent choice into the tokens, keeping the
     /// tuned metrics. MANGO is the exception: its strokeless surface and
     /// generous radii are part of its identity, so its case decodes the whole
     /// tuning from its preset code, keeping only the environment switches.
@@ -611,7 +611,7 @@ public struct ThemeTuning: Equatable, Sendable {
         case "Mango":
             // MANGO carries its own metrics, not only an accent, so decode its
             // pinned preset code (Registry/preset_vectors.json) over self to
-            // load every knob while keeping the environment switches.
+            // load every token while keeping the environment switches.
             if let mango = ThemeTuning(presetCode: "a74hGF01CVunaG0vzZJG", base: self) {
                 self = mango
             }

@@ -1,23 +1,26 @@
 #if canImport(UIKit)
-import Sharing
 import SwiftUI
 import SweetUIFoundations
 
-/// The theme's tokens embedded in a host's own screen or a preview: every
-/// token as a live control in Tune's groups, the preset code that names the
-/// result, and the exact Swift to paste once at an app root. Tune's card
-/// shows the same groups under Tokens.
+/// The theme's tokens in a host's own screen or a preview: the groups Tune
+/// shows under Tokens, Color open with the Checks and the rest collapsed,
+/// each token a live control over the tuning it edits. Tune's card holds
+/// Start from, the selection, the notes, the versions, and the code.
 public struct TuningPanel<PresetsFooter: View>: View {
     @Binding var tuning: ThemeTuning
-    let presetsFooter: PresetsFooter
-    /// The selection: `nil` shows every token and no Select control, as the
-    /// Showcase's previews and tests do; an item shows the tokens that reach it.
+    private let presetsFooter: PresetsFooter
+    /// The selection: `nil` shows every token; an item shows the tokens
+    /// that reach it.
     private let selection: Binding<ItemSelection>?
+    @State private var openGroups: Set<TokenCatalog.Token.Group> = [.color]
 
-    /// The panel over the tuning it edits. `presetsFooter` is the host's own
-    /// row under the preset chips, such as a link to a sample design system.
-    /// `showsScreen` is no longer read: the screen, its notes, and its
-    /// versions live in Tune's card, which `designSurface()` shows.
+    /// The groups over the tuning they edit, with the host's row above them.
+    /// `showsScreen` is not read: the screen, its notes, and its versions
+    /// live in Tune's card.
+    @available(
+        *, deprecated,
+        message: "Tune's card holds the presets, the selection, and the code. Use designSurface(isPresented:presetsFooter:)."
+    )
     public init(
         tuning: Binding<ThemeTuning>,
         selection: Binding<ItemSelection>? = nil,
@@ -29,128 +32,33 @@ public struct TuningPanel<PresetsFooter: View>: View {
         self.presetsFooter = presetsFooter()
     }
 
-    @State private var openGroups: Set<TokenCatalog.Token.Group> = [.color]
-
     /// Every token, or those that reach the selected item.
     private var tokens: [TokenCatalog.Token] {
         selection?.wrappedValue.item.map(TokenCatalog.reaching) ?? TokenCatalog.theme
     }
 
     public var body: some View {
-        NavigationStack {
-            Form {
-                PresetsSection(tuning: $tuning, footer: presetsFooter)
-                Section("Code") {
-                    CodeRows(tuning: tuning)
-                }
-                TokenGroups(
-                    tuning: $tuning, color: $tuning, tokens: tokens, open: $openGroups,
-                    actions: .editing($tuning))
+        Form {
+            if !(presetsFooter is EmptyView) {
+                Section { presetsFooter }
             }
-            .accessibilityIdentifier("tuning.form")
-            .navigationTitle("Tune")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Reset") {
-                        withAnimation(ToolChrome.animation) { tuning = .default }
-                    }
-                }
-                if let selection {
-                    ToolbarItem(placement: .topBarLeading) {
-                        // Arms the next tap on the content to pick the item under it.
-                        Button("Select", systemImage: "scope") {
-                            withAnimation(ToolChrome.animation) { selection.wrappedValue.isSelecting.toggle() }
-                        }
-                        .accessibilityIdentifier("tuning.select")
-                        .accessibilityAddTraits(selection.wrappedValue.isSelecting ? [.isSelected] : [])
-                    }
-                }
-            }
+            TokenGroups(
+                tuning: $tuning, color: $tuning, tokens: tokens, open: $openGroups, actions: .editing($tuning))
         }
+        .accessibilityIdentifier("tuning.form")
     }
 }
 
 extension TuningPanel where PresetsFooter == EmptyView {
+    /// The theme's groups over the tuning they edit.
     public init(tuning: Binding<ThemeTuning>) {
-        self.init(tuning: tuning) { EmptyView() }
+        _tuning = tuning
+        selection = nil
+        presetsFooter = EmptyView()
     }
 }
 
-private struct PresetsSection<Footer: View>: View {
-    @Binding var tuning: ThemeTuning
-    let footer: Footer
-
-    var body: some View {
-        Section("Presets") {
-            PresetChips { name in
-                withAnimation(ToolChrome.animation) { tuning.apply(presetNamed: name) }
-            }
-            footer
-        }
-    }
-}
-
-/// One chip per foundation preset, each in its own theme, in a row that scrolls.
-struct PresetChips: View {
-    let apply: (String) -> Void
-
-    var body: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                ForEach(RegistryTheme.presets) { preset in
-                    Button {
-                        apply(preset.name)
-                    } label: {
-                        // The small bezel around it makes a 44 pt target.
-                        Text(preset.name).frame(minHeight: 34)
-                    }
-                    // A native style, not the registry button item: the
-                    // panel is a package product and items are copied source.
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .registryTheme(preset.theme)
-                    .accessibilityIdentifier("tuning.preset.\(preset.name)")
-                }
-            }
-        }
-        .scrollIndicators(.hidden)
-        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-    }
-}
-
-/// Copy code, Copy Swift, and the Swift to read: the two ways a tuned theme
-/// leaves the app. Under Source the app shows its own theme, so there is no
-/// code to copy.
-struct CodeRows: View {
-    let tuning: ThemeTuning
-    var isSource = false
-
-    var body: some View {
-        CopyButton("Copy code", text: "--preset \(tuning.presetCode)")
-            .disabled(isSource)
-            .accessibilityIdentifier("tuning.copyCode")
-        CopyButton("Copy Swift", text: tuning.swiftSource)
-            .disabled(isSource)
-            .accessibilityIdentifier("tuning.copySwift")
-        if isSource {
-            Text("Tune sets no token, so there is no code to copy. The app shows its own theme.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        } else {
-            DisclosureGroup("Swift") {
-                Text(verbatim: tuning.swiftSource)
-                    .font(.footnote.monospaced())
-                    .textSelection(.enabled)
-                Text("Paste this once at your scene root. Every registry item you install inherits it.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-}
-
-#Preview("Tuning Panel") {
+#Preview("Tokens") {
     @Previewable @State var tuning = ThemeTuning.default
     TuningPanel(tuning: $tuning)
         .registryTheme(tuning.theme)

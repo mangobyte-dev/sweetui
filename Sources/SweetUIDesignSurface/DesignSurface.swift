@@ -6,15 +6,16 @@ import SweetUIFoundations
 public extension View {
     /// Turns this subtree into a design surface in debug builds: the theme the
     /// shared tokens describe is applied here, and the tool's own window puts
-    /// a draggable Tune button and a floating, movable, resizable panel over
+    /// a draggable Tune button and a floating, movable, resizable card over
     /// the whole app, which stays live underneath on every tab, sheet, and
     /// cover. Every registry item below reads the tuned tokens from the environment
-    /// and updates as a knob moves; the tokens persist in `registry-tokens.json`
-    /// (``ThemeTuning/fileURL``) and leave through the panel's copy actions.
+    /// and updates as a token moves; the tokens persist in `registry-tokens.json`
+    /// (``ThemeTuning/fileURL``) and leave through Copy code and Copy Swift in
+    /// Versions, or the hand-off to the agent.
     ///
     /// `tokens` registers the host's own token document (``TokenDocument``),
-    /// whose pages join the panel and whose file sits beside the registry's;
-    /// `knobs` registers per-item numeric knobs (``ItemKnob``) the items read
+    /// whose pages join Tokens and whose file sits beside the registry's;
+    /// `knobs` registers per-item knobs (``ItemKnob``) the items read
     /// through `registryKnob(_:_:default:)` in the environment.
     ///
     /// A release build returns the content unchanged. Apply it inside the
@@ -36,7 +37,7 @@ public extension View {
     /// The surface for a host that paints the registry items from its own
     /// tokens. It compiles in every configuration (a host reviews on TestFlight
     /// too): `enabled` shows or hides the whole tool (the host's own switch),
-    /// `tunesRegistryTheme: false` drops the panel's theme sections, and
+    /// `tunesRegistryTheme: false` drops Tokens' theme groups and Checks, and
     /// `panel` adds the host's own sections under the screen and the
     /// selection, given the selected item's name.
     func designSurface<Panel: View>(
@@ -55,7 +56,7 @@ public extension View {
             panelWrap: panelEnvironment))
     }
 
-    /// The surface with the host also driving the panel through `isPresented`;
+    /// The surface with the host also driving the card through `isPresented`;
     /// the window then shows no floating button of its own.
     func designSurface(
         isPresented: Binding<Bool>,
@@ -71,7 +72,7 @@ public extension View {
     }
 
     /// The surface with the host owning the trigger and adding its own row
-    /// under the panel's preset chips, such as a link to a sample design system.
+    /// under the preset chips in Start from, such as a link to a sample design system.
     func designSurface<PresetsFooter: View>(
         isPresented: Binding<Bool>,
         tokens: (any TokenDocument.Type)? = nil,
@@ -117,7 +118,7 @@ private let surfaceReporter = RegistrySurfaceReporter(
 /// The tool lives in its own window (``DesignSurfaceWindow``): this modifier
 /// keeps what must sit in the app's tree, the tuned theme and environment
 /// switches, the item surface the tagged roots read, and the reporter they
-/// and the named screens call. The button, the floating panel, the outlines,
+/// and the named screens call. The button, the floating card, the outlines,
 /// the guides, and the tap capture that resolves a selection to the innermost
 /// reported frame all come from the window, so they cover every tab, sheet,
 /// and cover while the app stays live underneath.
@@ -144,7 +145,7 @@ private struct DesignSurfaceModifier<PresetsFooter: View>: ViewModifier {
     func body(content: Content) -> some View {
         content
             // Items report their frames and draw their selection ring only
-            // while the panel is up; one capture layer above the content
+            // while the card is up; one capture layer above the content
             // resolves a tap to the innermost item so items never compete
             // for the gesture and controls stay untouched when not selecting.
             .environment(

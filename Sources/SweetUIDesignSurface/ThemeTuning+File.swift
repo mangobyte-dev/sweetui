@@ -6,7 +6,7 @@ import Foundation
 /// `tuning` holds the same keys `sweetui preset decode --json` prints
 /// under its `tuning` object, every key always present and colors spelled
 /// `#RRGGBB`, so a person and an agent read one shape; `code` and `version`
-/// name the same knobs as a preset code, the string every registry tool and
+/// name the same tokens as a preset code, the string every registry tool and
 /// the website accept. `environment` holds the switches a code never carries.
 /// Decoding is forgiving in one direction: a `tuning` object may name any
 /// subset of the keys and the rest keep their defaults, and a document with
@@ -32,7 +32,7 @@ extension ThemeTuning: Codable {
         case appearance, textSize, rightToLeft, direction
     }
 
-    /// The numeric knobs in the reference order, each with its key.
+    /// The number tokens in the reference order, each with its key.
     static let numericKeys: [(key: TuningKeys, path: WritableKeyPath<ThemeTuning, Double> & Sendable)] = [
         (.surfaceOpacity, \.surfaceOpacity),
         (.borderOpacity, \.borderOpacity),
@@ -175,15 +175,15 @@ extension ThemeTuning.RGB {
 }
 
 extension ThemeTuning {
-    /// One knob that differs between two tunings, spelled as the file spells it.
+    /// One token that differs between two tunings, spelled as the file spells it.
     public struct Difference: Codable, Equatable, Sendable {
         public let key: String
         public let from: String
         public let to: String
     }
 
-    /// Every knob where `self` differs from `base`, in the file's key order;
-    /// the environment switches are not knobs and never listed.
+    /// Every token where `self` differs from `base`, in the file's key order;
+    /// the environment switches are not tokens and never listed.
     public func differences(from base: ThemeTuning) -> [Difference] {
         var result: [Difference] = []
         func add(_ key: TuningKeys, _ from: String, _ to: String) {
