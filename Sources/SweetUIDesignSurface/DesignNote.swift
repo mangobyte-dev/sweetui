@@ -32,6 +32,17 @@ public struct DesignNote: Codable, Equatable, Identifiable, Sendable {
     /// The screenshot taken with the note, relative to Documents (`notes/<id>.png`).
     public var screenshot: String? = nil
     public var resolved = false
+    /// What the agent answered when it resolved the note, and when.
+    public var reply: String? = nil
+    public var changedFiles: [String]? = nil
+    public var resolvedAt: Date? = nil
+
+    /// Puts an answered note back in the agent's queue, keeping the reply
+    /// as the thread so far.
+    public mutating func reopen() {
+        resolved = false
+        resolvedAt = nil
+    }
 
     public init(
         id: UUID = UUID(), createdAt: Date = .now, text: String, item: String?, chain: [String],

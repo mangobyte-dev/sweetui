@@ -185,7 +185,13 @@ public struct MCPServer {
     }
     if tool == "resolve_design_note" {
       let file = try notesFile(arguments)
-      let note = try DesignNotes.resolve(id: string(arguments, "id"), file: file)
+      let changed = arguments["changedFiles"]
+      if changed != .null, changed.array == nil {
+        throw InvalidArgument(message: "changedFiles must be an array of strings")
+      }
+      let note = try DesignNotes.resolve(
+        id: string(arguments, "id"), file: file, reply: optional(arguments, "reply"),
+        changedFiles: changed.strings)
       return ["file": .string(file), "note": OrderedJSON(note)]
     }
     if tool == "describe_preset" {

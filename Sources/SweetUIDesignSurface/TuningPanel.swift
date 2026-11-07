@@ -386,23 +386,38 @@ private struct NotesSection: View {
     }()
 
     private var open: [DesignNote] { notes.filter { !$0.resolved }.reversed() }
+    private var answered: [DesignNote] { notes.filter(\.resolved).reversed() }
 
     var body: some View {
         Section {
             ForEach(open) { note in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(note.text)
-                    Text(verbatim: note.item.map(state.title) ?? note.screen ?? "Screen")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("tuning.note")
-                .swipeActions {
-                    Button("Delete", systemImage: "trash", role: .destructive) {
-                        $notes.withLock { $0.removeAll { $0.id == note.id } }
+                NoteRow(note: note, about: note.item.map(state.title) ?? note.screen ?? "Screen")
+                    .accessibilityIdentifier("tuning.note")
+                    .swipeActions {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
+                            $notes.withLock { $0.removeAll { $0.id == note.id } }
+                        }
+                    }
+            }
+            if !answered.isEmpty {
+                DisclosureGroup("Answered (\(answered.count))") {
+                    ForEach(answered) { note in
+                        NoteRow(note: note, about: note.item.map(state.title) ?? note.screen ?? "Screen")
+                            .accessibilityIdentifier("tuning.note.answered")
+                            .swipeActions {
+                                Button("Reopen", systemImage: "arrow.uturn.backward") {
+                                    $notes.withLock { notes in
+                                        if let index = notes.firstIndex(where: { $0.id == note.id }) { notes[index].reopen() }
+                                    }
+                                }
+                                .tint(ToolChrome.accent)
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    $notes.withLock { $0.removeAll { $0.id == note.id } }
+                                }
+                            }
                     }
                 }
+                .accessibilityIdentifier("tuning.notes.answered")
             }
             Button(selection.item == nil ? "Note this screen" : "Note this item", systemImage: "square.and.pencil") {
                 // A field inside a sheet takes focus only in the key window.
@@ -429,6 +444,33 @@ private struct NotesSection: View {
                 DesignContext.write(state: state, tuning: tuning, screenshot: note.screenshot)
             }
         }
+    }
+}
+
+/// One note: its text, what it is about, and the agent's reply once it
+/// has one, with the files the agent changed.
+private struct NoteRow: View {
+    let note: DesignNote
+    let about: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(note.text)
+            Text(verbatim: about)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            if let reply = note.reply {
+                Label(reply, systemImage: "arrowshape.turn.up.left")
+                    .font(.footnote)
+                    .padding(.top, 2)
+                if let files = note.changedFiles, !files.isEmpty {
+                    Text(files.joined(separator: ", "))
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

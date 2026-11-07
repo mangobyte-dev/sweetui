@@ -41,6 +41,9 @@
   rebuild. Each write records the previous values in `design-agent-change.json`; the panel shows
   "From the agent" with Undo and Keep. Verified on the iPhone Duo: a `set_tuning` over the real MCP
   server turned the running app pink and the banner's Undo put indigo back. Undo is one step deep.
+- Note threads. `resolve_design_note` takes a `reply` and `changedFiles`, and stamps `resolvedAt`.
+  The panel shows an answered note under Answered with the agent's reply and the files it changed;
+  swipe to reopen it (the reply stays as the thread so far) or delete it.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
   background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only

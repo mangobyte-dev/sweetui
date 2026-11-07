@@ -22,11 +22,15 @@ public enum DesignNotes {
     return includeResolved ? notes : notes.filter { $0["resolved"] != true }
   }
 
-  /// Marks the note resolved and writes the file back; the other notes keep
-  /// their bytes' meaning (the keys are re-rendered in the file's own
-  /// sorted order). Returns the note as written.
-  public static func resolve(id: String, file: String) throws -> JSON {
+  /// Marks the note resolved, with the agent's reply and the files it
+  /// changed when given, and writes the file back; the other notes keep
+  /// their values (the keys are re-rendered in the file's own sorted
+  /// order). Returns the note as written.
+  public static func resolve(
+    id: String, file: String, reply: String? = nil, changedFiles: [String] = []
+  ) throws -> JSON {
     @Dependency(\.registryFileSystem) var fs
+    @Dependency(\.date.now) var now
     var notes = try read(file)
     guard let index = notes.firstIndex(where: { $0["id"].string?.lowercased() == id.lowercased() })
     else {
@@ -34,6 +38,9 @@ public enum DesignNotes {
     }
     guard var note = notes[index].object else { throw RegistryError("note \(id) is not an object") }
     note["resolved"] = true
+    note["resolvedAt"] = .string(ISO8601DateFormatter().string(from: now))
+    if let reply, !reply.isEmpty { note["reply"] = .string(reply) }
+    if !changedFiles.isEmpty { note["changedFiles"] = .array(changedFiles.map(JSON.string)) }
     notes[index] = .object(note)
     try fs.write(Data(JSON.array(notes).rendered().utf8), file)
     return notes[index]

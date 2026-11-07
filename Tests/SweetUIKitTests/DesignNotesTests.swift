@@ -65,9 +65,13 @@ struct DesignNotesTests {
   @Test func resolvingFlipsOneNoteAndKeepsTheRest() throws {
     try withNotes { fs in
       let resolved = try DesignNotes.resolve(
-        id: "cebef0aa-20fe-420e-b251-b3a7fcff3fc1", file: "/app/design-notes.json")
+        id: "cebef0aa-20fe-420e-b251-b3a7fcff3fc1", file: "/app/design-notes.json",
+        reply: "Raised the card's elevation to high.", changedFiles: ["Sources/App/Theme.swift"])
       #expect(resolved["resolved"] == true)
       #expect(resolved["text"] == "Lift the card off the background")
+      #expect(resolved["reply"] == "Raised the card's elevation to high.")
+      #expect(resolved["changedFiles"].strings == ["Sources/App/Theme.swift"])
+      #expect(resolved["resolvedAt"].string?.hasSuffix("Z") == true)
       let written = try JSON.read(fs.read("/app/design-notes.json"))
       #expect(written.array?.count == 2)
       #expect(written.array?[0]["resolved"] == true)
@@ -108,8 +112,19 @@ struct DesignNotesTests {
       #expect(listed["result"]["structuredContent"]["file"] == "/app/design-notes.json")
       let resolved = try call(
         2, "resolve_design_note",
-        ["id": "CEBEF0AA-20FE-420E-B251-B3A7FCFF3FC1", "file": "/app/design-notes.json"])
+        [
+          "id": "CEBEF0AA-20FE-420E-B251-B3A7FCFF3FC1", "file": "/app/design-notes.json",
+          "reply": "Done.", "changedFiles": ["a.swift"],
+        ])
       #expect(resolved["result"]["structuredContent"]["note"]["resolved"] == true)
+      #expect(resolved["result"]["structuredContent"]["note"]["reply"] == "Done.")
+      let badFiles = try call(
+        6, "resolve_design_note",
+        [
+          "id": "6F3C1B2A-0000-4000-8000-000000000002", "file": "/app/design-notes.json",
+          "changedFiles": "a.swift",
+        ])
+      #expect(badFiles["result"]["isError"] == true)
       let empty = try call(3, "list_design_notes", ["file": "/app/design-notes.json"])
       #expect(empty["result"]["structuredContent"]["notes"] == [])
       // Neither a file nor a device is a tool error, not a crash.

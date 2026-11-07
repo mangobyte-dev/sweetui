@@ -57,4 +57,31 @@ struct DesignNoteTests {
         #expect(decoded.first?.knobs == ["elevation": 2])
         #expect(abs(decoded.first!.createdAt.timeIntervalSince(note.createdAt)) < 1)
     }
+
+    @Test func `An answered note reads the agent's reply and can be reopened`() throws {
+        let file = #"""
+            [{
+              "chain" : ["card"], "changedFiles" : ["Sources/App/Theme.swift"],
+              "createdAt" : "2026-11-07T00:11:49Z", "id" : "CEBEF0AA-20FE-420E-B251-B3A7FCFF3FC1",
+              "item" : "card", "knobs" : {}, "presetCode" : "a13GkaOXWwIF",
+              "reply" : "Raised the card's elevation to high.", "resolved" : true,
+              "resolvedAt" : "2026-11-07T00:30:00Z", "screen" : "Catalog",
+              "text" : "Lift the card off the background", "tokens" : ["cardRadius"]
+            }]
+            """#
+        var notes = try DesignNote.fileDecoder.decode([DesignNote].self, from: Data(file.utf8))
+        let note = try #require(notes.first)
+        #expect(note.resolved)
+        #expect(note.reply == "Raised the card's elevation to high.")
+        #expect(note.changedFiles == ["Sources/App/Theme.swift"])
+        #expect(note.resolvedAt != nil)
+
+        notes[0].reopen()
+        #expect(!notes[0].resolved)
+        #expect(notes[0].resolvedAt == nil)
+        #expect(notes[0].reply == "Raised the card's elevation to high.", "The thread so far stays.")
+        let document = try JSONSerialization.jsonObject(with: DesignNote.fileEncoder.encode(notes)) as! [[String: Any]]
+        #expect(document[0]["resolved"] as? Bool == false)
+        #expect(document[0]["resolvedAt"] == nil)
+    }
 }

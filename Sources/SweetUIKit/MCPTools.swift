@@ -318,13 +318,24 @@ extension MCPServer {
           {
             "name": "resolve_design_note",
             "title": "Resolve a design note",
-            "description": "Mark a note resolved in design-notes.json once its work is done; the Tune panel then drops it from its list. Locate the file as list_design_notes does.",
+            "description": "Mark a note resolved in design-notes.json once its work is done, with a reply the person reads under the note in the Tune panel and the files you changed; the panel moves it to Answered, where the person can reopen it. Locate the file as list_design_notes does.",
             "inputSchema": {
               "type": "object",
               "properties": {
                 "id": {
                   "type": "string",
                   "description": "The note's id, from list_design_notes"
+                },
+                "reply": {
+                  "type": "string",
+                  "description": "What you did, or why not, in a sentence or two"
+                },
+                "changedFiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Paths you changed for this note"
                 },
                 "file": {
                   "type": "string"
