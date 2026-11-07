@@ -120,7 +120,7 @@ private struct PlacePicker: View {
 
     var body: some View {
         Picker("Place", selection: $model.place) {
-            ForEach(model.places) { place in
+            ForEach(TuneModel.Place.allCases) { place in
                 Text(place.title)
                     .tag(place)
                     .accessibilityIdentifier("tuning.place.\(place.rawValue)")
@@ -139,7 +139,7 @@ private struct PlaceMenu: View {
     var body: some View {
         Menu {
             Picker("Place", selection: $model.place) {
-                ForEach(model.places) { place in
+                ForEach(TuneModel.Place.allCases) { place in
                     Text(place.title)
                         .tag(place)
                         .accessibilityIdentifier("tuning.place.\(place.rawValue)")
@@ -151,6 +151,7 @@ private struct PlaceMenu: View {
                 Text(model.place.title)
                 Image(systemName: "chevron.up.chevron.down")
                     .imageScale(.small)
+                    .accessibilityHidden(true)
             }
             .font(.subheadline.weight(.semibold))
             .lineLimit(1)
@@ -276,6 +277,7 @@ private struct PreviewMenu: View {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "eye")
+                    .accessibilityHidden(true)
                 if !overrides.isEmpty {
                     Text(verbatim: overrides.joined(separator: " · "))
                         .font(.caption.weight(.semibold))

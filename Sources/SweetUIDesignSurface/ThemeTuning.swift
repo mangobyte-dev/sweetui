@@ -126,9 +126,6 @@ public struct ThemeTuning: Equatable, Sendable {
         }
     }
 
-    /// The font design the theme carries, applied by `registryTheme(_:)` through
-    /// `fontDesign(_:)`. A custom family is never a knob: it lives in the Swift
-    /// export and the theme package, not in a code.
     /// Preview's layout direction: the system's, or one forced either way.
     public enum Direction: String, Codable, CaseIterable, Identifiable, Sendable {
         case system, leftToRight, rightToLeft
@@ -142,6 +139,9 @@ public struct ThemeTuning: Equatable, Sendable {
         }
     }
 
+    /// The font design the theme carries, applied by `registryTheme(_:)` through
+    /// `fontDesign(_:)`. A custom family is never a knob: it lives in the Swift
+    /// export and the theme package, not in a code.
     public enum FontDesign: String, Codable, CaseIterable, Identifiable, Sendable {
         case `default`, rounded, serif, monospaced
         public var id: String { rawValue }

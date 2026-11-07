@@ -11,7 +11,11 @@ struct NotesPlace: View {
         Form {
             AgentChangeSection(model: model)
             NotesSection(model: model)
-            VariantsSection(model: model)
+            // The agent's staged themes are codes, which a host that does
+            // not tune the theme never shows.
+            if model.stage.tunesTheme {
+                VariantsSection(model: model)
+            }
         }
         .accessibilityIdentifier("tuning.form")
     }

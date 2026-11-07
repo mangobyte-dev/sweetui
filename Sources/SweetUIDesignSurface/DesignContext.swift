@@ -27,13 +27,16 @@ public struct DesignContext: Codable, Equatable, Sendable {
     public var selectedItem: String?
     public var selectionChain: [String]
     public var items: [Item]
+    /// The design's preset code; empty under Source, while the app shows its
+    /// own theme.
     public var presetCode: String
     public var appearance: String
     public var textSize: String
     public var rightToLeft: Bool
     /// The last screenshot saved, relative to the Documents directory.
     public var screenshot: String?
-    /// The preset code the app showed when that screenshot was taken.
+    /// The preset code the app showed when that screenshot was taken; empty
+    /// under Source.
     public var screenshotCode: String?
     /// Whether the host tunes the registry theme; `false` for a host that
     /// paints the items from its own tokens.

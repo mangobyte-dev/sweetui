@@ -30,23 +30,37 @@ struct TuneModelTests {
         model.$history.withLock { $0.reconcile(values: model.liveDesign) }
         return model
     }
+
+    /// Launches the model as the live surface does, with the listener for
+    /// outside changes running, so a control's own write must not count a
+    /// second time as an outside one. Cancel the task when the test ends.
+    @MainActor
+    static func listening(_ model: TuneModel) async -> Task<Void, Never> {
+        let task = Task { await model.task() }
+        await Task.megaYield()
+        return task
+    }
 }
 
 extension TuneModelTests {
     @MainActor
     @Suite struct Settling {
-        @Test func `Ten slider steps between touch down and release record one version by you`() throws {
-            let model = TuneModelTests.launched()
+        @Test func `Ten slider steps between touch down and release record one version by you`() async throws {
+            let model = TuneModel(stage: DesignSurfaceState())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
             let before = model.history.entries.count
 
             model.sliderEditingChanged(true)
             for step in 1...10 {
                 model.tuningEdit.cardRadius = 16 + Double(step)
+                await Task.megaYield()
             }
             #expect(model.history.entries.count == before, "A step while the slider is held is not a version.")
             #expect(model.tuning.cardRadius == 26, "The app follows every step live.")
 
             model.sliderEditingChanged(false)
+            await Task.megaYield()
             #expect(model.history.entries.count == before + 1)
             let version = try #require(model.current)
             #expect(version.author == .you)
@@ -54,55 +68,78 @@ extension TuneModelTests {
             #expect(version.design.code == model.tuning.presetCode, "The version holds the value at release.")
         }
 
-        @Test func `A place change while a slider is held settles it as one version`() {
-            let model = TuneModelTests.launched()
+        @Test func `A place change while a slider is held settles it as one version`() async {
+            let model = TuneModel(stage: DesignSurfaceState())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
             let before = model.history.entries.count
 
             model.sliderEditingChanged(true)
             model.tuningEdit.cardRadius = 20
+            await Task.megaYield()
             model.tuningEdit.cardRadius = 24
+            await Task.megaYield()
             model.place = .versions
+            await Task.megaYield()
             #expect(model.history.entries.count == before + 1, "Leaving the place settles the held slider.")
             #expect(model.place == .versions)
             #expect(TuneModel(stage: DesignSurfaceState()).place == .versions, "The next open shows the last place.")
 
             // The slider is gone with its place; a late release adds nothing.
             model.sliderEditingChanged(false)
+            await Task.megaYield()
             #expect(model.history.entries.count == before + 1)
         }
 
-        @Test func `A menu or a switch records one version at once`() {
-            let model = TuneModelTests.launched()
+        @Test func `A menu or a switch records one version at once`() async {
+            let model = TuneModel(stage: DesignSurfaceState())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
             let before = model.history.entries.count
 
             model.tuningEdit.fontDesign = .rounded
             #expect(model.history.entries.count == before + 1)
             #expect(model.current?.author == .you)
+            await Task.megaYield()
+            #expect(model.history.entries.count == before + 1, "The listener does not count the menu's write again.")
 
             model.tuningEdit.darkLabelOnAccent = true
+            await Task.megaYield()
             #expect(model.history.entries.count == before + 2)
         }
 
-        @Test func `A color settles once, after its last change`() async {
-            let model = TuneModelTests.launched()
+        @Test(.dependency(\.continuousClock, TestClock()))
+        func `A color settles once, 0.6 s after its last change`() async throws {
+            @Dependency(\.continuousClock) var continuousClock
+            let clock = try #require(continuousClock as? TestClock<Duration>)
+            let model = TuneModel(stage: DesignSurfaceState())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
             let before = model.history.entries.count
 
+            // A drag across the wheel: each change comes before the last one settled.
             for color in [Color.red, .orange, .yellow] {
                 model.colorEdit.customAccentColor = color
+                await clock.advance(by: .milliseconds(500))
             }
             #expect(model.history.entries.count == before, "A color waits for the picker to rest.")
-            await model.colorSettle?.value
+            let settle = model.colorSettle
+            await clock.advance(by: .milliseconds(100))
+            await settle?.value
             #expect(model.history.entries.count == before + 1)
             #expect(model.current?.design.code == model.tuning.presetCode)
         }
 
-        @Test func `Preview is never a version`() {
-            let model = TuneModelTests.launched()
+        @Test func `Preview is never a version`() async {
+            let model = TuneModel(stage: DesignSurfaceState())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
             let before = model.history.entries.count
 
             model.appearance = .dark
             model.direction = .leftToRight
             model.textSize = .accessibility
+            await Task.megaYield()
             #expect(model.history.entries.count == before)
             #expect(model.previewOverrides == ["Dark", "AX3", "LTR"])
         }
@@ -178,18 +215,41 @@ extension TuneModelTests {
             #expect(record.contexts.value.last?.screenshot == "notes/context.png")
             #expect(record.contexts.value.last?.screenshotCode == model.tuning.presetCode)
         }
+
+        /// Under Source the theme file holds the default theme while the app
+        /// shows its own, so naming the default code would tell the agent
+        /// the screenshot shows a theme it does not.
+        @Test func `Under Source the context names no code, since the app shows its own theme`() async {
+            @Dependency(\.outboxRecord) var record
+            let model = TuneModel(stage: DesignSurfaceState())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            await model.contextCapture?.value
+            #expect(model.tuning.presetCode == ThemeTuning.default.presetCode)
+            #expect(record.contexts.value.last?.presetCode == "", "A fresh launch is Source.")
+            #expect(record.contexts.value.last?.screenshotCode == "")
+
+            model.presetChipTapped("Mango")
+            await model.contextCapture?.value
+            #expect(record.contexts.value.last?.presetCode == model.tuning.presetCode)
+            #expect(record.contexts.value.last?.screenshotCode == model.tuning.presetCode)
+
+            model.sourceButtonTapped()
+            await model.contextCapture?.value
+            #expect(record.contexts.value.last?.presetCode == "")
+            #expect(record.contexts.value.last?.screenshotCode == "", "The screenshot shows the app's own theme.")
+        }
     }
 
     @MainActor
     @Suite struct Hosts {
-        @Test func `A host that does not tune the theme keeps Versions and has no Start from`() {
+        @Test func `A host that does not tune the theme has no Start from and records knob-only designs`() {
             let stage = DesignSurfaceState()
             stage.tunesTheme = false
             let knob = ItemKnob("height", in: 24...60, shipped: 36)
             stage.knobs.register(["button": [knob]])
             let model = TuneModelTests.launched(stage)
 
-            #expect(model.places.contains(.versions))
             #expect(!model.showsStartFrom)
             #expect(TuneModelTests.launched().showsStartFrom, "A host that tunes the theme starts from presets.")
 
@@ -198,21 +258,29 @@ extension TuneModelTests {
             #expect(model.current?.design == DesignHistory.Design(knobs: ["button": ["height": 44]]))
         }
 
-        @Test func `Source clears every override and Default is a version of its own`() {
+        @Test func `Source clears every override and Default is a version of its own`() async {
             let stage = DesignSurfaceState()
             let knob = ItemKnob("height", in: 24...60, shipped: 36)
             stage.knobs.register(["button": [knob]])
-            let model = TuneModelTests.launched(stage)
+            let model = TuneModel(stage: stage)
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
             model.presetChipTapped("Mango")
             model.knobChanged("button", knob, to: 44)
+            await Task.megaYield()
+            let before = model.history.entries.count
 
             model.sourceButtonTapped()
+            await Task.megaYield()
+            #expect(model.history.entries.count == before + 1, "Source is one version, not one per file it clears.")
             #expect(model.current?.design == DesignHistory.Design())
             #expect(model.current?.origin == .source)
             #expect(stage.knobs.values.isEmpty)
             #expect(model.history.design(code: model.tuning.presetCode, knobs: [:]).code.isEmpty, "The app's own theme shows.")
 
             model.defaultButtonTapped()
+            await Task.megaYield()
+            #expect(model.history.entries.count == before + 2)
             #expect(model.current?.origin == .defaultTheme)
             #expect(model.current?.design.code == ThemeTuning.default.presetCode, "Default paints the default theme.")
         }

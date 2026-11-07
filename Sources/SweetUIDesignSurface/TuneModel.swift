@@ -73,9 +73,6 @@ final class TuneModel {
         }
     }
 
-    /// Versions stays for a host that tunes only knobs.
-    var places: [Place] { Place.allCases }
-
     /// Start from applies themes, so a host that paints the items from its
     /// own tokens has none.
     var showsStartFrom: Bool { stage.tunesTheme }
@@ -161,7 +158,11 @@ final class TuneModel {
     func task() async {
         $history.withLock { $0.reconcile(values: liveDesign) }
         refreshContext()
-        let changes = Publishers.Merge($tuning.publisher.map { _ in }, stage.knobs.$values.publisher.map { _ in })
+        // The maps are Sendable, so not isolated to the main actor: the loop
+        // asks for the next value off it, and a value buffered by two quick
+        // writes runs the map there, which traps an isolated closure.
+        let changes = Publishers.Merge(
+            $tuning.publisher.map { @Sendable _ in }, stage.knobs.$values.publisher.map { @Sendable _ in })
         for await _ in changes.values {
             outsideChange()
         }
@@ -203,16 +204,20 @@ final class TuneModel {
         contextCapture = Task { [weak self, clock] in
             do { try await clock.sleep(for: .milliseconds(300)) } catch { return }
             guard let self, !stage.selection.isSelecting else { return }
-            let code = tuning.presetCode
+            let code = liveDesign.code
             guard let path = outbox.saveScreenshot("context", selectedFrame) else { return }
             contextScreenshot = (path, code)
             outbox.writeContext(context)
         }
     }
 
+    /// The context names the design's code, empty under Source: the theme
+    /// file then holds the default theme, but the app shows its own.
     private var context: DesignContext {
-        DesignContext.capture(
+        var context = DesignContext.capture(
             state: stage, tuning: tuning, screenshot: contextScreenshot?.path, screenshotCode: contextScreenshot?.code)
+        context.presetCode = liveDesign.code
+        return context
     }
 
     /// The screen, its items, or the selection changed.

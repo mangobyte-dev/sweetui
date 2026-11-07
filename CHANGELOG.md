@@ -72,8 +72,9 @@
 
 ### Known limitations
 
-- On the iPhone Duo cover display (iOS 27.1 simulator) the panel's sheets (Import, Note) never
-  present; the same taps present them on the open inner display. Unverified on the pinned iPhone 17.
+- On the iPhone Duo cover display (iOS 27.1 simulator) Tune's Preview menu opens upward and runs past
+  the top edge: Outlines and Guides sit off screen when it opens, so they take more than 2 taps.
+  Whether the system color picker presents there is not checked. Unverified on the pinned iPhone 17.
 
 - The shipped default (SwiftUI's indigo under a white label) fails in dark at 3.51:1, and Increase
   Contrast lowers it to 2.13:1, because the accessible indigo is lighter. `systemRed` under the white

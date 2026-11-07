@@ -116,11 +116,11 @@ Place / affordance → destination / [content]. The shell is not a place; Select
 ### Shell
 
 [drag bar: grab, Collapse] [toolbar: Select; item menu label, "Home · 6 items" or "Card in Grid";
-at accessibility sizes the place Menu] [place picker: Tokens, Notes with the count of new answers
-and proposals, Versions] [the place] [bottom, in `safeAreaInset`: the Trying strip while a
-proposal is trying, "Trying Warm. Accent, Card radius." with Keep and Discard; the bottom bar:
-Undo, Redo, Preview showing its active overrides, Note] [card closed: the Tune button with a
-badge for new agent activity]
+at accessibility sizes, or in a card too short for the picker, the place Menu] [place picker:
+Tokens, Notes with the count of new answers and proposals, Versions] [the place] [bottom, in
+`safeAreaInset`: the Trying strip while a proposal is trying, "Trying Warm. Accent, Card radius."
+with Keep and Discard; the bottom bar: Undo, Redo, Preview showing its active overrides, Note]
+[card closed: the Tune button with a badge for new agent activity]
 
 - Tune button → the card at the remembered place (Tokens on first open)
 - Drag bar, grip → same place, card moved, resized, or snapped to the iPad column (PanelGeometry kept)
@@ -143,7 +143,7 @@ that was current before it; `tunesRegistryTheme: false` keeps Versions for knob-
 hides Start from, Copy code, and Copy Swift; a host that owns the trigger has no button and no badge; a
 proposal arriving with the card closed is tried and the button reads "Tune, 1 new from the
 agent"; at the 300 × 260 minimum the strip replaces the bottom bar while trying and the picker
-becomes a Menu at accessibility sizes; the keyboard pads the card as today.
+becomes a Menu, as it does at accessibility sizes; the keyboard pads the card as today.
 
 ### Tokens (J1, J2, J4)
 
@@ -227,8 +227,7 @@ accepts its answer; Restore, Apply, and Undo while trying discard first and the 
 a bad pasted code in Start from ("That is not a code Tune can read. Copy one from
 sweetui.dev/create.") changes nothing; on launch the value files are the truth and a version
 (origin edit) is recorded when they differ from history's Current; past 200 versions the oldest unnamed version that is
-not Current, a trial base, or Shipped drops and its children take its parent;
-`tunesRegistryTheme: false` hides the place.
+not Current, a trial base, or Shipped drops and its children take its parent.
 
 ### Selecting
 
@@ -257,7 +256,7 @@ simulator taps do not focus SwiftUI fields.
 
 ## Surface decisions
 
-- Chrome, top to bottom: drag bar; toolbar with Select and the item menu label; segmented place picker with counts; the place; at the bottom the Trying strip when present and the bottom bar (Undo, Redo, Preview, Note). At 300 × 260 content keeps 120 pt or the strip replaces the bottom bar; at accessibility sizes the picker becomes a Menu. Proved with `simless --matrix`.
+- Chrome, top to bottom: drag bar; toolbar with Select and the item menu label; segmented place picker with counts; the place; at the bottom the Trying strip when present and the bottom bar (Undo, Redo, Preview, Note). At 300 × 260 content keeps 120 pt or the strip replaces the bottom bar; at accessibility sizes, and while the card is under 248 pt below the drag bar (toolbar 44, picker row 40, bottom bar 44, place 120), the picker becomes a Menu in the toolbar. Proved with `simless --matrix`.
 - Prominence: the app is the canvas. The strip is the only colored block (fixed ToolChrome background). One prominent control per place: Send in Notes (tinted only with text), Hand off in Versions; none in Tokens.
 - One row form per object: TokenRow by kind, KnobRow, CheckRow, NoteRow, ProposalRow, VersionRow. Presets are chips under Start from and never share a form with proposals or versions.
 - Changes are words ("Accent: indigo to teal", "Card radius: 12 to 20 pt"); a code appears only behind Copy code and in the Swift disclosure.
@@ -300,7 +299,7 @@ graph TD
 
 | Module | Interface | Hides |
 | --- | --- | --- |
-| Host API (`DesignSurface.swift`) | the four `designSurface` overloads unchanged, `forgetRememberedLayout()` (also clears the remembered place), `TokenDocument`, `ItemKnob`, `TuningPanel(tuning:)` (renders the Tokens theme groups); `TuningPanel(tuning:selection:showsScreen:presetsFooter:)` is deprecated with a message pointing to `designSurface(isPresented:presetsFooter:)` | the modifier, `TunedTheme` (pass-through while the design is empty), the Preview modifier, the reporter, the host closures |
+| Host API (`DesignSurface.swift`) | the four `designSurface` overloads unchanged, `forgetRememberedLayout()` (also clears the remembered place), `TokenDocument`, `ItemKnob`, `DesignSurface.Place`, `DesignSurface.card(at:tunesRegistryTheme:)` (the card over in-memory files that it never writes for the agent, for previews and render checks), `TuningPanel(tuning:)` (renders the Tokens theme groups); `TuningPanel(tuning:selection:showsScreen:presetsFooter:)` is deprecated with a message pointing to `designSurface(isPresented:presetsFooter:)` | the modifier, `TunedTheme` (pass-through while the design is empty), the Preview modifier, the reporter, the host closures |
 | Shell (`DesignSurfaceWindow`, `PanelGeometry`, `ItemSelection`, `DesignSurfaceState`) | `install()`, `designSurfaceHitRegion(_:)`, `DesignSurfaceState` with an internal init; the overlay root owns `TuneModel` and renders `TuneCard` | window level, key handoff, hit regions, drag, resize, snap, memory per size class, outlines, guides, the Selecting pill, the button badge |
 | `TuneModel` (+Tokens, +Notes, +Versions) | `Place`, `HandOffStatus`, `init(stage:)`, drafts and focus, derived `current`, `trying`, `threads`, `changes…`, `checks`, `scopedTokens`, `unseen`, `handOffStatus`; one intent method per affordance (`undoButtonTapped()`, `tokenSettled(_:)`, `sendButtonTapped()`, `handOffButtonTapped()`, …); `task()` | the file keys (`@ObservationIgnored @Shared` for the panel's files, `@SharedReader` for the agent's), settle rules (release for sliders, at once for menus, 0.6 s after the last color change, flush on place change and collapse), authorship at the call site, auto-try deferred while held, context and screenshot refresh, hand-off capture, Shipped |
 | `DesignHistory` (pure) | `Design` (empty means Source), `Author`, `Origin`, `Entry {id, date, design, author, origin, name, parent}`, `Trial`, `Decision {tried, kept, discarded}`, `Shipped`, `returnTo` (the version left by the last Restore); `record`, `undo`, `redo`, `restore`, `name`, `tryProposal`, `keep`, `discard`, `ship`, `reconcile(values:)` | a tree, never truncated by a new change; trim at 200 drops only unnamed, non-current, non-base, non-Shipped entries and re-parents; a legacy linear file decodes; the proposal state derives from the tree and the decisions together |
@@ -321,11 +320,11 @@ swift-identified-collections, the Composable Architecture.
 
 | File | Writer | Holds |
 | --- | --- | --- |
-| `registry-tokens.json` | panel | theme and Preview (schema unchanged) |
+| `registry-tokens.json` | panel | theme and Preview; Preview's `direction` (`system`, `leftToRight`, `rightToLeft`) is added beside `rightToLeft`, which is still written, and a file without it decodes through `rightToLeft` |
 | `design-knobs.json` | panel | knob values (unchanged) |
 | `design-notes.json`, `notes/<id>.png` | panel | notes; answer fields moved out, `inReplyTo` added |
 | `design-history.json` | panel | versions with parent, author, origin, name; current; trial; decisions; shipped |
-| `design-context.json`, `notes/context.png` | panel | the screen for the agent, written while the surface is enabled, card open or closed, after each settled version, screen change, and try, and again when the keyboard hides and after the next render settles; it names the code its screenshot shows and whether the host tunes the theme (`tunesTheme`); never captured while Selecting |
+| `design-context.json`, `notes/context.png` | panel | the screen for the agent, written while the surface is enabled, card open or closed, after each settled version, screen change, and try, and again when the keyboard hides and after the next render settles; it names the code its screenshot shows (empty under Source) and whether the host tunes the theme (`tunesTheme`); never captured while Selecting |
 | `design-handoff.json`, `notes/handoff.png` | panel | the hand-off, with id and baseline |
 | `design-agent.json` | agent (MCP) | reads by id (notes and hand-offs apart), answers keyed by note or hand-off id, proposals; 0 bytes means empty |
 | `design-knob-specs.json` | agent, by hand | knob declarations (unchanged) |
