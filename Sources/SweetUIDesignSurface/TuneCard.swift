@@ -77,10 +77,15 @@ struct TuneCard: View {
         // A selection lands on the innermost item the host has a page for; an
         // item without one leaves the card on its place. The card is gone
         // while Selecting, so the page waits on the model until it is back.
-        .onChange(of: model.hostPageToPush, initial: true) { _, name in
-            guard let name else { return }
-            path = [name]
-            model.hostPageToPush = nil
+        // Any other place change (Note, the strip's name) leaves the page.
+        // One handler for both, so the push and the place never race.
+        .onChange(of: PageCue(place: model.place, push: model.hostPageToPush), initial: true) { old, cue in
+            if let name = cue.push {
+                path = [name]
+                model.hostPageToPush = nil
+            } else if old.place != cue.place {
+                path = []
+            }
         }
         // Clearing the selection also leaves a pushed host page, which was
         // about the selected item.
@@ -91,14 +96,16 @@ struct TuneCard: View {
 
     /// The rows at the bottom, inside each page of the stack so its scroll
     /// view keeps its last row above them (an inset outside the stack does
-    /// not reach the page): Notes' composer, the strip, the bottom bar.
+    /// not reach the page): Notes' composer, the strip, the bottom bar. The
+    /// last of them keeps the resize grip's corner free.
     private func bottom(composes: Bool) -> some View {
-        VStack(spacing: 0) {
+        let showsBar = !(isShort && (composes || model.showsStrip))
+        return VStack(spacing: 0) {
             if composes {
-                NotesComposer(model: model, compact: isShort)
+                NotesComposer(model: model, compact: isShort, clearsGrip: !showsBar && !model.showsStrip)
             }
-            TryingStrip(model: model)
-            if !(isShort && (composes || model.showsStrip)) {
+            TryingStrip(model: model, clearsGrip: !showsBar)
+            if showsBar {
                 BottomBar(model: model)
             }
         }
@@ -111,6 +118,30 @@ struct TuneCard: View {
         case .notes: NotesPlace(model: model)
         case .versions: VersionsPlace(model: model)
         }
+    }
+
+    /// The place and a host page waiting to be pushed.
+    private struct PageCue: Equatable {
+        var place: TuneModel.Place
+        var push: String?
+    }
+}
+
+/// A bottom row's side insets. The floating card's resize grip sits in its
+/// bottom-right corner in window points, whatever the card's direction, so
+/// the last row keeps 44 pt free on that physical side: trailing left to
+/// right, leading right to left.
+struct BottomRowInsets: ViewModifier {
+    let inset: CGFloat
+    let clearsGrip: Bool
+    @Environment(\.layoutDirection) private var direction
+
+    func body(content: Content) -> some View {
+        let right: Edge.Set = direction == .rightToLeft ? .leading : .trailing
+        let left: Edge.Set = direction == .rightToLeft ? .trailing : .leading
+        content
+            .padding(left, inset)
+            .padding(right, clearsGrip ? 44 : inset)
     }
 }
 
@@ -218,7 +249,8 @@ private struct ItemMenu: View {
         } label: {
             HStack(spacing: 4) {
                 Text(verbatim: model.itemMenuTitle)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
                 Image(systemName: "chevron.down")
                     .imageScale(.small)
                     .accessibilityHidden(true)
@@ -291,6 +323,8 @@ private struct ItemMenuItems: View {
 /// of it. The name opens Notes at the proposal.
 private struct TryingStrip: View {
     let model: TuneModel
+    /// The strip is the card's last row, over the resize grip's corner.
+    var clearsGrip = false
 
     var body: some View {
         Group {
@@ -307,17 +341,20 @@ private struct TryingStrip: View {
                             .contentShape(Rectangle())
                     }
                     .accessibilityHint("Shows the proposal in Notes.")
+                    .accessibilityIdentifier("tuning.trying.name")
                     Button {
                         withAnimation(ToolChrome.animation) { model.discardButtonTapped() }
                     } label: {
                         Text("Discard").frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
                     }
+                    .accessibilityLabel(Text(verbatim: "Discard \(proposal.name)"))
                     .accessibilityIdentifier("tuning.trying.discard")
                     Button {
                         withAnimation(ToolChrome.animation) { model.keepButtonTapped() }
                     } label: {
                         Text("Keep").fontWeight(.semibold).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
                     }
+                    .accessibilityLabel(Text(verbatim: "Keep \(proposal.name)"))
                     .accessibilityIdentifier("tuning.trying.keep")
                 }
                 .accessibilityElement(children: .contain)
@@ -326,20 +363,21 @@ private struct TryingStrip: View {
                 Text(verbatim: message)
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .accessibilityIdentifier("tuning.trying")
+                    .accessibilityIdentifier("tuning.trying.message")
             }
         }
         .buttonStyle(.borderless)
         .foregroundStyle(.white)
         .tint(.white)
-        .padding(.horizontal, ToolChrome.spacing)
-        .background(ToolChrome.accent)
+        .modifier(BottomRowInsets(inset: ToolChrome.spacing, clearsGrip: clearsGrip))
+        .background(ToolChrome.stripFill)
     }
 }
 
 /// Undo, Redo, Preview, and Note, in thumb reach.
 private struct BottomBar: View {
     @Bindable var model: TuneModel
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
 
     var body: some View {
         HStack(spacing: 0) {
@@ -349,7 +387,7 @@ private struct BottomBar: View {
                 Label("Undo", systemImage: "arrow.uturn.backward").barTarget()
             }
             .disabled(!model.history.canUndo)
-            .accessibilityHint(model.undoTarget.map(model.hint) ?? "")
+            .accessibilityHint(model.undoHint)
             .accessibilityIdentifier("tuning.undo")
             Button {
                 withAnimation(ToolChrome.animation) { model.redoButtonTapped() }
@@ -357,12 +395,12 @@ private struct BottomBar: View {
                 Label("Redo", systemImage: "arrow.uturn.forward").barTarget()
             }
             .disabled(!model.history.canRedo)
-            .accessibilityHint(model.redoTarget.map(model.hint) ?? "")
+            .accessibilityHint(model.redoHint)
             .accessibilityIdentifier("tuning.redo")
             Spacer(minLength: ToolChrome.compactSpacing)
             PreviewMenu(model: model)
             Button {
-                model.noteButtonTapped()
+                model.noteButtonTapped(voiceOver: voiceOver)
             } label: {
                 Label("Note", systemImage: "square.and.pencil").barTarget()
             }
@@ -370,9 +408,7 @@ private struct BottomBar: View {
             .accessibilityIdentifier("tuning.note")
         }
         .buttonStyle(.borderless)
-        .padding(.leading, ToolChrome.compactSpacing)
-        // The floating card's resize grip owns the trailing 44 pt corner.
-        .padding(.trailing, 44)
+        .modifier(BottomRowInsets(inset: ToolChrome.compactSpacing, clearsGrip: true))
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
     }
@@ -396,6 +432,7 @@ private struct PreviewMenu: View {
                 Toggle("Outlines", systemImage: "rectangle.dashed", isOn: $model.showsOutlines)
                     .accessibilityIdentifier("tuning.outlines")
                 Toggle("Guides", systemImage: "grid", isOn: $model.showsGuides)
+                    .accessibilityIdentifier("tuning.guides")
             }
         } label: {
             HStack(spacing: 4) {

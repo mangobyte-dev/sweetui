@@ -32,6 +32,7 @@ public struct CopyButton: View {
     private func copy() {
         UIPasteboard.general.string = text
         didCopy = true
+        AccessibilityNotification.Announcement("Copied.").post()
     }
 }
 #endif

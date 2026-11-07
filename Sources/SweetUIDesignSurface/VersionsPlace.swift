@@ -1,20 +1,21 @@
 #if canImport(UIKit)
 import SwiftUI
 
-/// Versions: Current (what it is, what it changes, the Checks, the open
-/// notes, its name, its code and Swift), Hand off with its status, and the
-/// history newest first, where a tap restores a version. A host that paints
-/// the items from its own tokens keeps the place for its knobs, without the
-/// Checks, the code, and the Swift.
+/// Versions: Hand off with its status, the place's one prominent control,
+/// at the top; Current (what it is, what it changes, the Checks, the open
+/// notes, its name, its code and Swift); and the history newest first, where
+/// a tap restores a version. A host that paints the items from its own
+/// tokens keeps the place for its knobs, without the Checks, the code, and
+/// the Swift.
 struct VersionsPlace: View {
     @Bindable var model: TuneModel
 
     var body: some View {
         Form {
+            HandOffSection(model: model)
             if let current = model.current {
                 CurrentSection(model: model, current: current)
             }
-            HandOffSection(model: model)
             HistorySection(model: model)
         }
         .accessibilityIdentifier("tuning.form")
@@ -30,6 +31,7 @@ struct VersionsPlace: View {
 private struct CurrentSection: View {
     @Bindable var model: TuneModel
     let current: DesignHistory.Entry
+    @FocusState private var nameFocused: Bool
 
     var body: some View {
         Section("Current") {
@@ -53,26 +55,44 @@ private struct CurrentSection: View {
             }
             if let changes = model.changesFromParent(current) {
                 ChangesRow(title: "From the version before", changes: changes)
+                    .accessibilityIdentifier("tuning.version.changes.parent")
             }
             if let changes = model.changesFromDefault {
-                ChangesRow(title: "From default", changes: changes)
+                ChangesRow(title: "From Default", changes: changes)
+                    .accessibilityIdentifier("tuning.version.changes.default")
             }
             if let checks = model.checksLine {
-                LinkRow(text: checks, hint: "Shows the Checks in Tokens.") {
-                    withAnimation(ToolChrome.animation) { model.checksLineTapped() }
+                // Under Source the Checks measure nothing, so the line leads nowhere.
+                if model.liveDesign.code.isEmpty {
+                    Text(verbatim: checks)
+                        .foregroundStyle(.secondary)
+                        .frame(minHeight: 44)
+                        .accessibilityIdentifier("tuning.version.checks")
+                } else {
+                    LinkRow(text: checks, hint: "Shows the Checks in Tokens.") {
+                        withAnimation(ToolChrome.animation) { model.checksLineTapped() }
+                    }
+                    .accessibilityIdentifier("tuning.version.checks")
                 }
             }
             if let open = model.openNotesLine {
                 LinkRow(text: open, hint: "Shows them in Notes.") {
                     withAnimation(ToolChrome.animation) { model.openNotesLineTapped() }
                 }
+                .accessibilityIdentifier("tuning.version.openNotes")
             }
             TextField("Name", text: $model.versionName, prompt: Text("Name this version"))
                 .submitLabel(.done)
+                .focused($nameFocused)
                 .onSubmit { model.nameSubmitted() }
+                // Leaving the field names the version too, so it never shows
+                // a name the version does not have.
+                .onChange(of: nameFocused) { _, focused in
+                    if !focused { model.nameSubmitted() }
+                }
                 .frame(minHeight: 44)
                 .accessibilityLabel("Name")
-                .accessibilityHint("Return names the current version.")
+                .accessibilityHint("Return or leaving the field names the version.")
                 .accessibilityIdentifier("tuning.version.name")
             if model.stage.tunesTheme {
                 CodeRows(tuning: model.tuning, isSource: model.liveDesign.code.isEmpty)
@@ -175,10 +195,17 @@ private struct HandOffSection: View {
             if let status = model.handOffStatus {
                 Text(verbatim: status.text)
                     .font(.footnote)
+                    .foregroundStyle(status.isNotSaved ? Color.red : Color.primary)
                     .accessibilityIdentifier("tuning.handoff.status")
             }
+            if let previous = model.previousHandOffLine {
+                Text(verbatim: previous)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("tuning.handoff.previous")
+            }
         } footer: {
-            Text("The agent puts the design into source. Once it answers with the files it changed, Tune clears its overrides so the source shows.")
+            Text("The agent puts the design into source, then builds and relaunches the app. Once it answers with the files it changed, Tune clears its overrides while the device still shows the design handed off, and the app shows the theme it was built with.")
         }
     }
 
@@ -221,6 +248,7 @@ private struct HistorySection: View {
 /// One version: who made it, its label, when, how much it changed, where
 /// it came from on a branch, and a check on Current.
 private struct VersionRow: View {
+    @ScaledMetric(relativeTo: .body) private var markWidth = 20.0
     let label: String
     let author: DesignHistory.Author
     let time: String
@@ -236,7 +264,7 @@ private struct VersionRow: View {
             HStack(spacing: ToolChrome.compactSpacing) {
                 Image(systemName: author == .agent ? "sparkles" : "person.fill")
                     .foregroundStyle(.secondary)
-                    .frame(width: 20)
+                    .frame(width: markWidth)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: label)

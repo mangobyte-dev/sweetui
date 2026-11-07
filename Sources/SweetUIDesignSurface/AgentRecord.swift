@@ -124,19 +124,21 @@ public struct Proposal: Codable, Equatable, Identifiable, Sendable {
 
     /// The design it puts on the device over `base`: a full code replaces
     /// the theme, tokens merge over the base's theme (Default's under
-    /// Source), and knobs merge with `nil` removing an override. Throws the
-    /// reason Tune cannot read it.
+    /// Source), and knobs merge with `nil` removing an override. A code is
+    /// kept in the form Tune writes (a `b` code with every appended field at
+    /// its default reads back as `a`), so the version equals what the theme
+    /// file then holds. Throws the reason Tune cannot read it.
     public func design(over base: DesignHistory.Design) throws(Unreadable) -> DesignHistory.Design {
         var design = base
         if let code {
-            guard let found = ThemeTuning.presetCode(in: code), ThemeTuning(presetCode: found) != nil else {
-                throw Unreadable("Its code is not one Tune can read.")
+            guard let found = ThemeTuning.presetCode(in: code), let theme = ThemeTuning(presetCode: found) else {
+                throw Unreadable("Its code is not one Tune can read. Reply to ask the agent for another.")
             }
-            design.code = found
+            design.code = theme.presetCode
         } else if let tokens {
             let theme = base.code.isEmpty ? ThemeTuning.default : ThemeTuning(presetCode: base.code) ?? .default
             guard let merged = theme.applying(tokens) else {
-                throw Unreadable("Its tokens are not ones Tune can read.")
+                throw Unreadable("Its tokens are not ones Tune can read. Reply to ask the agent for another.")
             }
             design.code = merged.presetCode
         }

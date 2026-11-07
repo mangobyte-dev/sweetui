@@ -133,13 +133,17 @@ struct SurfaceBoundaryTests {
         state.stage = .zero
     }
 
-    @Test func `A host title that is empty falls back to the item's name`() {
+    /// A title reads in sentences ("2 notes about Inline alert"), so with
+    /// no host title the name is put in words; the name itself stays for
+    /// the monospaced line and Copy name.
+    @Test func `A host title that is empty falls back to the item's name in words`() {
         let state = DesignSurfaceState.shared
         state.itemTitle = { $0 == "button" ? "" : "Row" }
-        #expect(state.title("button") == "button")
+        #expect(state.title("button") == "Button")
         #expect(state.title("item") == "Row")
         state.itemTitle = nil
-        #expect(state.title("button") == "button")
+        #expect(state.title("inline-alert") == "Inline alert")
+        #expect(state.title("button") == "Button")
     }
 
     // MARK: Motion

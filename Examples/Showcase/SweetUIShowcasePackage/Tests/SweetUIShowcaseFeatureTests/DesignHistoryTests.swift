@@ -250,6 +250,47 @@ struct DesignHistoryTests {
         #expect(history.decisions["P1"]?.state == .kept)
     }
 
+    /// Redo onto a proposal's version puts it back on trial; going on to
+    /// the edit made on top of it builds on it, as the edit did, so the
+    /// proposal is kept and Undo returns to its version, not past it.
+    @Test func `Redo past a re-tried proposal onto the edit above it keeps the proposal`() throws {
+        var history = DesignHistory()
+        history.record(Self.indigo, author: .you, origin: .first)
+        history.tryProposal("P", design: Self.mango)
+        let version = try #require(history.current)
+        history.record(Self.tall, author: .you, origin: .edit)
+        let edit = try #require(history.current)
+        history.undo()
+        history.undo()
+        #expect(history.decisions["P"]?.state == .discarded)
+        #expect(history.redo()?.id == version)
+        #expect(history.trial?.proposal == "P", "Redo onto the proposal's version is Trying again.")
+
+        #expect(history.redo()?.id == edit)
+        #expect(history.trial == nil, "No trial stays open over a version that is not the proposal's.")
+        #expect(history.decisions["P"]?.state == .kept)
+        #expect(history.undo()?.id == version, "Undo steps back to the proposal's version, not past it to the base.")
+    }
+
+    /// Shipped means the design is in source: it clears to Source only while
+    /// Current still holds that design, and never takes away a later one.
+    @Test func `Ship clears to Source only while Current holds the design handed off`() throws {
+        var history = DesignHistory()
+        history.record(Self.mango, author: .you, origin: .preset(name: "Mango"))
+        let cleared = history.ship(handoff: UUID(), design: Self.mango, files: ["A.swift"])
+        #expect(cleared)
+        #expect(history.entry(history.current)?.design == Design())
+        #expect(history.entry(history.current)?.author == .agent)
+
+        history.record(Self.tall, author: .you, origin: .edit)
+        let later = try #require(history.current)
+        let handoff = UUID()
+        let clearedLater = history.ship(handoff: handoff, design: Self.mango, files: ["A.swift"])
+        #expect(!clearedLater)
+        #expect(history.current == later, "A design the hand-off did not carry stays current.")
+        #expect(history.shipped?.handoff == handoff, "The answer is still recorded as Shipped.")
+    }
+
     /// Discard on an offered row turns the proposal down without touching
     /// the device; it must never discard the one trying.
     @Test func `Discarding an offered proposal leaves the device and the trial alone`() throws {

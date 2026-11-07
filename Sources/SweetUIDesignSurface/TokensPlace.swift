@@ -14,6 +14,16 @@ struct TokensPlace: View {
     var body: some View {
         let stage = model.stage
         Form {
+            if let error = model.tokensFileError {
+                Text(verbatim: error)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .accessibilityIdentifier("tuning.tokens.error")
+            }
+            if let line = model.ownTokensLine {
+                Text(verbatim: line)
+                    .foregroundStyle(.secondary)
+            }
             if let item = model.selectedItem {
                 ItemSection(model: model, item: item)
                 KnobsSection(model: model, item: item.name)
@@ -31,6 +41,7 @@ struct TokensPlace: View {
                         NavigationLink(value: page) {
                             Text(verbatim: "The app's page for \(stage.title(page))")
                         }
+                        .accessibilityIdentifier("tuning.item.page")
                     }
                 }
             } else {
@@ -89,6 +100,7 @@ private struct ItemSection: View {
                         .contentShape(Rectangle())
                 }
                 .accessibilityHint("Selects it.")
+                .accessibilityIdentifier("tuning.item.container")
             }
             if item.notes > 0 {
                 Button {
@@ -99,9 +111,15 @@ private struct ItemSection: View {
                         .contentShape(Rectangle())
                 }
                 .accessibilityHint("Shows them in Notes.")
+                .accessibilityIdentifier("tuning.item.notes")
             }
             CopyButton("Copy name", text: item.name)
                 .accessibilityIdentifier("tuning.item.copyName")
+            Button("Clear selection", systemImage: "xmark.circle") {
+                withAnimation(ToolChrome.animation) { model.clearSelectionTapped() }
+            }
+            .accessibilityHint("Shows every token again.")
+            .accessibilityIdentifier("tuning.item.clear")
         }
     }
 
@@ -137,29 +155,35 @@ private struct FixedFieldsSection: View {
 }
 
 /// Where a design starts: the presets, the host's own row, Source, Default,
-/// and a pasted code, each applied as a new version.
+/// and a pasted code, each applied as a new version. The one Current came
+/// from carries a check.
 private struct StartFromSection: View {
     @Bindable var model: TuneModel
 
     var body: some View {
+        let origin = model.current?.origin
         Section("Start from") {
-            PresetChips { name in
+            PresetChips(current: origin) { name in
                 withAnimation(ToolChrome.animation) { model.presetChipTapped(name) }
             }
             if let footer = model.stage.presetsFooter { footer }
-            Button("Source") {
+            StartRow(
+                title: "Source", detail: "Clears every token and knob, so the app's own theme shows.",
+                isCurrent: origin == .source
+            ) {
                 withAnimation(ToolChrome.animation) { model.sourceButtonTapped() }
             }
-            .accessibilityHint("Clears every token and knob, so the app's own theme shows.")
-            .accessibilityIdentifier("tuning.start.shipped")
-            Button("Default") {
+            .accessibilityIdentifier("tuning.start.source")
+            StartRow(
+                title: "Default", detail: "Applies the default theme. Knobs keep their values.",
+                isCurrent: origin == .defaultTheme
+            ) {
                 withAnimation(ToolChrome.animation) { model.defaultButtonTapped() }
             }
-            .accessibilityHint("Applies the default theme. Knobs keep their values.")
             .accessibilityIdentifier("tuning.start.default")
             HStack {
                 // A keyboard paste, which never raises the pasteboard prompt.
-                TextField("Paste a code", text: $model.codeDraft)
+                TextField("Paste a code or RegistryTheme(...)", text: $model.codeDraft)
                     .font(.footnote.monospaced())
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
@@ -167,10 +191,14 @@ private struct StartFromSection: View {
                     .onSubmit(applyCode)
                     .accessibilityLabel("Code")
                     .accessibilityIdentifier("tuning.code.field")
-                Button("Apply", action: applyCode)
-                    .buttonStyle(.borderless)
-                    .disabled(model.codeDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .accessibilityIdentifier("tuning.code.apply")
+                Button(action: applyCode) {
+                    Text("Apply")
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .disabled(model.codeDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .accessibilityIdentifier("tuning.code.apply")
             }
             if let error = model.codeError {
                 Text(error)
@@ -185,36 +213,79 @@ private struct StartFromSection: View {
     }
 }
 
-/// One chip per foundation preset, each in its own theme, in a row that scrolls.
+/// Source or Default: its title, what it does in a line under it, and a
+/// check while Current came from it.
+private struct StartRow: View {
+    let title: String
+    let detail: String
+    let isCurrent: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: title)
+                    Text(verbatim: detail)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                if isCurrent {
+                    Image(systemName: "checkmark")
+                        .accessibilityHidden(true)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .accessibilityLabel(Text(verbatim: title))
+        .accessibilityHint(Text(verbatim: detail))
+        .accessibilityAddTraits(isCurrent ? .isSelected : [])
+    }
+}
+
+/// One chip per foundation preset, each in its own theme, in a grid that
+/// wraps, so every chip is on the card; the one Current came from is checked.
 private struct PresetChips: View {
+    let current: DesignHistory.Origin?
     let apply: (String) -> Void
 
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                ForEach(RegistryTheme.presets) { preset in
-                    Button {
-                        apply(preset.name)
-                    } label: {
-                        // The small bezel around it makes a 44 pt target.
-                        Text(preset.name).frame(minHeight: 34)
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80), spacing: 8)], alignment: .leading, spacing: 8) {
+            ForEach(RegistryTheme.presets) { preset in
+                let isCurrent = current == .preset(name: preset.name)
+                Button {
+                    apply(preset.name)
+                } label: {
+                    // The small bezel around it makes a 44 pt target.
+                    Group {
+                        if isCurrent {
+                            Label(preset.name, systemImage: "checkmark")
+                        } else {
+                            Text(preset.name)
+                        }
                     }
-                    // A native style, not the registry button item: Tune is
-                    // a package product and items are copied source.
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .registryTheme(preset.theme)
-                    .accessibilityIdentifier("tuning.preset.\(preset.name)")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .frame(maxWidth: .infinity, minHeight: 34)
                 }
+                // A native style, not the registry button item: Tune is
+                // a package product and items are copied source.
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .registryTheme(preset.theme)
+                .accessibilityAddTraits(isCurrent ? .isSelected : [])
+                .accessibilityIdentifier("tuning.preset.\(preset.name)")
             }
         }
-        .scrollIndicators(.hidden)
         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
     }
 }
 
 /// The selected item's knobs, registered by the host or declared by the
-/// agent ("From the agent"); a value at its default leaves the file.
+/// agent ("Declared by the agent"), and each declared one Tune cannot draw
+/// with its reason; a value at its default leaves the file.
 private struct KnobsSection: View {
     let model: TuneModel
     let item: String
@@ -222,13 +293,24 @@ private struct KnobsSection: View {
     var body: some View {
         let specs = model.stage.knobs.knobs(for: item)
         let declared = model.stage.knobs.declaredNames(for: item)
-        if !specs.isEmpty {
+        let undrawable = model.stage.knobs.undrawable(for: item)
+        if !specs.isEmpty || !undrawable.isEmpty {
             Section {
                 ForEach(specs) { knob in
                     KnobRow(model: model, item: item, knob: knob, isDeclared: declared.contains(knob.name))
                 }
-                Button("Reset knobs") { model.resetKnobsButtonTapped(item) }
-                    .accessibilityIdentifier("tuning.knob.reset")
+                ForEach(undrawable, id: \.name) { spec in
+                    Text(verbatim: "\(spec.name) is not shown: \(spec.reason) Ask the agent to fix design-knob-specs.json.")
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                        .accessibilityIdentifier("tuning.knob.\(item).\(spec.name)")
+                }
+                if !specs.isEmpty {
+                    // A value at its default leaves the file, so none stored is none moved.
+                    Button("Reset knobs") { model.resetKnobsButtonTapped(item) }
+                        .disabled(model.stage.knobs.values[item] == nil)
+                        .accessibilityIdentifier("tuning.knob.reset")
+                }
             } header: {
                 Text("Knobs")
             }
@@ -236,7 +318,8 @@ private struct KnobsSection: View {
     }
 }
 
-/// One knob by kind: a switch, a choice, or a slider with its value.
+/// One knob by kind: a switch, a choice, or a slider with its value; a dot
+/// and "changed, 36 to 44" while it is off its default.
 private struct KnobRow: View {
     let model: TuneModel
     let item: String
@@ -244,36 +327,58 @@ private struct KnobRow: View {
     let isDeclared: Bool
 
     var body: some View {
+        let value = model.knobValue(item, knob)
+        let changed = value != knob.shipped
+        let word = knob.word(for: value)
         VStack(alignment: .leading, spacing: 4) {
-            control
+            control(changed: changed)
+                .accessibilityValue(
+                    Text(verbatim: changed ? "\(word), changed, \(knob.word(for: knob.shipped)) to \(word)" : word))
             if isDeclared {
-                Label("From the agent", systemImage: "sparkles")
+                Label("Declared by the agent", systemImage: "sparkles")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
     }
 
+    private func title(changed: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text(knob.title)
+            if changed {
+                Circle()
+                    .fill(ToolChrome.accent)
+                    .frame(width: 6, height: 6)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
     @ViewBuilder
-    private var control: some View {
+    private func control(changed: Bool) -> some View {
         switch knob.kind {
         case .bool:
-            Toggle(knob.title, isOn: Binding(
+            Toggle(isOn: Binding(
                 get: { model.knobValue(item, knob) != 0 },
-                set: { model.knobChanged(item, knob, to: $0 ? 1 : 0) }))
-                .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
+                set: { model.knobChanged(item, knob, to: $0 ? 1 : 0) })
+            ) {
+                title(changed: changed)
+            }
+            .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
         case .choice(let options):
-            Picker(knob.title, selection: Binding(
+            Picker(selection: Binding(
                 get: { knob.option(for: model.knobValue(item, knob)) ?? options[0] },
                 set: { word in model.knobChanged(item, knob, to: Double(options.firstIndex(of: word) ?? 0)) })
             ) {
                 ForEach(options, id: \.self) { Text(verbatim: $0).tag($0) }
+            } label: {
+                title(changed: changed)
             }
             .accessibilityIdentifier("tuning.knob.\(item).\(knob.name)")
         case .number:
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text(knob.title)
+                    title(changed: changed)
                     Spacer()
                     Text(
                         model.knobValue(item, knob),
@@ -283,6 +388,7 @@ private struct KnobRow: View {
                     .foregroundStyle(.secondary)
                 }
                 .font(.subheadline)
+                .accessibilityHidden(true)
                 Slider(
                     value: Binding(
                         get: { model.knobValue(item, knob) },
@@ -315,6 +421,7 @@ private struct HostTokensSection: View {
                 .accessibilityIdentifier("tuning.tokens.\(index)")
             }
             Button("Reset app tokens", role: .destructive) { store.reset() }
+                .accessibilityIdentifier("tuning.tokens.reset")
         }
     }
 }

@@ -124,7 +124,7 @@ struct TokenCatalogTests {
         let words = Set(changes.map(\.words))
         #expect(words.isSuperset(of: [
             "Card radius: 16 to 20 pt", "Border width: 1 to 1.5 pt", "Surface step: 0.02 to 0.03",
-            "Label on accent: white to black", "Font design: default to mono",
+            "Label on accent: white to black", "Font design: system to mono",
             "Background: none to #FFE6CC", "Background, Dark: none to #1A1A1A",
         ]), "\(words.sorted())")
         #expect(changes.count == 7)

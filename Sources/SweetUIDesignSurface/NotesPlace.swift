@@ -59,7 +59,7 @@ struct NotesPlace: View {
         switch row {
         case .note(let note):
             NoteRow(
-                note: note, subject: model.subject(note), status: model.status(note),
+                note: note, subject: model.subject(note), status: model.status(note), replyLine: model.replyLine(note),
                 selectSubject: { model.subjectTapped(note) },
                 reply: { model.replyButtonTapped(note: note) },
                 delete: { withAnimation(ToolChrome.animation) { model.deleteNote(note.id) } })
@@ -85,13 +85,16 @@ struct NotesPlace: View {
     }
 }
 
-/// One note: its subject (a tap selects the item), the text, when it was
-/// sent and whether the agent read or answered it, and Reply. Delete is a
-/// swipe, mirrored as an accessibility action.
+/// One note: what it replies to, its subject (a tap selects the item), the
+/// text, when it was sent and whether the agent read or answered it, and
+/// Reply. Delete is a swipe that never runs on its own, mirrored as an
+/// accessibility action.
 private struct NoteRow: View {
     let note: DesignNote
     let subject: String
     let status: String
+    /// "Reply to Warm"; `nil` for a note that follows nothing.
+    let replyLine: String?
     let selectSubject: () -> Void
     let reply: () -> Void
     let delete: () -> Void
@@ -99,6 +102,11 @@ private struct NoteRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: ToolChrome.compactSpacing) {
             VStack(alignment: .leading, spacing: 2) {
+                if let replyLine {
+                    Label(replyLine, systemImage: "arrowshape.turn.up.left")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 if note.item != nil {
                     Button(action: selectSubject) {
                         Text(verbatim: subject)
@@ -108,6 +116,7 @@ private struct NoteRow: View {
                     }
                     .buttonStyle(.borderless)
                     .accessibilityHint("Selects it on the app.")
+                    .accessibilityIdentifier("tuning.note.\(note.id.uuidString).subject")
                 } else {
                     Text(verbatim: subject)
                         .font(.footnote.weight(.semibold))
@@ -124,13 +133,15 @@ private struct NoteRow: View {
                 .accessibilityIdentifier("tuning.note.\(note.id.uuidString)")
             }
             Spacer(minLength: 0)
+            // Gray, not the tint's own secondary, so Send stays the one tinted control in Notes.
             Button(action: reply) {
-                Label("Reply", systemImage: "arrowshape.turn.up.left").barTarget()
+                Label("Reply", systemImage: "arrowshape.turn.up.left").barTarget().foregroundStyle(Color.secondary)
             }
             .buttonStyle(.borderless)
+            .accessibilityLabel(Text(verbatim: "Reply to your note about \(subject)"))
             .accessibilityIdentifier("tuning.note.\(note.id.uuidString).reply")
         }
-        .swipeActions {
+        .swipeActions(allowsFullSwipe: false) {
             Button("Delete", systemImage: "trash", role: .destructive, action: delete)
         }
     }
@@ -211,43 +222,50 @@ private struct ProposalRow: View {
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         .contentShape(Rectangle())
                 }
+                .accessibilityIdentifier("tuning.proposal.\(proposal.id).changes")
             }
             HStack(spacing: ToolChrome.spacing) {
                 switch state {
                 case .offered:
-                    action("Try", "try", `try`)
+                    action("Try", "Try \(proposal.name)", "try", `try`)
                         .disabled(unreadable != nil)
                         .accessibilityHint(unreadable ?? "")
-                    action("Discard", "discard", discard)
+                    action("Discard", "Discard \(proposal.name)", "discard", discard)
                 case .trying:
                     Text("Trying").foregroundStyle(.secondary)
-                    action("Keep", "keep", keep)
-                    action("Discard", "discard", discard)
+                    action("Keep", "Keep \(proposal.name)", "keep", keep)
+                    action("Discard", "Discard \(proposal.name)", "discard", discard)
                 case .kept:
                     Text("Kept").foregroundStyle(.secondary)
                 case .discarded:
                     Text("Discarded").foregroundStyle(.secondary)
-                    action("Try again", "try", `try`)
+                    action("Try again", "Try \(proposal.name) again", "try", `try`)
                         .disabled(unreadable != nil)
                         .accessibilityHint(unreadable ?? "")
                 }
                 Spacer(minLength: 0)
+                // Gray, not the tint's own secondary, so Send stays the one tinted control in Notes.
                 Button(action: reply) {
-                    Label("Reply", systemImage: "arrowshape.turn.up.left").barTarget()
+                    Label("Reply", systemImage: "arrowshape.turn.up.left").barTarget().foregroundStyle(Color.secondary)
                 }
+                .accessibilityLabel(Text(verbatim: "Reply to \(proposal.name)"))
                 .accessibilityIdentifier("tuning.proposal.\(proposal.id).reply")
             }
             .buttonStyle(.borderless)
         }
     }
 
-    /// A text button with the whole 44 point height as its target.
-    private func action(_ title: LocalizedStringKey, _ id: String, _ perform: @escaping () -> Void) -> some View {
+    /// A text button with the whole 44 point height as its target, labeled
+    /// with the proposal it acts on, so repeated rows read apart.
+    private func action(
+        _ title: LocalizedStringKey, _ label: String, _ id: String, _ perform: @escaping () -> Void
+    ) -> some View {
         Button(action: perform) {
             Text(title)
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }
+        .accessibilityLabel(Text(verbatim: label))
         .accessibilityIdentifier("tuning.proposal.\(proposal.id).\(id)")
     }
 
@@ -268,6 +286,8 @@ private struct ProposalRow: View {
 struct NotesComposer: View {
     @Bindable var model: TuneModel
     var compact = false
+    /// The composer is the card's last row, over the resize grip's corner.
+    var clearsGrip = false
     @FocusState private var fieldFocused: Bool
 
     var body: some View {
@@ -277,9 +297,15 @@ struct NotesComposer: View {
                     Text(verbatim: "Replying to: \(target.label)")
                         .lineLimit(1)
                     Spacer(minLength: 0)
-                    Button("Cancel") { model.cancelReplyTapped() }
-                        .buttonStyle(.borderless)
-                        .frame(minHeight: 44)
+                    Button {
+                        model.cancelReplyTapped()
+                    } label: {
+                        Text("Cancel reply")
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityIdentifier("tuning.composer.cancel")
                 }
                 .font(.footnote)
             } else if !compact {
@@ -291,9 +317,12 @@ struct NotesComposer: View {
             if let error = model.noteSaveError {
                 Text(verbatim: error)
                     .font(.footnote)
+                    .foregroundStyle(.red)
             }
             HStack(alignment: .bottom) {
-                TextField("Say what is wrong", text: $model.noteDraft, axis: .vertical)
+                TextField(
+                    model.replyTarget.map { "Reply to \($0.label)" } ?? "Say what is wrong", text: $model.noteDraft,
+                    axis: .vertical)
                     .lineLimit(1...4)
                     .focused($fieldFocused)
                     // The field's row is a 44 pt target: a tap beside the text focuses it.
@@ -316,7 +345,7 @@ struct NotesComposer: View {
                 .accessibilityIdentifier("tuning.composer.send")
             }
         }
-        .padding(.horizontal, ToolChrome.spacing)
+        .modifier(BottomRowInsets(inset: ToolChrome.spacing, clearsGrip: clearsGrip))
         .padding(.vertical, compact ? 4 : ToolChrome.compactSpacing)
         .background(.bar)
         .overlay(alignment: .top) { Divider() }

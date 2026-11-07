@@ -120,8 +120,8 @@ public struct ThemeTuning: Equatable, Sendable {
         var title: String {
             switch self {
             case .system: "System"
-            case .large: "Large"
-            case .accessibility: "Accessibility"
+            case .large: "XXXL"
+            case .accessibility: "AX3"
             }
         }
     }
@@ -147,7 +147,7 @@ public struct ThemeTuning: Equatable, Sendable {
         public var id: String { rawValue }
         var title: String {
             switch self {
-            case .default: "Default"
+            case .default: "System"
             case .rounded: "Rounded"
             case .serif: "Serif"
             case .monospaced: "Mono"

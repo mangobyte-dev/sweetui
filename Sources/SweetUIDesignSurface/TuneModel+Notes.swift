@@ -35,12 +35,15 @@ extension TuneModel {
 
     // MARK: The composer
 
-    /// Goes to Notes with the composer focused on the selection. With
-    /// nothing selected it arms Selecting first; the tap, on an item or on
-    /// nothing, returns to the focused composer.
-    func noteButtonTapped() {
+    /// Goes to Notes with the composer focused on the selection, as a new
+    /// note. With nothing selected it arms Selecting first; the tap, on an
+    /// item or on nothing, returns to the focused composer. With VoiceOver
+    /// running a tap on the app cannot be aimed by ear, so the note is about
+    /// the screen and the item menu selects.
+    func noteButtonTapped(voiceOver: Bool = false) {
         place = .notes
-        guard stage.selection.item == nil else {
+        replyTarget = nil
+        guard stage.selection.item == nil, !voiceOver else {
             composerFocused = true
             return
         }
@@ -94,8 +97,9 @@ extension TuneModel {
         })
         $notes.withLock { $0.append(note) }
         if let error = $notes.saveError {
-            noteSaveError = "Your note did not save, so the agent cannot read it. \(error.localizedDescription)"
+            noteSaveError = "Your note did not save, so the agent cannot read it. \(error.localizedDescription) Send again."
             $notes.withLock { $0.removeAll { $0.id == note.id } }
+            announce(noteSaveError ?? "")
             return
         }
         noteSaveError = nil
@@ -103,6 +107,7 @@ extension TuneModel {
         composerFocused = false
         replyTarget = nil
         scrollTarget = Row.note(note).id
+        announce("Sent. Not read yet.")
     }
 
     /// The composer replies to this note, about its subject.
@@ -126,6 +131,14 @@ extension TuneModel {
     func deleteNote(_ id: UUID) {
         $notes.withLock { $0.removeAll { $0.id == id } }
         if replyTarget?.id == id.uuidString { replyTarget = nil }
+    }
+
+    /// What a reply follows, "Reply to Warm" or "Reply to your note"; `nil`
+    /// for a note that follows nothing.
+    func replyLine(_ note: DesignNote) -> String? {
+        guard let parent = note.inReplyTo else { return nil }
+        if let proposal = proposal(parent) { return "Reply to \(proposal.name)" }
+        return notes.contains { $0.id.uuidString == parent } ? "Reply to your note" : nil
     }
 
     /// Selects a note's item, which Tune outlines on the app.
@@ -199,7 +212,9 @@ extension TuneModel {
 
     /// The line over the threads: when the agent last listed the notes.
     var readLine: String {
-        guard let last = agent.read.notes.values.max() else { return "The agent has not read your notes yet." }
+        guard let last = agent.read.notes.values.max() else {
+            return "The agent has not read your notes yet. Ask the agent to read them."
+        }
         return "The agent last read your notes at \(last.formatted(date: .omitted, time: .shortened))."
     }
 
@@ -212,10 +227,24 @@ extension TuneModel {
 
     // MARK: New from the agent
 
-    /// What the person has not seen yet: answers to notes and proposals
-    /// until Notes shows, and an answer to a hand-off until Versions shows.
+    /// What the person has not seen yet, for the Tune button: answers to
+    /// notes and proposals not yet decided until Notes shows, and an answer
+    /// to a hand-off until Versions shows.
     var unseen: Int {
-        noteActivity.union(handOffActivity).subtracting(seen).count
+        unseen(on: .notes) + unseen(on: .versions)
+    }
+
+    /// What is new on a place: Notes counts answers to notes and the
+    /// proposals the person has not decided (a Keep or Discard from the
+    /// strip decides one), Versions the answers to the hand-offs.
+    func unseen(on place: Place) -> Int {
+        switch place {
+        case .tokens: return 0
+        case .notes:
+            let decided = agent.proposals.filter { [.kept, .discarded].contains($0.state(in: history)) }
+            return noteActivity.subtracting(seen).subtracting(decided.map { "proposal.\($0.id)" }).count
+        case .versions: return handOffActivity.subtracting(seen).count
+        }
     }
 
     private var noteActivity: Set<String> {
@@ -334,15 +363,21 @@ extension TuneModel {
     /// Whether the strip shows: a proposal trying, or what became of it.
     var showsStrip: Bool { trying != nil || stripMessage != nil }
 
-    /// "Trying Warm. Accent, Card radius."
+    /// "Trying Warm. Accent, Card radius."; past three titles, "Trying
+    /// Mango. 12 changes."
     func tryingLine(_ proposal: Proposal) -> String {
         let titles = changes(proposal).map(\.title)
-        return "Trying \(proposal.name)." + (titles.isEmpty ? "" : " \(titles.joined(separator: ", ")).")
+        return switch titles.count {
+        case 0: "Trying \(proposal.name)."
+        case 1...3: "Trying \(proposal.name). \(titles.joined(separator: ", "))."
+        default: "Trying \(proposal.name). \(titles.count) changes."
+        }
     }
 
-    /// A place's title; Notes counts what is new from the agent.
+    /// A place's title; Notes and Versions count what is new from the agent.
     func title(_ place: Place) -> String {
-        place == .notes && unseen > 0 ? "\(place.title) (\(unseen))" : place.title
+        let count = unseen(on: place)
+        return count > 0 ? "\(place.title) (\(count))" : place.title
     }
 
     /// The strip's name: Notes, scrolled to the proposal.

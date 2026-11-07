@@ -21,10 +21,12 @@ enum DesignChanges {
     }
 
     /// Every token, then every knob, that `b` moves from `a`. `title` names
-    /// an item and `knobTitle` an item's knob, as the host titles them.
+    /// an item and `knobTitle` an item's knob, as the host titles them, and
+    /// `knobValue` says an item's knob value, "on" or an option's word.
     static func between(
         _ a: DesignHistory.Design, _ b: DesignHistory.Design,
-        title: (String) -> String = { $0 }, knobTitle: (String, String) -> String = { $1 }
+        title: (String) -> String = { $0 }, knobTitle: (String, String) -> String = { $1 },
+        knobValue: (String, String, Double) -> String = { ThemeTuning.RGB.format($2, minimum: 0) }
     ) -> [Change] {
         let from = a.code.isEmpty ? ThemeTuning.default : ThemeTuning(presetCode: a.code) ?? .default
         let to = b.code.isEmpty ? ThemeTuning.default : ThemeTuning(presetCode: b.code) ?? .default
@@ -45,8 +47,8 @@ enum DesignChanges {
             for knob in Set(before.keys).union(after.keys).sorted() where before[knob] != after[knob] {
                 changes.append(Change(
                     key: knob, title: "\(title(item)) \(knobTitle(item, knob).lowercased())", item: item,
-                    from: before[knob].map { ThemeTuning.RGB.format($0, minimum: 0) } ?? "default",
-                    to: after[knob].map { ThemeTuning.RGB.format($0, minimum: 0) } ?? "default"))
+                    from: before[knob].map { knobValue(item, knob, $0) } ?? "default",
+                    to: after[knob].map { knobValue(item, knob, $0) } ?? "default"))
             }
         }
         return changes

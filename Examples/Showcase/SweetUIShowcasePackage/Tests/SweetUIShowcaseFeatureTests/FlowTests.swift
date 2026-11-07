@@ -119,7 +119,7 @@ extension TuneModelTests {
             taps.tap { model.selectingTapped(Self.tapOnCard(stage)) }
             #expect(model.place == .notes)
             #expect(model.composerFocused, "The tap returns to the focused composer.")
-            #expect(model.composerSubject == "card")
+            #expect(model.composerSubject == "Card")
             model.noteDraft = "The card sits flat on the background."
             taps.tap { model.sendButtonTapped() }
             let note = try #require(model.notes.last)

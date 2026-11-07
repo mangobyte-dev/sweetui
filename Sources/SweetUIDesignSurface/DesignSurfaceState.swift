@@ -32,11 +32,13 @@ final class DesignSurfaceState {
     /// that every pushed page reads (a pushed page never reads its link's).
     var panelWrap: ((AnyView) -> AnyView)?
 
-    /// The host's title for the item, or the name when the host has none or
-    /// answers with an empty string.
+    /// The host's title for the item, or, when the host has none or answers
+    /// with an empty string, the name in words: "inline-alert" reads
+    /// "Inline alert". The name itself shows only where it is code.
     func title(_ name: String) -> String {
-        guard let title = itemTitle?(name), !title.isEmpty else { return name }
-        return title
+        if let title = itemTitle?(name), !title.isEmpty { return title }
+        let words = name.replacingOccurrences(of: "-", with: " ")
+        return words.prefix(1).uppercased() + words.dropFirst()
     }
     /// True when the host drives `isPresented` itself (the Showcase's accessory
     /// strip); the window then shows no floating button of its own.

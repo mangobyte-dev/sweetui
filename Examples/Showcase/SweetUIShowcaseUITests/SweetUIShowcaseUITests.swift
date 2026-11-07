@@ -710,11 +710,14 @@ final class SweetUIShowcaseUITests: XCTestCase {
         row.tap()
     }
 
-    /// An item menu row by its label, "button" or "button (9)": on iOS 27.1
-    /// the rows do not carry their `tuning.screen.<item>` identifier.
+    /// An item menu row by its label, the name in words, "Button" or
+    /// "Button (9)": on iOS 27.1 the rows do not carry their
+    /// `tuning.screen.<item>` identifier.
     @MainActor
     private func itemMenuRow(_ app: XCUIApplication, _ name: String) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", name, "\(name) (")).firstMatch
+        let words = name.replacingOccurrences(of: "-", with: " ")
+        let title = words.prefix(1).uppercased() + words.dropFirst()
+        return app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", title, "\(title) (")).firstMatch
     }
 
     /// The Swift the Versions place shows for Current, opened.
@@ -799,7 +802,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
         show("tokens", app)
         paste("nothing here", app)
         XCTAssertTrue(
-            app.staticTexts["That is not a code Tune can read. Copy one from sweetui.dev/create."]
+            app.staticTexts["Tune cannot read that as a code or a RegistryTheme(...). Copy a code from sweetui.dev/create."]
                 .waitForExistence(timeout: 2))
     }
 
@@ -819,7 +822,7 @@ final class SweetUIShowcaseUITests: XCTestCase {
         let fix = app.buttons["tuning.contrast.fixLabel"]
         revealInPanel(app, fix)
         XCTAssertTrue(fix.waitForExistence(timeout: 3), "Emerald under a white label must offer the dark one.")
-        XCTAssertEqual(fix.label, "Fix label")
+        XCTAssertEqual(fix.label, "Fix label: use black")
         XCTAssertTrue(label.label.contains("Fails"), "White on emerald fails: \(label.label)")
         XCTAssertTrue(label.label.contains(":1"), "The row must show the ratios, not only a verdict: \(label.label)")
         fix.tap()

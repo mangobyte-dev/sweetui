@@ -145,10 +145,12 @@ public struct DesignHistory: Codable, Equatable, Sendable {
     }
 
     /// Moves Current to its newest child and returns it; `nil` at a leaf.
-    /// A proposal's version that is not kept goes back on trial.
+    /// A proposal's version that is not kept goes back on trial, and a
+    /// child on top of the trial keeps it, as an edit on top of it does.
     @discardableResult
     public mutating func redo() -> Entry? {
         guard let current, let child = entries.last(where: { $0.parent == current }) else { return nil }
+        if let trial, trial.version != child.id { keep() }
         self.current = child.id
         returnTo = nil
         resumeTrial(child)
@@ -179,9 +181,9 @@ public struct DesignHistory: Codable, Equatable, Sendable {
         decisions[id] = Decision(state: .tried, date: .now)
     }
 
-    /// Names Current; an empty name clears it.
-    public mutating func name(_ name: String) {
-        guard let index = entries.firstIndex(where: { $0.id == current }) else { return }
+    /// Names a version, Current unless `id` says which; an empty name clears it.
+    public mutating func name(_ name: String, of id: UUID? = nil) {
+        guard let index = entries.firstIndex(where: { $0.id == (id ?? current) }) else { return }
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         entries[index].name = trimmed.isEmpty ? nil : trimmed
     }
@@ -226,11 +228,16 @@ public struct DesignHistory: Codable, Equatable, Sendable {
         self.trial = nil
     }
 
-    /// Records a hand-off the agent answered with changed files, then clears
-    /// to Source as a version by the agent.
-    public mutating func ship(handoff: UUID, design: Design, files: [String]) {
+    /// Records a hand-off the agent answered with changed files. While
+    /// Current still holds the design it carried, it clears to Source as a
+    /// version by the agent; after more edits, or for an older hand-off,
+    /// Current stays, since no source holds it. Returns whether it cleared.
+    @discardableResult
+    public mutating func ship(handoff: UUID, design: Design, files: [String]) -> Bool {
         shipped = Shipped(handoff: handoff, design: design, date: .now, changedFiles: files)
+        guard entry(current)?.design == design else { return false }
         record(Design(), author: .agent, origin: .source)
+        return true
     }
 
     /// Records the live values as an edit when they differ from Current: the

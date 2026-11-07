@@ -49,6 +49,13 @@ struct TokenGroups: View {
 
     var body: some View {
         let audit = ContrastAudit(tuning)
+        if actions.isSource {
+            // The controls hold Default's values under Source, so the first
+            // edit puts the whole default theme on the app.
+            Text("The app shows its own theme. Your first change starts from Default.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
         ForEach(TokenCatalog.Token.Group.allCases) { group in
             let rows = tokens.filter { $0.group == group }
             if !rows.isEmpty {
@@ -189,10 +196,11 @@ struct TokenRow: View {
             .contentTransition(.numericText())
     }
 
-    /// "cardRadius · reaches 4 on screen".
+    /// "cardRadius · reaches 4 items on screen"; the key alone when it
+    /// reaches none.
     private var details: String {
-        guard let reach = actions.reach?(token) else { return token.key }
-        return "\(token.key) · reaches \(reach) on screen"
+        guard let reach = actions.reach?(token), reach > 0 else { return token.key }
+        return "\(token.key) · reaches \(reach) \(reach == 1 ? "item" : "items") on screen"
     }
 
     private func action(_ title: LocalizedStringKey, _ id: String, _ perform: @escaping () -> Void) -> some View {
@@ -208,6 +216,9 @@ struct TokenRow: View {
         .accessibilityIdentifier("tuning.token.\(token.key).\(id)")
     }
 
+    /// Why the label on the accent cannot change under Ink.
+    static let inkLabelReason = "Ink uses the background color as its label."
+
     @ViewBuilder
     private var control: some View {
         switch token.kind {
@@ -217,14 +228,21 @@ struct TokenRow: View {
             } onEditingChanged: { actions.hold(token, $0) }
                 .accessibilityIdentifier("tuning.token.\(token.key)")
         case .choice(let options, let index):
+            // Ink draws the background color as its label, so it has no other.
+            let inkLabel = token.key == "darkLabelOnAccent" && tuning.accent == .ink
             Picker(token.title, selection: $tuning[dynamicMember: index].animation(ToolChrome.animation)) {
                 ForEach(options.indices, id: \.self) { Text(verbatim: options[$0]).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            // Ink draws the background color as its label, so it has no other.
-            .disabled(token.key == "darkLabelOnAccent" && tuning.accent == .ink)
+            .disabled(inkLabel)
+            .accessibilityHint(inkLabel ? Self.inkLabelReason : "")
             .accessibilityIdentifier("tuning.token.\(token.key)")
+            if inkLabel {
+                Text(Self.inkLabelReason)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         case .color(let light, let dark, let seed):
             ModeColumns {
                 ColorPicker(selection: lightColor(light, seed: seed), supportsOpacity: false) {
@@ -386,7 +404,7 @@ private struct CheckRow: View {
             if fixes != nil || asks {
                 HStack(spacing: ToolChrome.spacing) {
                     if let fixes {
-                        button("Fix label") { actions.fixLabel() }
+                        button(fixes ? "Fix label: use black" : "Fix label: use white") { actions.fixLabel() }
                             .accessibilityHint("Switches the label on the accent to \(fixes ? "black" : "white").")
                             .accessibilityIdentifier("tuning.contrast.fixLabel")
                     }

@@ -11,8 +11,8 @@ import UIKit
 struct DesignOutbox: Sendable {
     /// Writes `design-context.json`.
     var writeContext: @MainActor @Sendable (DesignContext) -> Void
-    /// Writes `design-handoff.json`; `false` when it could not be written.
-    var writeHandOff: @MainActor @Sendable (DesignHandoff) -> Bool
+    /// Writes `design-handoff.json`; throws why it could not be written.
+    var writeHandOff: @MainActor @Sendable (DesignHandoff) throws -> Void
     /// The hand-off `design-handoff.json` holds; `nil` when there is none or
     /// it is from before hand-offs had ids.
     var readHandOff: @MainActor @Sendable () -> DesignHandoff?
@@ -35,10 +35,9 @@ extension DesignOutbox {
         writeHandOff: { handoff in
             do {
                 try DesignNote.fileEncoder.encode(handoff).write(to: DesignHandoff.fileURL, options: .atomic)
-                return true
             } catch {
                 SurfaceLog.logger.error("design-handoff.json was not written: \(error)")
-                return false
+                throw error
             }
         },
         readHandOff: {
@@ -62,13 +61,13 @@ extension DesignOutbox {
     /// Reports every call, so a test names each write it expects.
     static let unimplemented = DesignOutbox(
         writeContext: IssueReporting.unimplemented("DesignOutbox.writeContext"),
-        writeHandOff: IssueReporting.unimplemented("DesignOutbox.writeHandOff", placeholder: false),
+        writeHandOff: IssueReporting.unimplemented("DesignOutbox.writeHandOff"),
         readHandOff: IssueReporting.unimplemented("DesignOutbox.readHandOff", placeholder: nil),
         saveScreenshot: IssueReporting.unimplemented("DesignOutbox.saveScreenshot", placeholder: nil))
 
     /// Writes nothing, for the card a preview or a render check shows.
     static let inert = DesignOutbox(
-        writeContext: { _ in }, writeHandOff: { _ in false }, readHandOff: { nil }, saveScreenshot: { _, _ in nil })
+        writeContext: { _ in }, writeHandOff: { _ in }, readHandOff: { nil }, saveScreenshot: { _, _ in nil })
 }
 
 private enum DesignOutboxKey: DependencyKey {

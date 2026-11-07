@@ -61,4 +61,25 @@ struct AgentRecordTests {
         let design = try knobs.design(over: DesignHistory.Design(code: "a13GkaOXWwIF", knobs: ["button": ["height": 44]]))
         #expect(design == DesignHistory.Design(code: "a13GkaOXWwIF", knobs: ["button": ["radius": 12]]), "A knobs-only proposal keeps the theme.")
     }
+
+    /// The version a try records must equal what the theme file then holds,
+    /// or Tune reads its own write as an edit and keeps the proposal unasked.
+    /// A `b` code whose appended fields are all at their defaults is valid,
+    /// and the file writes it back as `a`.
+    @Test func `A valid code in a form Tune does not write is stored as Tune writes it`() throws {
+        let mango = "a74hGF01CVunaG0vzZJG"
+        let written = "b" + mango.dropFirst()
+        #expect(ThemeTuning(presetCode: written)?.presetCode == mango, "The file writes this b code back as a.")
+        let proposal = Proposal(id: "M", date: .now, name: "Mango", code: "--preset \(written)")
+        #expect(try proposal.design(over: DesignHistory.Design()).code == mango)
+    }
+
+    /// An error says what to do next: a proposal Tune cannot try is answered
+    /// by asking the agent for another.
+    @Test func `An unreadable proposal says to reply for another`() {
+        let badCode = Proposal(id: "R", date: .now, name: "Bad", code: "zzz")
+        #expect(throws: Proposal.Unreadable("Its code is not one Tune can read. Reply to ask the agent for another.")) {
+            try badCode.design(over: DesignHistory.Design())
+        }
+    }
 }

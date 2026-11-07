@@ -66,7 +66,7 @@ extension TuneModelTests {
 
             #expect(model.place == .notes)
             #expect(model.stage.selection.item == "button")
-            #expect(model.composerSubject == "button")
+            #expect(model.composerSubject == "Button", "Without a host title the name reads as words.")
             #expect(!model.composerFocused, "A pick from Notes does not focus the composer; Note does.")
         }
 
@@ -123,7 +123,7 @@ extension TuneModelTests {
             #expect(!model.stage.selection.isSelecting)
             #expect(model.place == .notes)
             #expect(model.composerFocused)
-            #expect(model.composerSubject == "card")
+            #expect(model.composerSubject == "Card")
 
             // With an item selected, Note focuses the composer at once.
             model.composerFocused = false
@@ -133,6 +133,18 @@ extension TuneModelTests {
             #expect(model.composerFocused)
         }
 
+        /// The tap layer is one element VoiceOver cannot aim, so under
+        /// VoiceOver Note must not open it: the note is about the screen,
+        /// and the item menu selects.
+        @Test func `Note under VoiceOver with nothing selected goes straight to the composer about the screen`() {
+            let model = TuneModelTests.launched(TuneModelTests.screen())
+            model.noteButtonTapped(voiceOver: true)
+            #expect(model.place == .notes)
+            #expect(!model.stage.selection.isSelecting, "VoiceOver never gets the tap layer from Note.")
+            #expect(model.composerFocused)
+            #expect(model.composerSubject == "Components")
+        }
+
         @Test func `The item menu selects an item with its containers, a container from the chain, and says when it is off screen`() throws {
             let stage = TuneModelTests.screen()
             let model = TuneModelTests.launched(stage)
@@ -140,7 +152,7 @@ extension TuneModelTests {
 
             model.itemMenuSelected("card")
             #expect(stage.selection.chain == ["card", "dashboard"])
-            #expect(model.itemMenuTitle == "card in dashboard")
+            #expect(model.itemMenuTitle == "Card in Dashboard")
 
             model.itemMenuSelected("dashboard")
             #expect(stage.selection.chain == ["dashboard"], "A container from the chain is selected alone.")
@@ -152,7 +164,7 @@ extension TuneModelTests {
             model.itemMenuSelected("button")
             let button = try #require(stage.frames.first { $0.value.name == "button" }?.key)
             stage.forget(button)
-            #expect(model.itemMenuTitle == "button is not on this screen")
+            #expect(model.itemMenuTitle == "Button is not on this screen")
             #expect(model.composerSubject == "Components", "The composer falls back to the screen.")
 
             model.clearSelectionTapped()
@@ -171,8 +183,8 @@ extension TuneModelTests {
             // the measured stage then ends at the keyboard's top.
             stage.keyboardFrame = CGRect(x: 0, y: 516, width: 393, height: 336)
             stage.stage = CGRect(x: 0, y: 0, width: 393, height: 516)
-            #expect(model.itemMenuTitle == "button")
-            #expect(model.composerSubject == "button")
+            #expect(model.itemMenuTitle == "Button")
+            #expect(model.composerSubject == "Button")
             #expect(!model.isOnScreen("footer"), "An item below the window is off screen with the keyboard up too.")
 
             model.noteDraft = "The button looks cramped."

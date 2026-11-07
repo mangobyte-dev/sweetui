@@ -49,6 +49,17 @@ struct ContrastAuditTests {
         #expect(try Self.ratio("#777777", on: "#FFFFFF") < ContrastAudit.minimum)
     }
 
+    /// Tune holds the themes it tunes to 4.5:1, so its own one colored
+    /// block must meet it: the strip's white text on its fixed fill, in
+    /// light and dark alike. systemBlue under white is the negative case.
+    @Test func `The Trying strip's white text measures at least 4.5 to 1`() throws {
+        let fill = ToolChrome.stripRGB
+        let white = ContrastAudit.SRGB(red: 1, green: 1, blue: 1)
+        let strip = ContrastAudit.SRGB(red: fill.red, green: fill.green, blue: fill.blue)
+        #expect(ContrastAudit.ratio(white.luminance, strip.luminance) >= ContrastAudit.minimum)
+        #expect(try Self.ratio("#FFFFFF", on: "#007AFF") < ContrastAudit.minimum, "systemBlue under white falls short.")
+    }
+
     @Test func `A translucent label is measured blended with its background`() {
         let white = ContrastAudit.SRGB(red: 1, green: 1, blue: 1)
         let halfBlack = ContrastAudit.SRGB(red: 0, green: 0, blue: 0, alpha: 0.5).composited(over: white)

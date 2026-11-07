@@ -425,6 +425,11 @@ private struct FloatingTuneButton: View {
 /// follows Reduce Motion: none when the setting is on.
 enum ToolChrome {
     static let accent = Color(uiColor: .systemBlue)
+    /// The Trying strip's fill under its white text, fixed in both
+    /// appearances: #0062CC measures 5.8:1 under white, where systemBlue
+    /// (#007AFF) measures 4.0:1, below the 4.5:1 for text up to 17 pt.
+    static let stripRGB = ThemeTuning.RGB(red: 0, green: 98 / 255, blue: 204 / 255)
+    static let stripFill = stripRGB.color
     static let cardRadius: CGFloat = 16
     static let spacing: CGFloat = 12
     static let compactSpacing: CGFloat = 8

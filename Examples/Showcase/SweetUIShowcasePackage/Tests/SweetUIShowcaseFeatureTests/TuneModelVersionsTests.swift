@@ -178,8 +178,9 @@ extension TuneModelTests {
             .dependency(
                 \.designOutbox,
                 DesignOutbox(
-                    writeContext: { _ in }, writeHandOff: { _ in Versions.saves.value }, readHandOff: { nil },
-                    saveScreenshot: { name, _ in "notes/\(name).png" })))
+                    writeContext: { _ in },
+                    writeHandOff: { _ in if !Versions.saves.value { throw CocoaError(.fileWriteOutOfSpace) } },
+                    readHandOff: { nil }, saveScreenshot: { name, _ in "notes/\(name).png" })))
         func `A hand-off that did not save says why and shows no time`() throws {
             let saves = Self.saves
             saves.setValue(true)
@@ -190,7 +191,11 @@ extension TuneModelTests {
             saves.setValue(false)
             model.handOffButtonTapped()
             let status = try #require(model.handOffStatus)
-            #expect(status == .notSaved("The hand-off did not save, so the agent cannot read it. Hand off again."))
+            let reason = CocoaError(.fileWriteOutOfSpace).localizedDescription
+            #expect(
+                status == .notSaved("The hand-off did not save, so the agent cannot read it. \(reason) Hand off again."),
+                "The error names the cause the write gave, then the way out.")
+            #expect(status.isNotSaved)
             #expect(!status.text.contains("Handed off at"), "An unsaved hand-off shows no time.")
             #expect(model.handOff == first, "The last saved hand-off still takes its answer.")
 
@@ -234,7 +239,7 @@ extension TuneModelTests {
             model.presetChipTapped("Rose")
             model.tuningEdit.cardRadius = 20
             let edit = try #require(model.current)
-            #expect(model.label(edit) == "Edit")
+            #expect(model.label(edit) == "Card radius", "An unnamed edit reads as what it changed, not as Edit.")
             #expect(model.changesFromParent(edit)?.map(\.words) == ["Card radius: 16 to 20 pt"])
             #expect(model.changesFromDefault?.contains { $0.words == "Card radius: 16 to 20 pt" } == true)
             #expect(model.checksLine != ContrastAudit.unmeasuredUnderSource, "A set theme is measured.")
@@ -298,7 +303,10 @@ extension TuneModelTests {
                 "Source with no knob moved has no count, so its history row names no Default values.")
         }
 
-        @Test func `A name being typed stays when Current moves, and Return names the version then current`() async throws {
+        /// The Name field must never show a name the version does not have:
+        /// a draft typed for one version names that version, on Return or
+        /// when the field loses focus, even after Current moved.
+        @Test func `A name being typed stays when Current moves, and names the version it was typed for`() async throws {
             let model = TuneModel(stage: Self.stage())
             let listener = await TuneModelTests.listening(model)
             defer { listener.cancel() }
@@ -319,7 +327,67 @@ extension TuneModelTests {
             model.currentChanged()
             #expect(model.versionName == "Launch", "A proposal tried while typing must not take the draft.")
             model.nameSubmitted()
-            #expect(model.label(try #require(model.current)) == "Launch")
+            #expect(model.history.entry(first.id)?.name == "Launch", "The draft names the version it was typed for.")
+            #expect(model.current?.name == nil, "The proposal's version, current since, keeps no name it was not given.")
+            #expect(model.versionName == "", "The field then shows Current's own name.")
+
+            let named = model.history
+            model.nameSubmitted()
+            #expect(model.history == named, "Leaving the field unchanged names nothing again.")
+        }
+
+        /// Undo while trying is a Discard, so its hint must say so, and an
+        /// end of the history must say there is nothing, not stay silent.
+        @Test func `Undo's hint names a discard while trying, and both say nothing at an end`() async throws {
+            let model = TuneModel(stage: Self.stage())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            #expect(model.undoHint == "Nothing to undo.")
+            #expect(model.redoHint == "Nothing to redo.")
+            model.presetChipTapped("Rose")
+            let rose = try #require(model.current)
+            #expect(model.undoHint.hasPrefix("Makes First version at"))
+            agentWrites { $0.proposals = [Proposal(id: "P", date: Self.now, name: "Teal", tokens: ["accent": .string("teal")])] }
+            await Task.megaYield()
+            #expect(model.trying?.id == "P")
+            #expect(model.undoHint == "Discards Teal and makes Rose at \(model.time(rose)) current.")
+        }
+
+        /// History lists every version, so an unnamed edit must say what it
+        /// changed, or every row reads the same.
+        @Test func `An unnamed edit is labeled by what it changed`() throws {
+            let model = TuneModelTests.launched(Self.stage())
+            var tuned = ThemeTuning.default
+            tuned.cardRadius = 20
+            tuned.accent = .teal
+            model.$history.withLock { $0.record(DesignHistory.Design(code: tuned.presetCode), author: .you, origin: .edit) }
+            let two = try #require(model.current)
+            #expect(model.label(two) == "Accent and Card radius")
+            tuned.fontDesign = .rounded
+            tuned.standardSpacing = 20
+            model.$history.withLock { $0.record(DesignHistory.Design(code: tuned.presetCode), author: .you, origin: .edit) }
+            let second = try #require(model.current)
+            #expect(model.changesFromParent(second)?.count == 2)
+            model.$history.withLock { _ = $0.undo() }
+            model.$history.withLock { _ = $0.undo() }
+            model.$history.withLock { $0.record(DesignHistory.Design(code: tuned.presetCode), author: .you, origin: .edit) }
+            let four = try #require(model.current)
+            #expect(model.label(four) == "Accent and 3 more", "Past two titles the label counts the rest.")
+        }
+
+        /// Changes are words: a switch reads on or off and a choice its
+        /// option, never the number the file stores.
+        @Test func `A knob change reads in words`() async throws {
+            let stage = DesignSurfaceState()
+            let icon = ItemKnob.bool("showsIcon", title: "Icon", shipped: true)
+            let tone = ItemKnob.choice("tone", title: "Tone", options: ["neutral", "positive"], shipped: "neutral")
+            stage.knobs.register(["badge": [icon, tone, Self.knob]])
+            let model = TuneModelTests.launched(stage)
+            let changes = model.changes(
+                from: DesignHistory.Design(code: "a13GkaOXWwIF", knobs: ["badge": ["height": 40]]),
+                to: DesignHistory.Design(code: "a13GkaOXWwIF", knobs: ["badge": ["showsIcon": 0, "tone": 1, "height": 44]]))
+            #expect(changes.map(\.words) == ["Badge height: 40 to 44", "Badge icon: default to off", "Badge tone: default to positive"])
+            #expect(icon.word(for: icon.shipped) == "on")
         }
 
         @Test func `The open notes line goes to Notes at the oldest open note`() async throws {

@@ -1,7 +1,7 @@
 import Dependencies
 import DependenciesTestSupport
 import Foundation
-import Sharing
+@_spi(Internals) import Sharing
 import SwiftUI
 import Testing
 @testable import SweetUIDesignSurface
@@ -237,6 +237,43 @@ extension TuneModelTests {
             // Its designs are knob-only: they sit on Source.
             model.knobChanged("button", knob, to: 44)
             #expect(model.current?.design == DesignHistory.Design(knobs: ["button": ["height": 44]]))
+
+            // Tokens is the place Tune opens first, so it must never be blank.
+            #expect(model.ownTokensLine == "This app paints its items from its own tokens. Select an item to see its knobs.")
+            stage.selection = ItemSelection(item: "button", chain: ["button"])
+            #expect(model.ownTokensLine == nil, "With an item selected Tokens shows its knobs.")
+            #expect(TuneModelTests.launched().ownTokensLine == nil, "A host that tunes the theme has the theme's groups.")
+        }
+
+        nonisolated static let files = LockIsolated<[URL: Data]>([:])
+
+        /// A tokens file that did not decode leaves Default in place. That is
+        /// not a design the person made, so it must be said on Tokens and
+        /// never recorded as their edit, at launch or when a place change
+        /// settles; their first token change rewrites the file and records.
+        @Test(.dependency(\.defaultFileStorage, .inMemory(fileSystem: Hosts.files)))
+        func `A tokens file that did not decode is said and never recorded as your edit`() async throws {
+            let mango = DesignHistory.Entry(
+                date: Date(timeIntervalSince1970: 1_800_000_000), design: .init(code: "a74hGF01CVunaG0vzZJG"),
+                author: .you, origin: .preset(name: "Mango"))
+            let history = DesignHistory(entries: [mango], current: mango.id)
+            let encoded = try DesignNote.fileEncoder.encode(history)
+            Self.files.withValue { $0 = [ThemeTuning.fileURL: Data("{".utf8), DesignHistory.fileURL: encoded] }
+            let model = TuneModel(stage: DesignSurfaceState())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+
+            #expect(model.tokensFileError?.contains("registry-tokens.json") == true, "The broken file is said, not only logged.")
+            #expect(model.history == history, "Default read from a broken file is not your edit.")
+            model.place = .versions
+            await Task.megaYield()
+            #expect(model.history == history, "A place change settles nothing from it either.")
+
+            model.tuningEdit.cardRadius = 20
+            await Task.megaYield()
+            #expect(model.tokensFileError == nil, "A token change rewrites the file.")
+            #expect(model.history.entries.count == 2)
+            #expect(model.current?.parent == mango.id)
         }
 
         @Test func `Source clears every override and Default is a version of its own`() async {
@@ -280,7 +317,6 @@ final class OutboxRecord: Sendable {
             writeContext: { [contexts] context in contexts.withValue { $0.append(context) } },
             writeHandOff: { [handOffs] handOff in
                 handOffs.withValue { $0.append(handOff) }
-                return true
             },
             readHandOff: { [handOffs] in handOffs.value.last },
             saveScreenshot: { [screenshots] name, _ in

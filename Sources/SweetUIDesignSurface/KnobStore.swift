@@ -69,6 +69,15 @@ public struct ItemKnob: Identifiable, Sendable, Equatable {
         let index = Int(value.rounded())
         return options.indices.contains(index) ? options[index] : nil
     }
+
+    /// A stored value as Tune says it: on or off, the option's word, or the number.
+    func word(for value: Double) -> String {
+        switch kind {
+        case .bool: value != 0 ? "on" : "off"
+        case .choice: option(for: value) ?? ThemeTuning.RGB.format(value, minimum: 0)
+        case .number: ThemeTuning.RGB.format(value, minimum: 0)
+        }
+    }
 }
 
 /// A knob as an agent declares it in `design-knob-specs.json`: the file is
@@ -110,37 +119,48 @@ public struct ItemKnobSpec: Codable, Equatable, Sendable {
 
     /// The knob, or `nil` with a log line for a spec the panel cannot draw.
     public var knob: ItemKnob? {
+        if let undrawable {
+            SurfaceLog.logger.error("Knob spec \(name, privacy: .public): \(undrawable, privacy: .public)")
+            return nil
+        }
         switch (kind, shipped) {
         case (.number, .number(let value)):
-            guard let min, let max, min < max else {
-                SurfaceLog.logger.error("Knob spec \(name, privacy: .public): a number needs min < max")
-                return nil
-            }
-            return ItemKnob(name, title: title, in: min...max, step: step ?? 1, shipped: value)
+            return ItemKnob(name, title: title, in: (min ?? 0)...(max ?? 1), step: step ?? 1, shipped: value)
         case (.bool, .bool(let flag)):
             return .bool(name, title: title, shipped: flag)
         case (.choice, .word(let word)):
-            guard let options, !options.isEmpty else {
-                SurfaceLog.logger.error("Knob spec \(name, privacy: .public): a choice needs options")
-                return nil
-            }
-            return .choice(name, title: title, options: options, shipped: word)
+            return .choice(name, title: title, options: options ?? [], shipped: word)
         default:
-            SurfaceLog.logger.error("Knob spec \(name, privacy: .public): shipped does not match kind \(kind.rawValue, privacy: .public)")
             return nil
+        }
+    }
+
+    /// Why the panel cannot draw the spec, in a sentence Tune shows under the
+    /// item's knobs; `nil` when it can.
+    public var undrawable: String? {
+        switch (kind, shipped) {
+        case (.number, .number):
+            guard let min, let max, min < max else { return "A number needs min below max." }
+            return nil
+        case (.bool, .bool):
+            return nil
+        case (.choice, .word):
+            return options?.isEmpty == false ? nil : "A choice needs options."
+        default:
+            return "Its shipped value is not a \(kind.rawValue)."
         }
     }
 }
 
-extension SharedKey where Self == FileStorageKey<[String: [ItemKnobSpec]]>.Default {
-    /// The agent-declared knobs, beside the design tokens.
+extension ItemKnobSpec {
+    /// The agent's file of declared knobs, beside the design tokens.
+    static let fileURL = URL.documentsDirectory.appending(component: "design-knob-specs.json")
+}
+
+extension SharedReaderKey where Self == FileStorageKey<[String: [ItemKnobSpec]]>.Default {
+    /// The agent-declared knobs, read only: the agent writes the file by hand.
     static var designKnobSpecs: Self {
-        Self[
-            .fileStorage(
-                URL.documentsDirectory.appending(component: "design-knob-specs.json"),
-                decoder: nil, encoder: ThemeTuning.fileEncoder),
-            default: [:]
-        ]
+        Self[.fileStorage(ItemKnobSpec.fileURL, decoder: nil, encoder: ThemeTuning.fileEncoder), default: [:]]
     }
 }
 
@@ -162,7 +182,8 @@ extension SharedKey where Self == FileStorageKey<[String: [String: Double]]>.Def
 @MainActor
 final class KnobStore {
     @Shared(.designKnobs) var values
-    @Shared(.designKnobSpecs) var declared
+    /// The agent's file; read only, so a write to it does not compile.
+    @SharedReader(.designKnobSpecs) var declared
     /// The host's knobs, registered in code.
     private(set) var specs: [String: [ItemKnob]] = [:]
 
@@ -183,6 +204,15 @@ final class KnobStore {
     /// The names of the item's knobs the agent declared and the host did not take.
     func declaredNames(for item: String) -> Set<String> {
         Set((declared[item] ?? []).map(\.name)).subtracting((specs[item] ?? []).map(\.name))
+    }
+
+    /// The agent's specs for the item Tune cannot draw, with the reason,
+    /// except those whose names the host took.
+    func undrawable(for item: String) -> [(name: String, reason: String)] {
+        let taken = Set((specs[item] ?? []).map(\.name))
+        return (declared[item] ?? []).compactMap { spec in
+            spec.undrawable.flatMap { taken.contains(spec.name) ? nil : (spec.name, $0) }
+        }
     }
 
     func value(_ item: String, _ knob: ItemKnob) -> Double {

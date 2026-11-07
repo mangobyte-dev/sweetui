@@ -40,17 +40,28 @@ extension TuneModel {
 
     // MARK: Labels
 
-    /// A version by its name, or by what it came from.
+    /// A version by its name, or by what it came from; an edit by the titles
+    /// it changed, "Card radius" or "Accent and 2 more".
     func label(_ entry: DesignHistory.Entry) -> String {
         if let name = entry.name { return name }
         return switch entry.origin {
         case .first: "First version"
-        case .edit: "Edit"
+        case .edit: editLabel(entry)
         case .preset(let name): name
         case .proposal(let id): proposal(id)?.name ?? "A proposal"
         case .defaultTheme: "Default"
         case .source: entry.author == .agent ? "Shipped" : "Source"
         case .code: "Pasted code"
+        }
+    }
+
+    private func editLabel(_ entry: DesignHistory.Entry) -> String {
+        let titles = changesFromParent(entry)?.map(\.title) ?? []
+        return switch titles.count {
+        case 0: "Edit"
+        case 1: titles[0]
+        case 2: "\(titles[0]) and \(titles[1])"
+        default: "\(titles[0]) and \(titles.count - 1) more"
         }
     }
 
@@ -63,14 +74,31 @@ extension TuneModel {
         "Makes \(label(entry)) at \(time(entry)) current."
     }
 
+    /// Undo's hint: what it discards while a proposal is trying, and that
+    /// there is nothing to undo at a root.
+    var undoHint: String {
+        guard let target = undoTarget else { return "Nothing to undo." }
+        guard let trying else { return hint(target) }
+        return "Discards \(trying.name) and makes \(label(target)) at \(time(target)) current."
+    }
+
+    var redoHint: String {
+        redoTarget.map(hint) ?? "Nothing to redo."
+    }
+
     // MARK: Current
 
     /// Every token and knob `to` moves from `from`, in words, items and
-    /// knobs as the host titles them.
+    /// knobs as the host titles them, a switch as on or off and a choice as
+    /// its option.
     func changes(from: Design, to: Design) -> [DesignChanges.Change] {
-        DesignChanges.between(from, to, title: stage.title) { [stage] item, knob in
-            stage.knobs.knobs(for: item).first { $0.name == knob }?.title ?? knob
-        }
+        let knobs = stage.knobs
+        func knob(_ item: String, _ name: String) -> ItemKnob? { knobs.knobs(for: item).first { $0.name == name } }
+        return DesignChanges.between(
+            from, to, title: stage.title, knobTitle: { knob($0, $1)?.title ?? $1 },
+            knobValue: { item, name, value in
+                knob(item, name)?.word(for: value) ?? ThemeTuning.RGB.format(value, minimum: 0)
+            })
     }
 
     /// What a version changed from the one it came from; `nil` for a root.
@@ -143,9 +171,15 @@ extension TuneModel {
         scrollTarget = openNotes.first.map { Row.note($0).id }
     }
 
-    /// Names Current with the Name field's text; a blank one clears the name.
+    /// Names the version the Name field showed with its text, on Return or
+    /// when the field loses focus; a blank one clears the name.
     func nameSubmitted() {
-        $history.withLock { $0.name(versionName) }
+        let id = nameFieldVersion ?? history.current
+        let name = versionName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if name != (history.entry(id)?.name ?? "") {
+            $history.withLock { $0.name(name, of: id) }
+            announce(name.isEmpty ? "Name cleared." : "Named \(name).")
+        }
         showCurrentName()
     }
 
@@ -188,11 +222,14 @@ extension TuneModel {
         let handoff = DesignHandoff.capture(
             id: uuid(), sentAt: now, design: liveDesign, tuning: tuning, version: history.current, notes: notes,
             answers: agent.answers, screenshot: screenshot, previous: handOff)
-        if outbox.writeHandOff(handoff) {
+        do {
+            try outbox.writeHandOff(handoff)
             handOff = handoff
             handOffError = nil
-        } else {
-            handOffError = "The hand-off did not save, so the agent cannot read it. Hand off again."
+            announce(HandOffStatus.sent(handoff.sentAt).text)
+        } catch {
+            handOffError = "The hand-off did not save, so the agent cannot read it. \(error.localizedDescription) Hand off again."
+            announce(handOffError ?? "")
         }
     }
 
@@ -204,16 +241,32 @@ extension TuneModel {
         case shipped(Date, files: [String])
         case answered(String)
 
+        var isNotSaved: Bool {
+            if case .notSaved = self { return true }
+            return false
+        }
+
         var text: String {
             func time(_ date: Date) -> String { date.formatted(date: .omitted, time: .shortened) }
             return switch self {
             case .notSaved(let reason): reason
-            case .sent(let date): "Handed off at \(time(date)). Not read yet."
+            case .sent(let date): "Handed off at \(time(date)). Not read yet. Ask the agent to read it."
             case .read(let date): "Read by the agent at \(time(date))."
-            case .shipped(let date, let files): "Shipped at \(time(date)). Changed \(files.joined(separator: ", "))."
+            case .shipped(let date, let files):
+                "Shipped at \(time(date)). Changed \(files.joined(separator: ", ")). A build with those files shows them."
             case .answered(let reply): "The agent answered: \(reply)"
             }
         }
+    }
+
+    /// The answer to the hand-off before the current one, which still
+    /// counts: "The hand-off before, at 10:40: Shipped at 10:51. …"; `nil`
+    /// while it has none.
+    var previousHandOffLine: String? {
+        guard let previous = handOff?.previous, let answer = agent.answers[previous.id.uuidString] else { return nil }
+        let status: HandOffStatus =
+            answer.changedFiles.isEmpty ? .answered(answer.reply) : .shipped(answer.date, files: answer.changedFiles)
+        return "The hand-off before, at \(previous.sentAt.formatted(date: .omitted, time: .shortened)): \(status.text)"
     }
 
     var handOffStatus: HandOffStatus? {
@@ -227,9 +280,11 @@ extension TuneModel {
     }
 
     /// A hand-off the agent answered with changed files is Shipped: its
-    /// design now lives in source, so Tune clears its token and knob
-    /// overrides and the source shows. The current hand-off and the one
-    /// before it take an answer; each ships once, and never after a later one.
+    /// design now lives in source. While the device still shows that design,
+    /// Tune clears its token and knob overrides, so the app shows the theme
+    /// it was built with; a design changed since stays, since no source holds
+    /// it. The current hand-off and the one before it take an answer; each
+    /// ships once, and never after a later one.
     func shipAnswered() {
         guard let handOff else { return }
         var sent: [(id: UUID, design: Design)] = []
@@ -240,8 +295,9 @@ extension TuneModel {
         for (index, hand) in sent.enumerated() {
             guard let answer = agent.answers[hand.id.uuidString], !answer.changedFiles.isEmpty else { continue }
             if let shipped = history.shipped?.handoff, sent[index...].contains(where: { $0.id == shipped }) { continue }
-            changeHistory { $0.ship(handoff: hand.id, design: hand.design, files: answer.changedFiles) }
-            apply(Design())
+            var cleared = false
+            changeHistory { cleared = $0.ship(handoff: hand.id, design: hand.design, files: answer.changedFiles) }
+            if cleared { apply(Design()) }
             refreshContext()
         }
     }

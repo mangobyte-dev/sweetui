@@ -24,7 +24,7 @@ final class TuneModel {
     static let placeStorageKey = "designSurface.place"
     /// The answers and proposals the person has seen on Notes.
     static let seenStorageKey = "designSurface.seen"
-    static let codeError = "That is not a code Tune can read. Copy one from sweetui.dev/create."
+    static let codeError = "Tune cannot read that as a code or a RegistryTheme(...). Copy a code from sweetui.dev/create."
 
     let stage: DesignSurfaceState
 
@@ -155,10 +155,12 @@ final class TuneModel {
 
     /// Records the live design as one version by you when it moved, then
     /// tries a proposal that arrived while the control was held, on top.
+    /// While the tokens file did not decode it holds Default, not a design
+    /// the person made, so nothing is recorded until a write replaces it.
     func settle() {
         colorSettle?.cancel()
         colorSettle = nil
-        record(liveDesign, author: .you, origin: .edit)
+        if $tuning.loadError == nil { record(liveDesign, author: .you, origin: .edit) }
         if agentWaits {
             agentWaits = false
             shipAnswered()
@@ -234,10 +236,11 @@ final class TuneModel {
 
     /// Reconciles the history with the value files, then records each change
     /// made outside Tune's controls and follows the agent's file until the
-    /// surface goes away.
+    /// surface goes away. A tokens file that did not decode holds Default,
+    /// not the person's design, so it is not reconciled.
     func task() async {
         handOff = outbox.readHandOff()
-        $history.withLock { $0.reconcile(values: liveDesign) }
+        if $tuning.loadError == nil { $history.withLock { $0.reconcile(values: liveDesign) } }
         refreshContext()
         // The maps are Sendable, so not isolated to the main actor: the loop
         // asks for the next value off it, and a value buffered by two quick
@@ -259,9 +262,9 @@ final class TuneModel {
     private enum Change { case values, agent }
 
     /// A change Tune's controls did not make, such as the host's own strip:
-    /// one version by you.
+    /// one version by you. Nothing while the tokens file did not decode.
     private func outsideChange() {
-        guard !isHoldingSlider, colorSettle == nil else { return }
+        guard !isHoldingSlider, colorSettle == nil, $tuning.loadError == nil else { return }
         record(liveDesign, author: .you, origin: .edit)
     }
 
@@ -286,9 +289,19 @@ final class TuneModel {
         defer { announced = keys }
         guard let announced else { return }
         for (id, answer) in agent.answers where !announced.contains("\(id) \(answer.date.timeIntervalSince1970)") {
-            let sentence = answer.reply.split(separator: ".", maxSplits: 1).first.map { String($0) + "." } ?? answer.reply
-            announce("The agent answered: \(sentence)")
+            announce("The agent answered: \(Self.firstSentence(of: answer.reply))")
         }
+    }
+
+    /// The first sentence by the system's sentence rules, so a file name
+    /// such as `RegistryTheme+App.swift` does not end it.
+    static func firstSentence(of text: String) -> String {
+        var sentence = text
+        text.enumerateSubstrings(in: text.startIndex..., options: .bySentences) { substring, _, _, stop in
+            if let substring { sentence = substring.trimmingCharacters(in: .whitespacesAndNewlines) }
+            stop = true
+        }
+        return sentence
     }
 
     // MARK: The agent's context

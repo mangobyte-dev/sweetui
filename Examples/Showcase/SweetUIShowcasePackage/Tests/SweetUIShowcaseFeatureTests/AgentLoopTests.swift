@@ -77,6 +77,67 @@ extension TuneModelTests {
             #expect(model.stripMessage == "Discarded Round.")
         }
 
+        /// Start from leaves a proposal, as Undo and Restore do: what it
+        /// applies goes over the base, so a token the person never chose
+        /// must not stay on the device or be listed as their change.
+        @Test func `Apply while a proposal is trying discards it first, so none of its tokens or knobs stay`() async throws {
+            let stage = Self.stage()
+            let model = TuneModel(stage: stage)
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            model.presetChipTapped("Rose")
+            let base = try #require(model.current)
+            agentWrites {
+                $0.proposals = [
+                    Self.proposal("W", "Warm", tokens: ["cardRadius": .number(20)], knobs: ["button": ["height": 50]], apply: true)
+                ]
+            }
+            await Task.megaYield()
+            #expect(model.trying?.id == "W")
+            #expect(model.tuning.cardRadius == 20)
+
+            model.presetChipTapped("Emerald")
+            #expect(model.history.decisions["W"]?.state == .discarded)
+            #expect(model.history.trial == nil)
+            #expect(model.tuning.cardRadius == ThemeTuning.default.cardRadius, "Warm's radius must leave with Warm.")
+            #expect(stage.knobs.values.isEmpty, "Warm's knob must leave with Warm.")
+            let emerald = try #require(model.current)
+            #expect(emerald.parent == base.id, "The preset is a child of the base, not of Warm's version.")
+            #expect(emerald.origin == .preset(name: "Emerald"))
+            #expect(
+                model.changesFromParent(emerald)?.map(\.title) == ["Accent"],
+                "Only the preset's accent is the person's change.")
+
+            agentWrites { $0.proposals.append(Self.proposal("X", "Round", minute: 1, tokens: ["cardRadius": .number(28)], apply: true)) }
+            await Task.megaYield()
+            model.defaultButtonTapped()
+            #expect(model.history.decisions["X"]?.state == .discarded)
+            #expect(model.tuning.cardRadius == ThemeTuning.default.cardRadius)
+
+            agentWrites { $0.proposals.append(Self.proposal("Y", "Round", minute: 2, tokens: ["cardRadius": .number(28)], apply: true)) }
+            await Task.megaYield()
+            model.codeDraft = "--preset a74hGF01CVunaG0vzZJG"
+            model.applyCodeButtonTapped()
+            #expect(model.history.decisions["Y"]?.state == .discarded)
+            #expect(model.current?.origin == .code)
+            #expect(model.current?.design.code == "a74hGF01CVunaG0vzZJG", "The pasted code applies over the base.")
+        }
+
+        /// The device holds a proposal's code as the theme file writes it,
+        /// so a valid code in another form must not read as the person's edit.
+        @Test func `A proposal whose code Tune writes in another form stays trying`() async throws {
+            let model = TuneModel(stage: Self.stage())
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            agentWrites { $0.proposals = [Self.proposal("M", "Mango", code: "b74hGF01CVunaG0vzZJG", apply: true)] }
+            await Task.megaYield()
+            await Task.megaYield()
+            #expect(model.trying?.id == "M", "Tune's own write of the code is not an edit that keeps it.")
+            #expect(model.history.decisions["M"]?.state == .tried)
+            #expect(model.current?.design.code == "a74hGF01CVunaG0vzZJG")
+            #expect(model.tryingLine(try #require(model.trying)).hasSuffix("changes."), "Past three titles the strip counts.")
+        }
+
         @Test func `A proposal that asks to be applied is tried on arrival, card closed, and an edit keeps it`() async throws {
             let stage = Self.stage()
             let model = TuneModel(stage: stage)
@@ -207,7 +268,7 @@ extension TuneModelTests {
             model.replyButtonTapped(note: note)
             #expect(model.composerFocused)
             #expect(
-                model.composerSubject == "button, on Catalog",
+                model.composerSubject == "Button, on Catalog",
                 "A reply is about its note's subject, not the selection, and says the item is on another screen.")
             model.noteDraft = "Still too short."
             model.sendButtonTapped()
@@ -220,6 +281,8 @@ extension TuneModelTests {
             #expect(model.noteDraft.isEmpty)
             #expect(record.screenshots.value.last == reply.id.uuidString)
             #expect(model.threads.map(\.rows.count) == [2], "The reply threads under its note.")
+            #expect(model.replyLine(reply) == "Reply to your note", "A reply says what it follows.")
+            #expect(model.replyLine(note) == nil)
 
             agentWrites { $0.proposals = [Self.proposal("P1", "Teal", note: note.id.uuidString, tokens: ["accent": .string("teal")])] }
             model.replyButtonTapped(proposal: try #require(model.proposal("P1")))
@@ -227,6 +290,7 @@ extension TuneModelTests {
             model.sendButtonTapped()
             #expect(model.notes.last?.inReplyTo == "P1")
             #expect(model.notes.last?.item == "button", "A reply to a proposal is about its note's subject.")
+            #expect(model.replyLine(try #require(model.notes.last)) == "Reply to Teal")
             let first = model.notes[1].id.uuidString
             let second = try #require(model.notes.last).id.uuidString
             #expect(
@@ -241,6 +305,10 @@ extension TuneModelTests {
             #expect(model.replyTarget == nil)
             #expect(model.noteDraft == "A draft", "Cancel keeps the draft.")
             #expect(model.composerSubject == "this screen", "The selected badge is not on this screen, so the note is about the screen.")
+
+            model.replyButtonTapped(note: note)
+            model.noteButtonTapped()
+            #expect(model.replyTarget == nil, "Note writes a new note about the selection, not the reply left open.")
         }
 
         @Test func `A hand-off answer with files sets Shipped and clears the overrides, and one without files does not`() async throws {
@@ -287,6 +355,31 @@ extension TuneModelTests {
             #expect(model.tuning.accent == .pink, "A hand-off ships once; a later write must not wipe the person's edit.")
         }
 
+        /// Shipped means the design is in source. Rose was never handed off,
+        /// so an answer to the Mango hand-off must not take Rose off the device.
+        @Test func `An answer to a hand-off whose design the device no longer shows records Shipped and keeps Current`() async throws {
+            let stage = Self.stage()
+            let model = TuneModel(stage: stage)
+            let listener = await TuneModelTests.listening(model)
+            defer { listener.cancel() }
+            model.presetChipTapped("Mango")
+            model.handOffButtonTapped()
+            let handOff = try #require(model.handOff)
+            model.presetChipTapped("Rose")
+            model.knobChanged("button", Self.knob, to: 44)
+            let rose = try #require(model.current)
+
+            agentWrites {
+                $0.answers[handOff.id.uuidString] = .init(reply: "MANGO.", changedFiles: ["A.swift"], date: Self.now)
+            }
+            await Task.megaYield()
+            #expect(model.history.shipped?.handoff == handOff.id, "The answer is still Shipped.")
+            #expect(model.current?.id == rose.id, "Rose is in no source, so it stays current.")
+            #expect(model.tuning.accent == .pink, "Rose stays on the device.")
+            #expect(stage.knobs.values == ["button": ["height": 44]])
+            #expect(model.handOffStatus == .shipped(Self.now, files: ["A.swift"]))
+        }
+
         @Test func `The previous hand-off still ships, and never after a newer one shipped`() async throws {
             let model = TuneModel(stage: Self.stage())
             let listener = await TuneModelTests.listening(model)
@@ -303,6 +396,11 @@ extension TuneModelTests {
             await Task.megaYield()
             #expect(model.history.shipped?.handoff == first.id)
             #expect(model.history.shipped?.design == first.design)
+            #expect(model.tuning.accent == .pink, "The device shows Rose, not the Mango that shipped, so it stays.")
+            #expect(
+                model.previousHandOffLine?.hasPrefix("The hand-off before, at") == true
+                    && model.previousHandOffLine?.contains("Shipped at") == true,
+                "The answer to the hand-off before shows under the status: \(model.previousHandOffLine ?? "none")")
             agentWrites { $0.answers[second.id.uuidString] = .init(reply: "Rose.", changedFiles: ["A.swift"], date: Self.now) }
             await Task.megaYield()
             #expect(model.history.shipped?.handoff == second.id)
@@ -336,11 +434,20 @@ extension TuneModelTests {
             #expect(model.unseen == 0)
             #expect(model.title(.notes) == "Notes")
             #expect(TuneModel(stage: DesignSurfaceState()).unseen == 0, "What the person saw stays seen after a relaunch.")
+
+            // A proposal decided from the strip before Notes shows is no news.
+            model.place = .tokens
+            agentWrites { $0.proposals.append(Self.proposal("B", "Mint", minute: 1, tokens: ["accent": .string("mint")], apply: true)) }
+            await Task.megaYield()
+            #expect(model.title(.notes) == "Notes (1)")
+            model.keepButtonTapped()
+            #expect(model.unseen == 0, "Kept from the strip, it no longer counts.")
+            #expect(model.title(.notes) == "Notes")
         }
 
         /// An answer to a hand-off is news from the agent like an answer to a
-        /// note, but it shows in Versions: it counts on the button and Notes
-        /// until Versions is shown, and Notes alone does not clear it.
+        /// note, but it shows in Versions: it counts on the button and on the
+        /// Versions segment, where it is, until Versions is shown.
         @Test func `A hand-off answer counts as new until Versions is shown`() async throws {
             let model = TuneModel(stage: Self.stage())
             let listener = await TuneModelTests.listening(model)
@@ -357,16 +464,26 @@ extension TuneModelTests {
             }
             await Task.megaYield()
             #expect(model.unseen == 1)
-            #expect(model.title(.notes) == "Notes (1)")
+            #expect(model.title(.versions) == "Versions (1)", "The answer counts where it shows.")
+            #expect(model.title(.notes) == "Notes", "Notes has nothing new to show.")
             model.place = .notes
             #expect(model.unseen == 1, "Notes does not show the hand-off's answer, so it stays new.")
             model.place = .versions
             #expect(model.unseen == 0)
-            #expect(model.title(.notes) == "Notes")
+            #expect(model.title(.versions) == "Versions")
 
             let relaunched = TuneModel(stage: DesignSurfaceState())
             relaunched.handOff = handOff
             #expect(relaunched.unseen == 0, "What the person saw stays seen after a relaunch.")
+        }
+
+        /// VoiceOver announces an answer's first sentence, so a file name in
+        /// it must not end the sentence early.
+        @Test func `An answer's first sentence keeps a file name whole`() {
+            #expect(
+                TuneModel.firstSentence(of: "Put MANGO into RegistryTheme+App.swift. Then rebuilt.")
+                    == "Put MANGO into RegistryTheme+App.swift.")
+            #expect(TuneModel.firstSentence(of: "Raised it") == "Raised it")
         }
 
         /// The panel never saves the agent's file: Sharing would throttle and

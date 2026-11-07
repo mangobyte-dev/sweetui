@@ -6,18 +6,23 @@ import SwiftUI
 extension TuneModel {
     // MARK: Start from
 
-    /// Applies a preset's accent (Mango's whole theme) as a new version.
+    /// Applies a preset's accent (Mango's whole theme) as a new version. A
+    /// proposal trying is discarded first, so the preset applies over the
+    /// base and none of the proposal's tokens or knobs stay.
     func presetChipTapped(_ name: String) {
         flush()
+        discardButtonTapped()
         var tuned = tuning
         tuned.apply(presetNamed: name)
         write(tuned)
         recordApplied(.preset(name: name))
     }
 
-    /// Applies Default, the values Changes compare against; knobs stay.
+    /// Applies Default, the values Changes compare against; knobs stay, the
+    /// base's after a proposal trying is discarded.
     func defaultButtonTapped() {
         flush()
+        discardButtonTapped()
         if let tuned = ThemeTuning(presetCode: ThemeTuning.default.presetCode, base: tuning) { write(tuned) }
         recordApplied(.defaultTheme)
     }
@@ -29,19 +34,24 @@ extension TuneModel {
         record(Design(), author: .you, origin: .source)
     }
 
-    /// Applies a pasted code or `RegistryTheme(...)` initializer; a text Tune
+    /// Applies a pasted code or `RegistryTheme(...)` initializer over the
+    /// base of a proposal trying, which is discarded first; a text Tune
     /// cannot read changes nothing and says so, and a blank one does nothing.
     func applyCodeButtonTapped() {
         guard !codeDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        guard let parsed = ThemeTuning.parse(codeDraft, into: tuning) else {
+        guard ThemeTuning.parse(codeDraft, into: tuning) != nil else {
             codeError = Self.codeError
+            announce(Self.codeError)
             return
         }
         flush()
+        discardButtonTapped()
+        guard let parsed = ThemeTuning.parse(codeDraft, into: tuning) else { return }
         write(parsed)
         codeDraft = ""
         codeError = nil
         recordApplied(.code)
+        announce("Applied the pasted code.")
     }
 
     /// Records what Start from applied, its theme as a code even when it is
@@ -69,6 +79,21 @@ extension TuneModel {
     }
 
     // MARK: Tokens
+
+    /// Why the tokens read Default: `registry-tokens.json` did not decode.
+    /// Tune records no version from it until a change or a Restore rewrites it.
+    var tokensFileError: String? {
+        $tuning.loadError.map { _ in
+            "Tune could not read registry-tokens.json, so the tokens show Default. A token change, or a Restore in Versions, rewrites the file."
+        }
+    }
+
+    /// What Tokens says where it would show nothing: a host that paints its
+    /// items from its own tokens, with no item selected and no token pages.
+    var ownTokensLine: String? {
+        guard !stage.tunesTheme, stage.selection.item == nil, stage.hostTokens == nil else { return nil }
+        return "This app paints its items from its own tokens. Select an item to see its knobs."
+    }
 
     /// The tokens Tokens shows: every one, or those that reach the selection.
     var scopedTokens: [TokenCatalog.Token] {
@@ -105,11 +130,15 @@ extension TuneModel {
         tuningEdit = tuned
     }
 
-    /// Switches the label on the accent to the one that measures better.
+    /// Switches the label on the accent to the one that measures better,
+    /// and says how the pair stands then.
     func fixLabelTapped() {
         flush()
         guard let dark = ContrastAudit.betterLabel(for: tuning) else { return }
         tuningEdit.darkLabelOnAccent = dark
+        if let pair = ContrastAudit(tuning).pairs.first(where: { $0.kind == .labelOnAccent }) {
+            announce("\(pair.title) \(pair.verdictWord.lowercased()).")
+        }
     }
 
     /// Goes to Notes with the check's pair and ratios drafted for the agent,

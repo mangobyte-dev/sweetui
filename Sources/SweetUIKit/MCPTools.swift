@@ -361,7 +361,7 @@ extension MCPServer {
           {
             "name": "read_handoff",
             "title": "Read the hand-off from the device",
-            "description": "Read the hand-off the person sent from Tune's Versions (design-handoff.json): its id, the design's code (empty under Source) and its Swift, every moved knob, the changes from Default, the open notes with their screenshots, and the previous hand-off's id. Reading stamps this hand-off read, so the person sees it. Write the theme and the knob defaults into source, answer the open notes, then call answer_handoff. Locate the file as list_design_notes does.",
+            "description": "Read the hand-off the person sent from Tune's Versions (design-handoff.json): its id, the design's code (empty under Source) and its Swift, every moved knob, the changes from Default, the open notes with their screenshots, and the previous hand-off's id. Reading stamps this hand-off read, so the person sees it. Write the theme and the knob defaults into source, answer the open notes, build and relaunch the app, then call answer_handoff. Locate the file as list_design_notes does.",
             "inputSchema": {
               "type": "object",
               "properties": {
@@ -388,7 +388,7 @@ extension MCPServer {
           {
             "name": "answer_handoff",
             "title": "Answer a hand-off",
-            "description": "Answer a hand-off in Tune, written to design-agent.json: a reply and the files you changed. With changedFiles the person sees Shipped and Tune clears its token and knob overrides, so the app shows your source; without them the reply shows alone. Accepts the current hand-off and the one before it, and says when a newer one waits; refuses an older id. Locate the file as list_design_notes does.",
+            "description": "Answer a hand-off in Tune, written to design-agent.json: a reply and the files you changed. Build and relaunch the app with those files first: the app shows only the source it was built with. With changedFiles the person sees Shipped and, while the device still shows the design handed off, Tune clears its token and knob overrides, so the app shows your source; without them the reply shows alone. Accepts the current hand-off and the one before it, and says when a newer one waits; refuses an older id. Locate the file as list_design_notes does.",
             "inputSchema": {
               "type": "object",
               "properties": {

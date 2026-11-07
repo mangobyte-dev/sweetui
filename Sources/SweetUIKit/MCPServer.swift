@@ -208,6 +208,7 @@ public struct MCPServer {
           ),
           "Write each knob under knobs as the item's new shipped default in its source",
           "Act on each open note (read its screenshotPath), then answer_design_note with its id",
+          "Build and relaunch the app with the changed source: the app shows only the source it was built with",
           .string(
             "Then answer_handoff with id \(handoff["id"].text) and the changedFiles; Tune clears its token and knob overrides so the source shows"
           ),
