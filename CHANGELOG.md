@@ -26,6 +26,11 @@
   the code over the current tuning (the environment switches stay) and writes the pick back as
   `chosen`. A chip reads selected while the knobs still match its code. No build or capture per
   variant: a preset code applies at runtime. A code the panel cannot decode applies nothing.
+- `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
+  carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
+  background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only
+  when there is something to measure, so a code with a system accent prints what it always did; the
+  Tune panel measures system accents on the device.
 
 ### Known limitations
 

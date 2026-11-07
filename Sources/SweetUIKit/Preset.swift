@@ -490,10 +490,16 @@ public enum Preset {
       if let number = tuning[key].number { return String(number) }
       return tuning[key].rendered()
     }
+    // Only the literal colors a code carries can be measured here; a system
+    // accent resolves on the device, so the key appears only when there is
+    // something to report and the pinned outputs keep their bytes.
+    let contrast = Contrast.report(tuning)
     if json {
       let body = keys.map { "    \"\($0)\": \(value($0))" }.joined(separator: ",\n")
+      let measured =
+        contrast == [:] ? "" : ",\n  \"contrast\": " + contrast.rendered(level: 1)
       return
-        "{\n  \"code\": \"\(code)\",\n  \"version\": \"\(version)\",\n  \"tuning\": {\n\(body)\n  },\n  \"swift\": \(try JSON.string(swiftSource(tuning)).rendered()),\n  \"url\": \(JSON.string(url(code)).rendered())\n}"
+        "{\n  \"code\": \"\(code)\",\n  \"version\": \"\(version)\",\n  \"tuning\": {\n\(body)\n  }\(measured),\n  \"swift\": \(try JSON.string(swiftSource(tuning)).rendered()),\n  \"url\": \(JSON.string(url(code)).rendered())\n}"
     }
     func row(_ key: String, _ value: String) -> String {
       "  " + key + String(repeating: " ", count: max(0, 26 - key.count)) + value
@@ -501,6 +507,13 @@ public enum Preset {
     var lines = ["Preset", row("code", code), row("version", version)]
     for key in keys {
       lines.append(row(key, tuning[key] == .null ? "none" : tuning[key].string ?? value(key)))
+    }
+    for (name, pair) in (contrast.object ?? [:]).sorted(by: { $0.key < $1.key }) {
+      let verdict = pair["passes"] == .bool(true) ? "passes" : "fails 4.5:1"
+      lines.append(
+        row(
+          "contrast." + name,
+          "\(pair["light"].number ?? 0):1 light, \(pair["dark"].number ?? 0):1 dark, \(verdict)"))
     }
     lines += [row("url", url(code)), "", try swiftSource(tuning)]
     return lines.joined(separator: "\n")

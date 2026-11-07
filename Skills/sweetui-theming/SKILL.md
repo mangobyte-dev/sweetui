@@ -48,7 +48,7 @@ Quote every API, code from these, never memory; codes come from codec, never han
 A preset code is one short `RegistryTheme` string; tool, Showcase, website, MCP read/write it.
 
 1. `sweetui preset decode a13GkaOXWwIF`: code, version, accent, ..., website URL.
-2. `--json`: machine-readable knobs, same payload as MCP `describe_preset`.
+2. `--json`: machine-readable knobs, same payload as MCP `describe_preset`. A custom accent, or a custom foreground over a custom background, adds `contrast`: WCAG 2.2 ratios in light and dark and `passes` against 4.5:1. A system accent is not measured there (it resolves on the device); the Tune panel measures it.
 3. `preset url a13GkaOXWwIF`: just the URL.
 
 - **DO** treat the code as portable: `a13GkaOXWwIF` = Indigo preset, foundation metrics; never hand-assemble characters, decode it.
