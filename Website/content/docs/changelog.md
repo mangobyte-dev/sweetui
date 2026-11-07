@@ -6,10 +6,10 @@
 
 - Tune, the card `designSurface()` puts over a running debug build, with three places: Tokens (Start
   from, the theme's tokens in groups with the Checks, the selected item, its knobs, the host's
-  sections), Notes (the conversation with the agent), and Versions (Current, Hand off, and the
+  sections), Notes (the conversation with the agent), and Versions (Hand off, Current, and the
   history). The
   toolbar holds Select and the item menu; the bottom bar holds Undo, Redo, Preview, and Note. Preview
-  is one menu of appearance, text size, direction (System, Left to right, Right to left), outlines,
+  is one menu of appearance, text size (System, XXXL, AX3), direction (System, Left to right, Right to left), outlines,
   and guides, applied beside the theme and never part of a version, also for a host that paints the
   items from its own tokens. The place picker becomes a menu at an accessibility text size and in a
   card too short to keep 120 pt for the place. `DesignSurface.card(at:tunesRegistryTheme:sample:)`
@@ -23,13 +23,15 @@
   drops, never Current, a trial's base, or Shipped. A device with the older list-shaped file keeps
   its history. On launch the value files are the truth, so a change lost to a kill is recorded once.
   While Tune sets no token the app shows its own theme (Source); Source and Default are versions.
-  Versions shows Current (its label, author, and time, "Trying Warm" while trying, what it changed
-  from the version before and from Default in words (under Source only its knobs, beside "Tokens:
-  source, the app's own theme.", since Tune does not know those values), a line for the Checks
-  that opens Tokens with Color open, a line for the open notes that opens Notes, the Name field,
-  Copy code, Copy Swift, and the Swift to read), then Hand off, then the history newest first: each
-  row has its author's mark, label, time, change count (none for Source with no knob moved), a
-  check on Current, and "from Mango at 10:40" where it branched. A tap
+  Versions shows Hand off at the top, then Current (its label, author, and time, "Trying Warm"
+  while trying, what it changed from the version before and from Default in words (under Source
+  only its knobs, beside "Tokens: source, the app's own theme.", since Tune does not know those
+  values), a line for the Checks that opens Tokens with Color open (plain text under Source, where
+  they measure nothing), a line for the open notes that opens Notes, the Name field, which names
+  the version it showed on Return or when it loses focus, Copy code, Copy Swift, and the Swift to
+  read), then the history newest first: each row has its author's mark, label (an unnamed edit
+  reads as what it changed, "Card radius" or "Accent and 2 more"), time, change count (none for
+  Source with no knob moved), a check on Current, and "from Mango at 10:40" where it branched. A tap
   restores a version. Undo right after Restore onto a proposal's version that is not kept returns to
   the version Restore left and records the proposal discarded. A host that does not tune the theme
   keeps Versions without the Checks, Copy code, and Copy Swift.
@@ -38,20 +40,28 @@
   its moved knobs, its frame, and the design's code (empty under Source). Threads list oldest first:
   the note, the agent's answer with the files it changed, the proposals that answer it, then the
   replies. A note reads Not read yet, Read, or Answered, and a line above the threads says when the
-  agent last read them. Reply on any note or proposal threads the next note to it (`inReplyTo`) with
-  that note's subject. Delete is a swipe, mirrored as an accessibility action. The composer sits at
-  the bottom of the card.
+  agent last read them, or to ask the agent to read them. Reply on any note or proposal threads the
+  next note to it (`inReplyTo`) with that note's subject, and the reply starts with what it follows
+  ("Reply to Warm"). Reply is secondary, so Send is the one tinted control. Note always starts a new
+  note; under VoiceOver, with nothing selected, it goes straight to the composer about the screen.
+  Delete is a swipe that never runs on its own, mirrored as an accessibility action. The composer
+  sits at the bottom of the card.
 - Proposals. The agent offers a design: a full code, or tokens as a delta, and knob values. One that
   asks to be applied is tried as soon as it arrives, card open or closed, merged over the current
   version; one that arrives while a slider is held is tried on release, on top of it. The Trying
   strip ("Trying Warm. Accent, Card radius.") offers Keep and Discard. Discard puts the base back
   exactly, Keep turns down the other proposals that answer the same note (one that answers no note
   turns down none), and an edit keeps it ("Kept
-  Warm. Your change is on top."). Undo, Restore, or Apply while trying discards it; Redo or Restore
-  onto a proposal's version tries it again; Undo past a kept one records it discarded. A proposal row
-  shows its reason and its Changes in words, with Try, Keep, Discard, or Try again for its state.
-  Notes and the Tune button count what is new from the agent ("Tune, 1 new from the agent"), and
-  VoiceOver announces each try, decision, and answer.
+  Warm. Your change is on top."). Undo, Restore, or Apply while trying discards it, and Apply then
+  applies over the base; Redo or Restore onto a proposal's version tries it again, and Redo on to
+  the version above it keeps it; Undo past a kept one records it discarded. A proposal's code is kept
+  in the form the theme file writes, so Tune never reads its own write as an edit. A proposal row
+  shows its reason and its Changes in words, with Try, Keep, Discard, or Try again for its state,
+  each labeled with the proposal's name for VoiceOver. Past three titles the strip counts ("Trying
+  Mango. 12 changes."), and its fill is #0062CC, 5.8:1 under its white text. Notes counts new
+  answers and undecided proposals, Versions new answers to a hand-off, and the Tune button both
+  ("Tune, 1 new from the agent"). VoiceOver announces each try, decision, and answer (its first
+  sentence), a sent note, a hand-off, a copy, a name, Fix label, and an applied code.
 - One writer per file. Tune writes `registry-tokens.json`, `design-knobs.json`, `design-notes.json`,
   `design-history.json`, `design-context.json`, and `design-handoff.json`. The agent writes only
   `design-agent.json`: read dates by note and hand-off id, answers keyed by id, and proposals. Tune
@@ -65,11 +75,17 @@
 - Hand off, the one prominent control in Versions, keeps a proposal that is trying, then writes `design-handoff.json` and
   `notes/handoff.png`: an id, the design's code (empty under Source) and its Swift, the moved knobs,
   the changes from Default, the notes the agent has not answered, and the previous hand-off. Its
-  status reads "Handed off at 10:42. Not read yet.", "Read by the agent at 10:43.", "Shipped at
-  10:51. Changed RegistryTheme+App.swift.", or the agent's answer. An answer with changed files is
-  Shipped: Tune clears its token and knob overrides so the source shows. Under Source, Copy code and
-  Copy Swift say there is no code, and the Checks line says Tune sets no token. An answer to the
-  hand-off counts as new on Notes and the Tune button until Versions is shown.
+  status reads "Handed off at 10:42. Not read yet. Ask the agent to read it.", "Read by the agent at
+  10:43.", "Shipped at 10:51. Changed RegistryTheme+App.swift. A build with those files shows
+  them.", or the agent's answer, and the previous hand-off's answer shows under it. A save that
+  fails says why in red, with the cause the write gave. An answer with changed files is Shipped:
+  while the device still shows the design handed off, Tune clears its token and knob overrides so
+  the source shows; after more edits, or for an older hand-off, Current stays, since no source holds
+  it. The agent builds and relaunches the app before it answers, since a running build shows only
+  the source it was built with (the `sweetui` skill, `read_handoff`'s next steps, and
+  `answer_handoff`'s description say so). Under Source, Copy code and Copy Swift say there is no
+  code, and the Checks line says Tune sets no token. An answer to the hand-off counts as new on the
+  Versions segment and the Tune button until Versions is shown.
 - Six MCP design tools beside the seven released: `get_design_context`;
   `list_design_notes(includeAnswered)`, which joins answers, proposals with their state (offered,
   trying, kept, discarded), and the person's decisions, and stamps a read date per note returned;
@@ -86,19 +102,27 @@
   light and dark and again under Increase Contrast. A row reads Passes, Passes with Increase Contrast,
   or Fails against the 4.5:1 the Human Interface Guidelines apply to text up to 17 points, with the
   ratios beside it, and the Color header counts the failures ("Color · 1 fails"). When the other label
-  (white or black) would pass, Fix label applies it; Ask the agent on a failing check goes to Notes
+  (white or black) would pass, Fix label ("Fix label: use black") applies it; Ask the agent on a failing check goes to Notes
   with the pair and its ratios drafted under any draft already there. Under Source, Tune cannot read
   the app's colors, so the Checks say so and the header counts no failure. Ratios agree with
   WebAIM's checker to two decimals (`ContrastAuditTests`).
-- Tokens and Selecting. With nothing selected, Tokens shows Start from, then the theme's tokens in
-  seven groups: Color open, and Type, Space, Shape, Surface, Chart, and Disabled collapsed, each header
-  counting what changed ("Space · 2 changed"). A token row shows its title, value ("source" while Tune
-  sets no token), key, how many items on screen it reaches, and, while it is changed, a dot and Reset
-  token. A color token has Light and Dark pickers and Use the Light value. While a token's slider is
-  held, only the items it reaches are outlined. Select, then a tap on an item, shows the Item section
-  (title, name, size and origin, instances, the item around it, the notes about it, Copy name), its
-  knobs (the agent's marked "From the agent"), only the tokens that reach it, and what it reads that
-  no token moves ("Also reads negative. No token moves it."). A pick from Notes stays on Notes as the
+- Tokens and Selecting. With nothing selected, Tokens shows Start from (the preset chips in a grid
+  that wraps, Source and Default each with a line saying what it does, and Paste a code, which takes
+  a code or a `RegistryTheme(...)`; the one Current came from is checked), then the theme's tokens
+  in seven groups: Color open, and Type, Space, Shape, Surface, Chart, and Disabled collapsed, each
+  header counting what changed ("Space · 2 changed"). A token row shows its title, value ("source"
+  while Tune sets no token), key, how many items on screen it reaches ("reaches 4 items on
+  screen", left out when it reaches none), and, while it is changed, a dot and Reset token. A color
+  token has Light and Dark pickers and Use the Light value. While a token's slider is held, only the
+  items it reaches are outlined. A `registry-tokens.json` that did not decode is said at the top of
+  Tokens and records no version until a token change or a Restore rewrites it. A host that paints
+  its items from its own tokens, with nothing selected, reads "This app paints its items from its
+  own tokens. Select an item to see its knobs." Select, then a tap on an item, shows the Item section
+  (title, name, size and origin, instances, the item around it, the notes about it, Copy name,
+  Clear selection), its knobs (the agent's marked "Declared by the agent", a moved one with a dot
+  and "changed, 36 to 44"), only the tokens that reach it, and what it reads that no token moves
+  ("Also reads negative. No token moves it."). With no title from the host, an item reads as its
+  name in words ("Inline alert"). A pick from Notes stays on Notes as the
   composer's subject and pushes no host page over it. A tap on nothing, or Cancel on the Selecting
   pill, keeps the selection. Note with nothing selected arms Selecting and returns to the focused
   composer. The item menu lists the selection's chain and the items on this screen, and says when the
@@ -115,8 +139,9 @@
   `registryKnob(_:_:options:default:)` to read them. An agent writes `design-knob-specs.json` beside
   the tokens, `{"<item>": [{"name", "title", "kind": "number" | "bool" | "choice", "min", "max",
   "step", "options", "shipped"}]}`, and Tune shows the controls under the item at once; a host knob
-  of the same name wins, and a spec Tune cannot draw is dropped with a log line. The item reads a new
-  knob after one build.
+  of the same name wins, and a spec Tune cannot draw is named under the item's Knobs with its
+  reason. Tune holds the file through `@SharedReader`. Changes say a switch as on or off and a
+  choice as its option. The item reads a new knob after one build.
 - Two simless fixtures, `TunePanel` and `TunePanelEmerald`, render the embedded `TuningPanel` headless.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
@@ -137,13 +162,46 @@
   still names it) and the bottom bar; the Trying strip stays while a proposal is trying.
 - The composer field's own accessibility frame stays one line tall (about 22 pt on the iPhone Duo):
   SwiftUI's frame and padding do not resize the text view's element. Its row is a 44 pt target, and a
-  tap beside the text focuses it. A color picker's frame is the system well's, 24 pt.
+  tap beside the text focuses it. A color picker's frame is the system well's, 24 pt, below the
+  HIG's 28 pt iOS minimum; the 44 pt frame on each picker sizes its row, not the well.
 - A token's slider begins its hold, and its reach outlines, once the thumb moves a step; a touch
-  that rests without moving shows none (iPhone Duo, iOS 27.1).
+  that rests without moving shows none (iPhone Duo, iOS 27.1). If that first step's value arrives
+  before the hold begins, one drag records two versions. The event order is unmeasured: the feature
+  tests begin the hold first, so only a live count of `design-history.json` around one drag decides it.
+- Under Source the controls hold Default's values, so the first token edit puts the whole default
+  theme on the app, not only that token; a line above the groups says so.
 - `design-variants.json` and `design-agent-change.json` from earlier builds are ignored, not deleted.
-- On the iPhone Duo cover display (iOS 27.1 simulator) Tune's Preview menu opens upward and runs past
-  the top edge: Outlines and Guides sit off screen when it opens, so they take more than 2 taps.
-  The system color picker presents there (checked 2026-11-07). Unverified on the pinned iPhone 17.
+- Outlines and the list of the items on this screen live in menus, Preview and the item menu. On the
+  iPhone Duo cover display (iOS 27.1 simulator) the Preview menu opens upward and runs past the top
+  edge: Outlines and Guides sit off screen when it opens, so they take more than 2 taps. The system
+  color picker presents there (checked 2026-11-07). Unverified on the pinned iPhone 17.
+- Accessibility-size layouts are unmeasured: the simless AX fixtures did not scale text (the same
+  paragraph measured 268 × 101 pt at large and at AX3). The strip, proposal rows, token rows, and
+  the Checks keep their buttons in one row; they stack with `ViewThatFits` once an argent AX3 and AX5
+  run shows they must.
+- Notes and the hand-off do not record Preview (appearance, text size, direction), though their
+  screenshots render under it, and the context stores the direction as a Bool. Recording it changes
+  three file formats, the shared fixtures, and the MCP readers, so it waits for its own change.
+- The card moves and resizes only by dragging its bar and its grip. VoiceOver and Switch Control
+  have no Move or Snap action yet; that needs new `PanelGeometry` entry points.
+- Leaving a pushed host page when the place changes (Note, the strip's name) is compile-checked
+  only: the Showcase registers no host page. App token pages push with
+  `NavigationLink(destination:)` inside the card's path-driven stack and get no bottom bar; both are
+  latent while `TokenDocument` has no adopter.
+- Reset app tokens is one tap, and Undo cannot reverse it: app tokens sit outside versions and Tune
+  has no alerts. It stays so until `TokenDocument` has an adopter.
+- After Shipped, the notes the hand-off carried still read as going with the next hand-off, since
+  `answer_handoff` answers no note. Changing it means deciding whether shipping answers them.
+- Answered threads never fold. Folding conflicts with scrolling to a row inside a folded thread.
+- The Checks hide while an item is selected, so the Checks line in Versions clears the selection to
+  show them. Showing them in the item's scope is a decision for the owner.
+- The code on the device is never shown as text, only behind Copy code and in the Swift
+  disclosure: changes read in words by design, so the code cannot be read at a glance.
+- A note's screenshot is never shown (only its absence is), and a note does not link to the version
+  it was on. A thumbnail and a Restore link are new surface, not a fix.
+- Opacities read as decimals (0.07), because codes, `describe_preset`, and `propose_design` speak
+  fractions and percent would split Tune's words from the agent's. "Mono" names both a font design
+  and a chart palette, to fit the four segments in a 300 pt card.
 - Under Source, `TunedTheme` applies the app's own theme again, read from above `designSurface()`,
   rather than removing itself, so the app keeps its state when the design leaves or returns to
   Source; an app theme without an accent carries the app's accent color there. Source shows the
