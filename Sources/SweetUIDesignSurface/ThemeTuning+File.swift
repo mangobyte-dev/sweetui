@@ -17,7 +17,7 @@ extension ThemeTuning: Codable {
         case code, version, tuning, environment
     }
 
-    private enum TuningKeys: String, CodingKey {
+    enum TuningKeys: String, CodingKey {
         case accent, darkLabelOnAccent, customAccent, customAccentDark
         case surfaceOpacity, borderOpacity, borderWidth, emphasizedBorderWidth
         case compactRadius, controlRadius, cardRadius
@@ -33,7 +33,7 @@ extension ThemeTuning: Codable {
     }
 
     /// The numeric knobs in the reference order, each with its key.
-    private static let numericKeys: [(key: TuningKeys, path: WritableKeyPath<ThemeTuning, Double> & Sendable)] = [
+    static let numericKeys: [(key: TuningKeys, path: WritableKeyPath<ThemeTuning, Double> & Sendable)] = [
         (.surfaceOpacity, \.surfaceOpacity),
         (.borderOpacity, \.borderOpacity),
         (.borderWidth, \.borderWidth),
@@ -50,7 +50,7 @@ extension ThemeTuning: Codable {
     ]
 
     /// The optional color pairs, each with its key.
-    private static let colorKeys: [(key: TuningKeys, path: WritableKeyPath<ThemeTuning, RGB?> & Sendable)] = [
+    static let colorKeys: [(key: TuningKeys, path: WritableKeyPath<ThemeTuning, RGB?> & Sendable)] = [
         (.customAccentDark, \.customAccentDark),
         (.background, \.background),
         (.backgroundDark, \.backgroundDark),
@@ -167,6 +167,38 @@ extension ThemeTuning.RGB {
             return nil
         }
         self.init(packed: packed)
+    }
+}
+
+extension ThemeTuning {
+    /// One knob that differs between two tunings, spelled as the file spells it.
+    public struct Difference: Equatable, Sendable {
+        public let key: String
+        public let from: String
+        public let to: String
+    }
+
+    /// Every knob where `self` differs from `base`, in the file's key order;
+    /// the environment switches are not knobs and never listed.
+    public func differences(from base: ThemeTuning) -> [Difference] {
+        var result: [Difference] = []
+        func add(_ key: TuningKeys, _ from: String, _ to: String) {
+            if from != to { result.append(Difference(key: key.rawValue, from: from, to: to)) }
+        }
+        add(.accent, base.accent.rawValue, accent.rawValue)
+        add(.darkLabelOnAccent, "\(base.darkLabelOnAccent)", "\(darkLabelOnAccent)")
+        if accent == .custom || base.accent == .custom {
+            add(.customAccent, base.customAccent.hex, customAccent.hex)
+        }
+        for field in Self.numericKeys {
+            add(field.key, RGB.format(base[keyPath: field.path], minimum: 0), RGB.format(self[keyPath: field.path], minimum: 0))
+        }
+        add(.fontDesign, base.fontDesign.rawValue, fontDesign.rawValue)
+        add(.chartPalette, base.chartPalette.rawValue, chartPalette.rawValue)
+        for field in Self.colorKeys {
+            add(field.key, base[keyPath: field.path]?.hex ?? "none", self[keyPath: field.path]?.hex ?? "none")
+        }
+        return result
     }
 }
 #endif

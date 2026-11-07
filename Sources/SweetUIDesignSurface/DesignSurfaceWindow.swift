@@ -142,6 +142,28 @@ private struct DesignSurfaceOverlayRoot: View {
     @Environment(\.layoutDirection) private var direction
     @Bindable private var state = DesignSurfaceState.shared
 
+    @Shared(.designHistory) private var history
+    @Shared(.agentChange) private var agentChange
+    @Shared(.designVariants) private var variants
+
+    /// Appends the settled state to the history, naming who moved it: the
+    /// agent when its last write is this code, a variant when a chip
+    /// matches, the shipped theme when nothing has moved, the person otherwise.
+    private func recordHistory() {
+        let current = DesignHistory.State(code: tuning.presetCode, knobs: state.knobs.values)
+        let source: DesignHistory.Source
+        if history.entries.isEmpty, current.code == ThemeTuning.default.presetCode, current.knobs.isEmpty {
+            source = .shipped
+        } else if agentChange?.code == current.code {
+            source = .agent
+        } else if variants.matching(tuning) != nil {
+            source = .variant
+        } else {
+            source = .person
+        }
+        $history.withLock { $0.record(current, source: source) }
+    }
+
     /// What a context rewrite waits for; a scroll moves frames, not this.
     private var contextKey: [String] {
         [state.isPresented ? "up" : "down", state.screen ?? "", tuning.presetCode, state.selection.item ?? ""]
@@ -204,7 +226,9 @@ private struct DesignSurfaceOverlayRoot: View {
         // the screen, its items, the selection, the theme, or a knob changes,
         // never on a scroll (frames are read at write time).
         .onChange(of: contextKey, initial: true) { _, _ in
-            if state.isPresented { DesignContext.write(state: state, tuning: tuning) }
+            guard state.isPresented else { return }
+            DesignContext.write(state: state, tuning: tuning)
+            recordHistory()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
             state.keyboardFrame = (note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect) ?? .zero

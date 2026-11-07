@@ -44,6 +44,12 @@
 - Note threads. `resolve_design_note` takes a `reply` and `changedFiles`, and stamps `resolvedAt`.
   The panel shows an answered note under Answered with the agent's reply and the files it changed;
   swipe to reopen it (the reply stays as the thread so far) or delete it.
+- History. Every settled state of the design on the device (a knob or preset the person moved, a
+  write by the agent, a variant pick) is an entry in `design-history.json`: the preset code, the
+  knob values, the source, and a name once the person checkpoints it. The panel's History section
+  has Undo and Redo, a Checkpoint field that names the current state, the named states to restore
+  by a tap, and Compare to shipped, which lists each knob that differs from the defaults with its
+  from and to values. Two hundred entries are kept; named ones outlive the unnamed.
 - `sweetui preset decode` and MCP `describe_preset` report contrast for the literal colors a code
   carries: `labelOnAccent` for a custom accent and `text` for a custom foreground over a custom
   background, as WCAG 2.2 ratios in light and dark with `passes` against 4.5:1. The key appears only

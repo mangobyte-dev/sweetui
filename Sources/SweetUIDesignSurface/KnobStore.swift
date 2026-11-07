@@ -83,6 +83,11 @@ final class KnobStore {
         $values.withLock { $0[item] = nil }
     }
 
+    /// Replaces every stored value, as a history entry restores them.
+    func replaceAll(_ stored: [String: [String: Double]]) {
+        $values.withLock { $0 = stored }
+    }
+
     /// Puts an item's stored values back as they were; empty clears them.
     func restore(_ item: String, _ stored: [String: Double]) {
         $values.withLock { $0[item] = stored.isEmpty ? nil : stored }

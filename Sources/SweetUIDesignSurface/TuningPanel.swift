@@ -90,6 +90,9 @@ public struct TuningPanel<PresetsFooter: View>: View {
                 if showsScreen, let host = DesignSurfaceState.shared.hostSections {
                     host(selection?.wrappedValue.chain ?? [])
                 }
+                if showsScreen && tunesTheme {
+                    HistorySection(tuning: $tuning)
+                }
                 if tunesTheme {
                     PresetsSection(tuning: $tuning, footer: presetsFooter)
                     if showsScreen { VariantsSection(tuning: $tuning) }
@@ -321,6 +324,97 @@ private struct ScopeSection: View {
                     .accessibilityIdentifier("tuning.scope.item")
                 Text("\(tokenCount) tokens reach it")
             }
+        }
+    }
+}
+
+/// Every settled state of the design on this device: Undo and Redo walk
+/// it, a checkpoint names the current state so it can be restored by name,
+/// and Compare to shipped lists each knob that differs from the defaults.
+private struct HistorySection: View {
+    @Binding var tuning: ThemeTuning
+    @Shared(.designHistory) private var history
+    @State private var checkpointName = ""
+    private let state = DesignSurfaceState.shared
+
+    private var differences: [ThemeTuning.Difference] { tuning.differences(from: .default) }
+
+    var body: some View {
+        Section {
+            HStack {
+                Button("Undo", systemImage: "arrow.uturn.backward") { step { $0.undo() } }
+                    .disabled(!history.canUndo)
+                    .accessibilityIdentifier("tuning.history.undo")
+                Spacer()
+                Text("\(history.entries.count) states")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                Spacer()
+                Button("Redo", systemImage: "arrow.uturn.forward") { step { $0.redo() } }
+                    .disabled(!history.canRedo)
+                    .accessibilityIdentifier("tuning.history.redo")
+            }
+            .buttonStyle(.borderless)
+            HStack {
+                TextField("Name this state", text: $checkpointName)
+                    .accessibilityIdentifier("tuning.history.name")
+                Button("Checkpoint") {
+                    $history.withLock { $0.name(checkpointName) }
+                    checkpointName = ""
+                }
+                .buttonStyle(.borderless)
+                .disabled(checkpointName.trimmingCharacters(in: .whitespaces).isEmpty || history.current == nil)
+                .accessibilityIdentifier("tuning.history.checkpoint")
+            }
+            ForEach(history.named) { entry in
+                Button {
+                    step { $0.restore(entry.id) }
+                } label: {
+                    LabeledContent {
+                        if history.current?.id == entry.id {
+                            Image(systemName: "checkmark").foregroundStyle(.tint).accessibilityHidden(true)
+                        }
+                    } label: {
+                        Text(verbatim: entry.name ?? "")
+                        Text(entry.date, format: .dateTime.hour().minute())
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(history.current?.id == entry.id ? [.isSelected] : [])
+                .accessibilityIdentifier("tuning.history.restore")
+            }
+            DisclosureGroup("Compare to shipped (\(differences.count))") {
+                if differences.isEmpty {
+                    Text("Every knob is at its shipped value.")
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(differences, id: \.key) { difference in
+                    LabeledContent(difference.key) {
+                        Text(verbatim: "\(difference.from) → \(difference.to)")
+                            .font(.footnote.monospaced())
+                    }
+                    .accessibilityIdentifier("tuning.history.difference.\(difference.key)")
+                }
+            }
+            .accessibilityIdentifier("tuning.history.compare")
+        } header: {
+            Text("History")
+        } footer: {
+            Text("Every settled change is kept in design-history.json, by the person, the agent, or a variant.")
+        }
+    }
+
+    /// Moves the cursor with `move`, then applies the entry it lands on: the
+    /// code over the current tuning (the switches stay) and the knobs.
+    private func step(_ move: (inout DesignHistory) -> DesignHistory.Entry?) {
+        var landed: DesignHistory.Entry?
+        $history.withLock { landed = move(&$0) }
+        guard let entry = landed else { return }
+        withAnimation(ToolChrome.animation) {
+            if let restored = ThemeTuning(presetCode: entry.code, base: tuning) { tuning = restored }
+            state.knobs.replaceAll(entry.knobs)
         }
     }
 }
